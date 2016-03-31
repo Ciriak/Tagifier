@@ -1,1 +1,47 @@
-HELLO WORLD
+<!doctype html>
+<html ng-app="tagifier" ng-controller="mainCtrl">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tagifier</title>
+    <link rel="stylesheet" href="bower_components/foundation/css/foundation.min.css" />
+  </head>
+  <body>
+    <nav class="top-bar" data-topbar role="navigation">
+	  <ul class="title-area">
+	    <li class="name">
+	      <h1><a href="#">Tagifier</a></h1>
+	    </li>
+	     <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+	    <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+	  </ul>
+
+	  <section class="top-bar-section">
+	    <!-- Right Nav Section -->
+	    <ul class="right">
+	      <li><a href="#">About</a></li>
+	    </ul>
+	  </section>
+	</nav>
+
+	<div ui-view></div>
+
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/foundation/js/foundation.min.js"></script>
+    <script src="bower_components/angular/angular.min.js"></script>
+    <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+
+    <!-- Angular components -->
+    <script src="js/app.js"></script>
+
+    <script src="js/controllers/mainInput.js"></script>
+    <script src="js/controllers/file.js"></script>
+
+    <!-- initialize FOundation -->
+    <script>
+      $(document).foundation();
+    </script>
+
+  </body>
+</html>

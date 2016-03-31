@@ -1,0 +1,13 @@
+<div class="row text-center">
+	<div class="small-12 large-6 large-offset-3 columns">
+		<img src="img/tgf/icon.png">
+		<h1>TAGIFIER</h1>
+	</div>
+</div>
+<div class="row" ng-controller="mainInputCtrl">
+	<div class="small-8 small-offset-2 large-4 large-offset-4 columns">
+		<form ng-submit="miSubmit()">
+			<input type="text" placeholder="http://youtu.be/cG4OlW" ng-change="checkUrl()"  ng-model="currentUrl" ng-class="{good_url: goodUrl}">
+		</form>
+	</div>
+</div>

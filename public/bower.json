@@ -26,7 +26,9 @@
   ],
   "dependencies": {
     "angular": "^1.5.3",
+    "animate.css": "^3.5.1",
+    "jquery": "^2.2.2",
     "foundation": "^5.5.3",
-    "animate.css": "^3.5.1"
+    "angular-ui-router": "ui-router#^0.2.18"
   }
 }
