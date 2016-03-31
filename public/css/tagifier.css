@@ -1,0 +1,13 @@
+#welcome-container
+{
+	margin-top:15vh;
+}
+
+#welcome-container #welcome-logo
+{
+	width:150px;
+	height:150px;
+	background-size: 100% 100%;
+	border-radius: 100%;
+	margin: auto;
+}
