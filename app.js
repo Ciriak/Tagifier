@@ -22,8 +22,33 @@ fs.readFile("config.json", function (err, data) {
 
 app.use('/', express.static(__dirname + '/public/'));
 
-app.get('/api', function(req, res) {
-  res.send('hello world');
+app.get('/api/:fileId([0-9a-z_]{1,11})', function(req,res){
+	var uriInfos = "https://www.googleapis.com/youtube/v3/videos?id="+req.params.fileId+"&part=snippet&key="+config.youtube_api_key;
+	var uriDetails = "https://www.googleapis.com/youtube/v3/videos?id="+req.params.fileId+"&part=contentDetails&key="+config.youtube_api_key;
+	var vid = {};
+
+	request(uriInfos, function (error, response, body) {
+		console.log(body);
+  	if (!error && response.statusCode == 200) {
+  		body = JSON.parse(body);
+  		for (var attr in body.items[0]) { vid[attr] = body.items[0][attr]; }
+    	request(uriDetails, function (error2, response2, body2) {
+	  	if (!error2 && response2.statusCode == 200) {
+	    	body2 = JSON.parse(body2);
+	    	for (var attr in body2.items[0]) { vid[attr] = body2.items[0][attr]; }
+	    	res.send(vid);
+	  	}
+	  	else
+	  	{
+	  		res.send("Invalid query for contentDetails");
+	  	}
+		});
+  	}
+  	else
+  	{
+  		res.send("Invalid query for Snippet");
+  	}
+	});
 });
 
 app.listen(port, function () {

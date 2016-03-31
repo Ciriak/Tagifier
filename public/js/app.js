@@ -1,5 +1,5 @@
 var app = angular.module('tagifier', [
-'ui.router',
+'ui.router'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {

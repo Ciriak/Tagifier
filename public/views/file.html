@@ -8,16 +8,26 @@
 
   <table class="small-12 large-12 columns">
   	<tr>
-  		<td>Lorem</td>
-  		<td> ipsum</td>
+  		<td>Pattern</td>
+  		<td>
+  			<input type="text" ng-model="userPattern" ng-change="genPattern()">
+  		</td>
+  	</tr>
+  	<tr>
+  		<td>Title</td>
+  		<td>
+  			<input type="text" ng-model="exportFile.title">
+  		</td>
+  	</tr>
+  	<tr>
+  		<td>Artist</td>
+  		<td>
+  			<input type="text" ng-model="exportFile.artist">
+  		</td>
   	</tr>
   	<tr>
   		<td>Lorem</td>
-  		<td> ipsum</td>
-  	</tr>
-  	<tr>
-  		<td>Lorem</td>
-  		<td> ipsum</td>
+  		<td><input type="text" ng-model="exportFile.album"></td>
   	</tr>
   	<tr>
   		<td>Lorem</td>
