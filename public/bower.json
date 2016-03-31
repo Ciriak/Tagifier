@@ -1,0 +1,32 @@
+{
+  "name": "Tagifier",
+  "description": "Download Youtube video as tagged mp3 files",
+  "main": "app.js",
+  "authors": [
+    "Cyriaque DELAUNAY"
+  ],
+  "license": "ISC",
+  "keywords": [
+    "tagifier",
+    "mp3",
+    "youtube",
+    "tag"
+  ],
+  "homepage": "https://github.com/CYRIAQU3/tagifier",
+  "moduleType": [
+    "globals"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "^1.5.3",
+    "foundation": "^5.5.3",
+    "animate.css": "^3.5.1"
+  }
+}
