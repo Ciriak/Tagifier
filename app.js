@@ -2,10 +2,23 @@ var http = require('http');
 var fs = require('fs');
 var port = 8080;
 var express = require('express');
-app = module.exports.app = express();
-var server = http.createServer(app);
 var request = require('request');
+var nodeID3 = require('node-id3');
+var YoutubeMp3Downloader = require('youtube-mp3-downloader');
+
+var app = express();
+var server = app.listen(port);
+var io = require('socket.io').listen(server);
+
 var config = {};
+
+var YD = new YoutubeMp3Downloader({
+    "ffmpegPath": "ffmpeg/ffmpeg.exe",        // Where is the FFmpeg binary located? 
+    "outputPath": "public/exports",    // Where should the downloaded and encoded files be stored? 
+    "youtubeVideoQuality": "highest",       // What video quality should be used? 
+    "queueParallelism": 2,                  // How many parallel downloads/encodes should be started? 
+    "progressTimeout": 2000                 // How long should be the interval of the progress reports 
+});
 
 // retreive config file
 fs.readFile("config.json", function (err, data) {
@@ -20,6 +33,8 @@ fs.readFile("config.json", function (err, data) {
     }
   });
 
+
+
 app.use('/', express.static(__dirname + '/public/'));
 
 app.get('/api/:fileId([0-9a-z_]{1,11})', function(req,res){
@@ -28,7 +43,6 @@ app.get('/api/:fileId([0-9a-z_]{1,11})', function(req,res){
 	var vid = {};
 
 	request(uriInfos, function (error, response, body) {
-		console.log(body);
   	if (!error && response.statusCode == 200) {
   		body = JSON.parse(body);
   		for (var attr in body.items[0]) { vid[attr] = body.items[0][attr]; }
@@ -51,6 +65,26 @@ app.get('/api/:fileId([0-9a-z_]{1,11})', function(req,res){
 	});
 });
 
-app.listen(port, function () {
-  console.log('Tagifier is active on port '+port);
+io.on('connection', function (socket){
+  console.log("User connected");
+
+  socket.on('fileRequest', function (data) {
+    var file = data.file;
+    YD.download(file.id);
+
+    YD.on("finished", function(data) {
+        var success = nodeID3.write(file, data.file);   //Pass tags and filepath
+console.log(success); 
+        socket.emit("yd_event",{event:"finished",data:data});
+    });
+     
+    YD.on("error", function(error) {
+        console.log(error);
+        socket.emit("yd_event",{event:"error",data:error});
+    });
+     
+    YD.on("progress", function(progress) {
+        socket.emit("yd_event",{event:"progress",data:progress});
+    });
+  });
 });

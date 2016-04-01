@@ -27,6 +27,12 @@ app.config(function($stateProvider, $urlRouterProvider) {
 
 app.controller('mainCtrl', ['$scope', '$http','$rootScope', function($scope, $http,$rootScope)
 {
+  
+  $scope.socket = io.connect('http://localhost:8080');
+  $scope.socket.on('connect', function()
+  {
+    console.log("Socket connected !");
+  });
 
   $rootScope.$on('$stateChangeStart', 
   function(event, toState, toParams, fromState, fromParams)

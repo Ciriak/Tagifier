@@ -5,6 +5,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 	$scope.pattern;
 	$scope.canDownload = false;
 	$scope.file = {};
+	$scope.buttonLabel = "Download";
 
 	$scope.exportFile = {};
 	$http({
@@ -13,13 +14,14 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 	}).then(function successCallback(response) {
 		parseFileData(response.data);
 	}, function errorCallback(response) {
-
+		console.log(response);
 	});
 
 	var parseFileData = function(data){
 		console.log(data);
 		$scope.file = data;
-		$scope.exportFile.cover = data.snippet.thumbnails.maxres.url;
+		$scope.exportFile.image = data.snippet.thumbnails.default.url;
+		$scope.exportFile.id = $stateParams.fileId;
 		var pt = data.snippet.localized.title.split(" - ");
 		$scope.userPattern = "%artist% - %title%";
 		// if xx - xx format
@@ -59,4 +61,23 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 		};
 		$scope.canDownload = true;
 	}
+
+	$scope.requestFile = function(){
+		$scope.socket.emit("fileRequest",{file:$scope.exportFile});
+	}
+
+	$scope.socket.on("yd_event",function(ev){
+		console.log(ev);
+		if(ev["event"] == "progress"){
+			$scope.buttonLabel = ev.data.progress.percentage;
+		}
+		if(ev["event"] == "error"){
+			$scope.buttonLabel = "Download";
+		}
+		if(ev["event"] == "finished"){
+			console.log("File Ready");
+		}
+
+		$scope.$apply();
+	});
 });

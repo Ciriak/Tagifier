@@ -1,10 +1,10 @@
 <div class="row small-12 large-6 large-offset-3" id="file-container">
-  <div class="small-12 large-4 columns"><img ng-src="{{exportFile.cover}}"></div>
+  <div class="small-12 large-4 columns"><img ng-src="{{exportFile.image}}"></div>
   <div class="small-12 large-6 columns">
   	<h1>{{exportFile.title}}</h1>
   	<h2>{{exportFile.artist}}</h2>
   </div>
-  <div class="small-12 large-2 columns"><div class="button" ng-class="{'disabled':!canDownload}">Download</div></div>
+  <div class="small-12 large-2 columns"><div class="button" ng-class="{'disabled':!canDownload}" ng-click="requestFile()">{{buttonLabel}}</div></div>
 
   <table class="small-12 large-12 columns">
     <tr>
