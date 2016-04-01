@@ -3,6 +3,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 	$scope.baseStr;
 	$scope.userPattern;
 	$scope.pattern;
+	$scope.canDownload = false;
 	$scope.file = {};
 
 	$scope.exportFile = {};
@@ -11,16 +12,14 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 	  url: '/api/'+$stateParams.fileId
 	}).then(function successCallback(response) {
 		parseFileData(response.data);
-	// this callback will be called asynchronously
-	// when the response is available
 	}, function errorCallback(response) {
-	// called asynchronously if an error occurs
-	// or server returns response with an error status.
+
 	});
 
 	var parseFileData = function(data){
-		//console.log(data);
+		console.log(data);
 		$scope.file = data;
+		$scope.exportFile.cover = data.snippet.thumbnails.maxres.url;
 		var pt = data.snippet.localized.title.split(" - ");
 		$scope.userPattern = "%artist% - %title%";
 		// if xx - xx format
@@ -47,6 +46,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 		if(!extrData)
 		{
 			console.log("Invalid regex");
+			$scope.canDownload = false;
 			return;
 		}
 
@@ -57,5 +57,6 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 				$scope.exportFile[$scope.vars[i]] = extrData[i+1];
 			}
 		};
+		$scope.canDownload = true;
 	}
 });

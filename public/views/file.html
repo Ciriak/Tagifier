@@ -1,10 +1,10 @@
 <div class="row small-12 large-6 large-offset-3" id="file-container">
-  <div class="small-12 large-4 columns"><img src="http://lorempixel.com/500/500"></div>
+  <div class="small-12 large-4 columns"><img ng-src="{{exportFile.cover}}"></div>
   <div class="small-12 large-6 columns">
-  	<h1>Lorem ipsum</h1>
-  	<h2>Ipsem Danlante</h2>
+  	<h1>{{exportFile.title}}</h1>
+  	<h2>{{exportFile.artist}}</h2>
   </div>
-  <div class="small-12 large-2 columns"><button>Download</button></div>
+  <div class="small-12 large-2 columns"><div class="button" ng-class="{'disabled':!canDownload}">Download</div></div>
 
   <table class="small-12 large-12 columns">
     <tr>
@@ -31,9 +31,13 @@
   			<input type="text" ng-model="exportFile.artist">
   		</td>
   	</tr>
+    <tr>
+      <td>Gender</td>
+      <td><input type="text" ng-model="exportFile.gender"></td>
+    </tr>
   	<tr>
-  		<td>Lorem</td>
-  		<td><input type="text" ng-model="exportFile.album"></td>
+  		<td>TrackNum</td>
+  		<td><input type="text" ng-model="exportFile.track"></td>
   	</tr>
   	<tr>
   		<td>Lorem</td>
