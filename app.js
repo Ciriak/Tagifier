@@ -4,7 +4,13 @@ var port = 8080;
 var express = require('express');
 var request = require('request');
 var nodeID3 = require('node-id3');
+var random = require('random-gen');
 var YoutubeMp3Downloader = require('youtube-mp3-downloader');
+var fid = require('fast-image-downloader');
+var fidOpt = {
+  TIMEOUT : 2000, // timeout in ms
+  ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
+}
 
 var app = express();
 var server = app.listen(port);
@@ -17,7 +23,7 @@ var YD = new YoutubeMp3Downloader({
     "outputPath": "public/exports",    // Where should the downloaded and encoded files be stored? 
     "youtubeVideoQuality": "highest",       // What video quality should be used? 
     "queueParallelism": 2,                  // How many parallel downloads/encodes should be started? 
-    "progressTimeout": 2000                 // How long should be the interval of the progress reports 
+    "progressTimeout": 1000                 // How long should be the interval of the progress reports 
 });
 
 // retreive config file
@@ -37,7 +43,7 @@ fs.readFile("config.json", function (err, data) {
 
 app.use('/', express.static(__dirname + '/public/'));
 
-app.get('/api/:fileId([0-9a-z_]{1,11})', function(req,res){
+app.get('/api/:fileId(*{1,11})', function(req,res){
 	var uriInfos = "https://www.googleapis.com/youtube/v3/videos?id="+req.params.fileId+"&part=snippet&key="+config.youtube_api_key;
 	var uriDetails = "https://www.googleapis.com/youtube/v3/videos?id="+req.params.fileId+"&part=contentDetails&key="+config.youtube_api_key;
 	var vid = {};
@@ -69,22 +75,50 @@ io.on('connection', function (socket){
   console.log("User connected");
 
   socket.on('fileRequest', function (data) {
+    var session = random.alphaNum(16);
     var file = data.file;
-    YD.download(file.id);
 
-    YD.on("finished", function(data) {
-        var success = nodeID3.write(file, data.file);   //Pass tags and filepath
-console.log(success); 
-        socket.emit("yd_event",{event:"finished",data:data});
-    });
-     
-    YD.on("error", function(error) {
-        console.log(error);
-        socket.emit("yd_event",{event:"error",data:error});
-    });
-     
-    YD.on("progress", function(progress) {
-        socket.emit("yd_event",{event:"progress",data:progress});
+    fid(file.image, fidOpt.TIMEOUT, fidOpt.ALLOWED_TYPES, "", function(err, img){
+      if (err) {
+        console.log(err.error);
+      } else {
+        
+        console.log(data);
+        var imgPath = "./public/img/temps/"+session+"."+img.fileType.ext;
+        fs.writeFile(imgPath, img.body, function(err) {
+          if(err) {
+              return console.log(err);
+          }
+
+            file.image = imgPath;
+            console.log(imgPath);
+            YD.download(file.id,session+".mp3");
+
+            YD.on("finished", function(data) {
+                var success = nodeID3.write(file, data.file);   //Pass tags and filepath
+                console.log(success); 
+                if (fs.existsSync(imgPath)) {
+                  fs.unlink(imgPath);
+                }
+                socket.emit("yd_event",{event:"finished",data:data});
+
+                setTimeout(function(){
+                  if (fs.existsSync(data.file)) {
+                    fs.unlink(data.file);
+                  }
+                },600*1000); //remove the file after 10 min (600 sec)
+            });
+             
+            YD.on("error", function(error) {
+                console.log(error);
+                socket.emit("yd_event",{event:"error",data:error});
+            });
+             
+            YD.on("progress", function(progress) {
+                socket.emit("yd_event",{event:"progress",data:progress});
+            });
+        }); 
+      }
     });
   });
 });

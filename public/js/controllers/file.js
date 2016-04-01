@@ -20,7 +20,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 	var parseFileData = function(data){
 		console.log(data);
 		$scope.file = data;
-		$scope.exportFile.image = data.snippet.thumbnails.default.url;
+		$scope.exportFile.image = getBestThumbnail(data.snippet.thumbnails);
 		$scope.exportFile.id = $stateParams.fileId;
 		var pt = data.snippet.localized.title.split(" - ");
 		$scope.userPattern = "%artist% - %title%";
@@ -81,3 +81,21 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 		$scope.$apply();
 	});
 });
+
+var getBestThumbnail = function(t){
+	if(t.maxres){
+		return t.maxres.url;
+	}
+	if(t.high){
+		return t.high.url;
+	}
+	if(t.medium){
+		return t.medium.url;
+	}
+	if(t.standard){
+		return t.standard.url;
+	}
+	else{
+		return "";
+	}
+}
