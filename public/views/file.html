@@ -7,12 +7,18 @@
   <div class="small-12 large-2 columns"><button>Download</button></div>
 
   <table class="small-12 large-12 columns">
-  	<tr>
-  		<td>Pattern</td>
-  		<td>
-  			<input type="text" ng-model="userPattern" ng-change="genPattern()">
-  		</td>
-  	</tr>
+    <tr>
+      <td>Filename</td>
+      <td>
+        <input type="text" ng-model="baseStr" ng-change="genPattern()">
+      </td>
+    </tr>
+    <tr>
+      <td>Pattern</td>
+      <td>
+        <input type="text" ng-model="userPattern" ng-change="genPattern()">
+      </td>
+    </tr>
   	<tr>
   		<td>Title</td>
   		<td>

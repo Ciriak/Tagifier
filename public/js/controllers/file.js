@@ -1,6 +1,7 @@
 app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 {
-	$scope.userPattern = "%title%";
+	$scope.baseStr;
+	$scope.userPattern;
 	$scope.pattern;
 	$scope.file = {};
 
@@ -18,23 +19,43 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 	});
 
 	var parseFileData = function(data){
+		//console.log(data);
 		$scope.file = data;
 		var pt = data.snippet.localized.title.split(" - ");
-		
+		$scope.userPattern = "%artist% - %title%";
 		// if xx - xx format
 		if(pt.length == 2){
-			$scope.pattern = "%artist% - %title%";
+			$scope.baseStr =  data.snippet.localized.title;
 		}
 
 		else {
-			$scope.pattern = "%title%";
-			$scope.exportFile.title = data.snippet.localized.title;
-			$scope.exportFile.artist = data.snippet.channelName;
+			$scope.baseStr =  data.snippet.channelTitle+" - "+data.snippet.localized.title;
 		}
+
+		$scope.genPattern();
 	}
 
 	$scope.genPattern = function(){
 		$scope.pattern = $scope.userPattern.replace(/%([a-zA-Z0-9])\w+%/g,"(.*)");
-		console.log($scope.pattern);
+		$scope.vars = $scope.userPattern.match(/%([a-zA-Z0-9])\w+%/g);
+		for (var i = 0; i < $scope.vars.length; i++)
+		{
+			$scope.vars[i] = $scope.vars[i].replace("%","").replace("%",""); //remove %x%
+		};
+		
+		var extrData = $scope.baseStr.match(new RegExp($scope.pattern));
+		if(!extrData)
+		{
+			console.log("Invalid regex");
+			return;
+		}
+
+		for (var i = 0; i < $scope.vars.length; i++)
+		{
+			if(extrData[i+1])
+			{
+				$scope.exportFile[$scope.vars[i]] = extrData[i+1];
+			}
+		};
 	}
 });
