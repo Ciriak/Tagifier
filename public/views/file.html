@@ -1,12 +1,17 @@
-<div class="row small-12 large-6 large-offset-3" id="file-container">
-  <div class="small-12 large-4 columns"><img ng-src="{{exportFile.image}}"></div>
-  <div class="small-12 large-6 columns">
-  	<h1>{{exportFile.title}}</h1>
-  	<h2>{{exportFile.artist}}</h2>
+<div class="row small-12 large-6 large-offset-3" id="file-container" ng-class="{'processing':processing}">
+  <div id="file-heading">
+    <img ng-src="{{exportFile.image}}" id="file-bg">
+    <div class="small-12 large-4 columns"><img ng-src="{{exportFile.image}}" id="file-image"></div>
+    <div class="small-12 large-6 columns">
+    	<h1>{{fileHeadingLabel.h1}}</h1>
+    	<h2>{{fileHeadingLabel.h2}}</h2>
+    </div>
+    <div class="small-12 large-2 columns">
+      <div class="dl-button" ng-class="{'disabled':!canDownload}" ng-click="requestFile()"><i class="mdi mdi-download"></i></div>
+    </div>
   </div>
-  <div class="small-12 large-2 columns"><div class="button" ng-class="{'disabled':!canDownload}" ng-click="requestFile()">{{buttonLabel}}</div></div>
 
-  <table class="small-12 large-12 columns">
+  <table class="small-12 large-12 columns" id="file-tags" ng-class="{'hidden':!canEditTags}">
     <tr>
       <td>Filename</td>
       <td>
