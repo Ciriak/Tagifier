@@ -30,6 +30,7 @@
     "jquery": "^2.2.2",
     "angular-ui-router": "ui-router#^0.2.18",
     "mdi": "^1.5.54",
-    "bootstrap": "^3.3.6"
+    "bootstrap": "^3.3.6",
+    "angular-notify": "^2.5.0"
   }
 }
