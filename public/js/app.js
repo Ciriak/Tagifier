@@ -1,5 +1,6 @@
 var app = angular.module('tagifier', [
-'ui.router'
+'ui.router',
+'cgNotify'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {

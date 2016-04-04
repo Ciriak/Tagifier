@@ -5,6 +5,7 @@ var express = require('express');
 var request = require('request');
 var nodeID3 = require('node-id3');
 var random = require('random-gen');
+var bodyParser = require('body-parser')
 var YoutubeMp3Downloader = require('youtube-mp3-downloader');
 var fid = require('fast-image-downloader');
 var fidOpt = {
@@ -39,9 +40,44 @@ fs.readFile("config.json", function (err, data) {
     }
   });
 
-
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
 
 app.use('/', express.static(__dirname + '/public/'));
+
+//
+// Used for Captchat confirmation
+//
+
+app.post('/checker', function(req,res)
+{
+  var r;
+  var turl = "http://verify.solvemedia.com/papi/verify";
+  var form =  {
+      challenge: req.body.chal,
+      response : req.body.resp,
+      privatekey : config.solvemedia_key,
+      remoteip : req.connection.remoteAddress
+    };
+  request.post({
+    url:turl,
+    form: form
+  },
+  function(err,httpResponse,body){
+    if(body.substring(0,4) == "true") // if good captchat response by solvemedia
+    {
+      res.sendStatus(200);
+      return;
+    }
+    res.sendStatus(403);
+  });
+});
+
+//
+//
+//
 
 app.get('/api/:fileId(*{1,11})', function(req,res){
 	var uriInfos = "https://www.googleapis.com/youtube/v3/videos?id="+req.params.fileId+"&part=snippet&key="+config.youtube_api_key;

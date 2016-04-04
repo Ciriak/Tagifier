@@ -60,12 +60,29 @@
     	</div>
     </div>
     <div class="row col-md-6 col-md-offset-3 marged">
-      <button type="button" id="following" class="btn btn-primary btn-lg col-xs-12" href="#tab3" data-toggle="tab">Download <i class="mdi mdi-download" aria-hidden="true"></i>
+      <button type="button" id="following" class="btn btn-primary btn-lg col-xs-12" href="#tab3" data-toggle="tab" ng-click="showConfirmModal()">Download <i class="mdi mdi-download" aria-hidden="true"></i>
       </button>
     </div>
 
   </div>
 </div>
-<script>
-  //ACPuzzle.create('buxt.317r8uls-ge9STPl6ilzpmYgl8G', 'solve-media-container', "");
-</script>
+
+
+<div class="modal" id="confirm-dl-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+  <form class="modal-dialog" role="document" ng-submit="checkCaptchat()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="exampleModalLabel">One final effort</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div id="solve-media-container"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary btn-lg"><i class="mdi mdi-download"></i> Download</button>
+      </div>
+    </div>
+  </form>
+</div>

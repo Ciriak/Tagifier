@@ -1,4 +1,4 @@
-app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
+app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
 {
 	$('[data-toggle="tooltip"]').tooltip();	//initialize tooltips
 	$scope.baseStr;
@@ -76,6 +76,34 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 		$scope.processing = true;
 		$scope.socket.emit("fileRequest",{file:$scope.exportFile});
 		$scope.fileHeadingLabel.h2 = "In Waiting list..";
+	}
+
+	$scope.showConfirmModal = function(){
+		$('#confirm-dl-modal').modal();
+		$scope.generateCaptchat();
+	}
+
+	$scope.generateCaptchat = function(){
+		ACPuzzle.create('buxt.317r8uls-ge9STPl6ilzpmYgl8G', 'solve-media-container', "");
+	}
+
+	$scope.checkCaptchat = function(){
+		var resp = $("#adcopy_response").val();
+		var chal = $("#adcopy_challenge").val();
+
+		$http({
+		  method: 'POST',
+		  url: '/checker',
+		  data : {
+		  	chal : chal,
+		  	resp : resp
+		  }
+		}).then(function successCallback(r) {
+			//start conversion here
+		}, function errorCallback(r) {
+			notify({ message:'The captchat is invalid !', duration:5000} );
+			$scope.generateCaptchat();
+		});
 	}
 
 	$scope.socket.on("yd_event",function(ev){
