@@ -1,10 +1,12 @@
 app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 {
+	$('[data-toggle="tooltip"]').tooltip();	//initialize tooltips
 	$scope.baseStr;
 	$scope.userPattern;
 	$scope.pattern;
 	$scope.canDownload = false;
 	$scope.processing = false;
+	$scope.canEditTags = true;
 	$scope.file = {};
 	$scope.fileHeadingLabel = {};
 

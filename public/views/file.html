@@ -1,52 +1,71 @@
-<div class="row small-12 large-6 large-offset-3" id="file-container" ng-class="{'processing':processing}">
-  <div id="file-heading">
-    <img ng-src="{{exportFile.image}}" id="file-bg">
-    <div class="small-12 large-4 columns"><img ng-src="{{exportFile.image}}" id="file-image"></div>
-    <div class="small-12 large-6 columns">
-    	<h1>{{fileHeadingLabel.h1}}</h1>
-    	<h2>{{fileHeadingLabel.h2}}</h2>
-    </div>
-    <div class="small-12 large-2 columns">
-      <div class="dl-button" ng-class="{'disabled':!canDownload}" ng-click="requestFile()"><i class="mdi mdi-download"></i></div>
+<div class="container-fluid" id="file-container" ng-class="{'processing':processing}">
+  <div id="file-heading" class="row marged">
+    <!--<img ng-src="{{exportFile.image}}" id="file-bg" class="img-responsive">-->
+    <div class="col-md-3 col-md-offset-3">
+      <img ng-src="{{exportFile.image}}" id="file-image" class="img-responsive"></div>
+    <div class="col-md-3">
+      <h1>{{fileHeadingLabel.h1}}</h1>
+      <h2>{{fileHeadingLabel.h2}}</h2>
     </div>
   </div>
 
-  <table class="small-12 large-12 columns" id="file-tags" ng-class="{'hidden':!canEditTags}">
-    <tr>
-      <td>Filename</td>
-      <td>
-        <input type="text" ng-model="baseStr" ng-change="genPattern()">
-      </td>
-    </tr>
-    <tr>
-      <td>Pattern</td>
-      <td>
-        <input type="text" ng-model="userPattern" ng-change="genPattern()">
-      </td>
-    </tr>
-  	<tr>
-  		<td>Title</td>
-  		<td>
-  			<input type="text" ng-model="exportFile.title">
-  		</td>
-  	</tr>
-  	<tr>
-  		<td>Artist</td>
-  		<td>
-  			<input type="text" ng-model="exportFile.artist">
-  		</td>
-  	</tr>
-    <tr>
-      <td>Gender</td>
-      <td><input type="text" ng-model="exportFile.gender"></td>
-    </tr>
-  	<tr>
-  		<td>TrackNum</td>
-  		<td><input type="text" ng-model="exportFile.track"></td>
-  	</tr>
-  	<tr>
-  		<td>Lorem</td>
-  		<td> ipsum</td>
-  	</tr>
-  </table>
+  <div class="row col-md-6 col-md-offset-3 marged" id="file-body-container">
+
+    <div class="col-md-12" id="file-tags" ng-class="{'hidden':!canEditTags}">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox"> Use pattern
+            </label>
+          </div>
+        </div>
+        <div class="col-md-6"></div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">Filename</div>
+        <div class="col-md-6">
+          <input type="text" class="form-control" ng-model="baseStr" ng-change="genPattern()">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">Pattern</div>
+        <div class="col-md-6" data-toggle="tooltip" data-placement="right" title="Tooltip on right">
+          <input type="text" class="form-control" ng-model="userPattern" ng-change="genPattern()">
+        </div>
+      </div>
+    	<div class="row">
+    		<div class="col-md-6">Title</div>
+    		<div class="col-md-6">
+    			<input type="text" class="form-control" ng-model="exportFile.title">
+    		</div>
+    	</div>
+    	<div class="row">
+    		<div class="col-md-6">Artist</div>
+    		<div class="col-md-6">
+    			<input type="text" class="form-control" ng-model="exportFile.artist">
+    		</div>
+    	</div>
+      <div class="row">
+        <div class="col-md-6">Gender</div>
+        <div class="col-md-6"><input type="text" class="form-control" ng-model="exportFile.gender"></div>
+      </div>
+    	<div class="row">
+    		<div class="col-md-6">TrackNum</div>
+    		<div class="col-md-6"><input type="text" class="form-control" ng-model="exportFile.track"></div>
+    	</div>
+    	<div class="row">
+    		<div class="col-md-6">Lorem</div>
+    		<div class="col-md-6"> ipsum</div>
+    	</div>
+    </div>
+    <div class="row col-md-6 col-md-offset-3 marged">
+      <button type="button" id="following" class="btn btn-primary btn-lg col-xs-12" href="#tab3" data-toggle="tab">Download <i class="mdi mdi-download" aria-hidden="true"></i>
+      </button>
+    </div>
+
+  </div>
 </div>
+<script>
+  //ACPuzzle.create('buxt.317r8uls-ge9STPl6ilzpmYgl8G', 'solve-media-container', "");
+</script>

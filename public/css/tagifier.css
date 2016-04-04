@@ -1,99 +1,223 @@
 body
 {
-	background-color: #212121;
+	font-family: Roboto;
+	background-color: #1B2838;
+	color:#E4F1FE;
 }
 
-.button
+*
 {
-	padding: 10px;
-	border-radius:3px;
+	scrollbar-face-color: #3498DB;
+  	scrollbar-track-color: #1B2838;
 }
 
-#file-heading
-{
-	overflow: hidden;
-	position:relative;
-	margin-top: 50px;
-	padding: 20px;
-	transition-duration:0.5s;
+::-webkit-scrollbar {
+  width: 0.5em;
+  height: 0.5em;
 }
 
-#file-container.processing #file-heading	/*when processing*/
-{
-	margin-top:25vh;
+::-webkit-scrollbar-thumb {
+  background: #3498DB;
+  border-radius:3px;
 }
 
-#file-heading #file-bg
-{
-	overflow: hidden;
-	position: absolute;
-	margin-top:-20%;
-	top: 0;
-	left: 0;
-	width: 130%;
-	margin-left:-10%;
-	opacity: 0.5;
-	filter: blur(5px);
-	 -webkit-filter : blur(5px);
+::-webkit-scrollbar-track {
+  background: #1B2838;
 }
 
-#file-heading #file-image
+p,h1,h2,h3
 {
-	border-radius:500px;
-	max-width: 150px;
-	height: 150px;
+	color:#E4F1FE;
 }
 
-#file-heading h1
+
+.marged
 {
-	font-size: 24px;
+	margin-top:50px;
+}
+
+.btn.btn-primary
+{
+	transition-duration:0.3s;
+	background-color: #1ABC9C;
+	border:1px #1ABC9C solid;
 	color: #ffffff;
 }
 
-#file-heading h2
+.btn.btn-primary:hover
 {
-	font-size: 18px;
-	color: #34495e;
-	color: #f2f2f2;
+	background-color: #3498DB;
+	border:1px #3498DB solid;
+	color: #DEE0E2;
 }
 
-#file-container.processing #file-heading h2
+.btn.btn-default
 {
-	-webkit-animation: textFlash 1s infinite;
-    animation: textFlash 1s infinite;
-    animation-timing-function: linear;
-    -webkit-animation-timing-function: linear;
+	background-color: #3498DB;
+	border:1px #3498DB solid;
+	color: #DEE0E2;
 }
 
-@keyframes textFlash {
-    0% {opacity: 1.0;}
-    50% {opacity: 0.7;}
-    100% {opacity: 1.0;}
+.btn.btn-default:active
+{
+	background-color: #3498DB;
+	border:1px #3498DB solid;
+	color: #DEE0E2;
 }
 
-#file-heading .dl-button
+.btn.btn-link
 {
-	border-radius: 100%;
-	color:#ffffff;
-	background-color:#50AE56;
-	padding: 0px;
-	width: 75px;
-	height:75px;
-	text-align: center;
+	text-decoration: none;
+	color: #8F98A0!important;
+	background-color: transparent;
+	border-bottom: 3px transparent solid;
+}
+
+.btn.btn-link:hover
+{
+	background-color: transparent;
+	border-bottom: 3px #1ABC9C solid;
+	text-decoration: none;
+}
+
+.btn.btn-link.active
+{
+	background-color: transparent;
+	border-bottom: 3px #1ABC9C solid;
+	text-decoration: none;
+}
+
+.container-fluid
+{
+	color: #ffffff;
+}
+
+.container-fluid.light
+{
+	padding-top: 30px;
+	background-color: #F6F6F6;
+	color: #2C3E50;
+	padding-bottom: 30px;
+}
+
+.jumbotron
+{
+	background-color: transparent;
+	margin-bottom:0;
+}
+
+.navbar
+{
+	margin-bottom:0;
+}
+
+.navbar-inverse
+{
+	background-color: transparent;
+	border-color: transparent;
+}
+
+.navbar-brand
+{
+	height: 30px;
+	margin-top: 8px;
+	padding: 0;
+}
+
+.modal
+{
+	color: #34495E;
+}
+
+.form-control
+{
+	background-color: transparent;
+	border:2px #8F98A0 solid;
+	color: #8F98A0;
+}
+
+.form-control.marged
+{
+	margin: 5px;
+}
+
+.form-control:focus
+{
+	border-color: #1ABC9C;
+	box-shadow: none;
+}
+
+#header-logo
+{
+	height: 100%;
+}
+
+.movie-banner,.tv-banner
+{
+	position: relative;
+	padding-top:0px;
+	height: 250px;
+	overflow: hidden;
+}
+
+.movie-banner img,.tv-banner img
+{
+	width: 100%;
+	min-height: 100%;
+	-webkit-filter: blur(8px);
+}
+
+.movie-banner .banner-light,.tv-banner .banner-light
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-image:linear-gradient(60deg, rgba(0,62,64,0.7), rgba(10,45,106,0.7));
+}
+
+.movie-banner .banner-content,.tv-banner .banner-content
+{
+	position: absolute;
+	bottom:0;
+	margin: 10px;
+	z-index: 2;
+}
+
+.movie-banner .banner-content h1,.tv-banner .banner-content h1
+{
+	display: inline-block;
+	color: #ffffff;
+}
+
+.banner-poster
+{
+	width: 100px;
+	overflow: hidden;
+	display: inline-block;
+}
+
+.banner-poster img
+{
+	height: 100%;
+	-webkit-filter: blur(0px);
+}
+
+.href-row
+{
 	cursor: pointer;
-	font-size: 40px;
-	border:8px #232426 solid;
-	transition-duration:0.3s;
 }
 
-#file-heading .dl-button:hover
-{
-	box-shadow: 0px 0px 20px #2ecc71;
+.tooltip-inner {	/*tooltip size*/
+    min-width: 100px;
 }
 
-#file-container.processing #file-tags
-{
-	display: none;
+.row-eq-height {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
 }
 
 #welcome-container
