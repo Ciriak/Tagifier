@@ -9,6 +9,8 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
 	$scope.canEditTags = true;
 	$scope.file = {};
 	$scope.fileHeadingLabel = {};
+	$scope.progress = 0;
+	$scope.progressStatus = 'waiting',
 
 	$scope.exportFile = {};
 	$http({
@@ -99,8 +101,11 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
 		  	resp : resp
 		  }
 		}).then(function successCallback(r) {
-			//start conversion here
+			$('#confirm-dl-modal').modal('hide');
+			$scope.processing = true;
+			$scope.requestFile();
 		}, function errorCallback(r) {
+			$scope.processing = false;
 			notify({ message:'The captchat is invalid !', duration:5000} );
 			$scope.generateCaptchat();
 		});
@@ -109,17 +114,25 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
 	$scope.socket.on("yd_event",function(ev){
 		console.log(ev);
 		if(ev["event"] == "progress"){
-			$scope.processing = true;
-			$scope.fileHeadingLabel.h2 = "Processing... ("+Math.round(ev.data.progress.percentage)+"%)";
+			if(ev.data.videoId == $scope.exportFile.id){
+				$scope.processing = true;
+				$scope.progress = ev.data.progress.percentage;
+				$scope.progressStatus = "processing";
+				$scope.fileHeadingLabel.h2 = "Processing... ("+Math.round(ev.data.progress.percentage)+"%)";
+				$scope.$apply();
+			}
 		}
 		if(ev["event"] == "error"){
 			$scope.buttonLabel = "Download";
 			$scope.processing = false;
+			notify({ message:'Internal error, please retry', duration:5000} );
 		}
 		if(ev["event"] == "finished"){
-			console.log("File Ready");
-			$scope.processing = false;
-			$scope.fileHeadingLabel.h2 = "Your file is ready !";
+			$scope.progressStatus = "ready";
+			var url = ev.data.file.replace("public/","");
+			setTimeout(function(){
+				download(url, $scope.exportFile.fileName+".mp3","audio/mp3");
+			},1000);
 		}
 
 		$scope.$apply();

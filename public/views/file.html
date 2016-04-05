@@ -1,4 +1,4 @@
-<div class="container-fluid" id="file-container" ng-class="{'processing':processing}">
+<div class="container-fluid" id="file-container" ng-hide="processing">
   <div id="file-heading" class="row marged">
     <!--<img ng-src="{{exportFile.image}}" id="file-bg" class="img-responsive">-->
     <div class="col-md-3 col-md-offset-3">
@@ -86,3 +86,5 @@
     </div>
   </form>
 </div>
+
+<div ng-include="'views/processing.html'" ng-show="processing"></div>
