@@ -28,7 +28,10 @@
     "angular": "^1.5.3",
     "animate.css": "^3.5.1",
     "jquery": "^2.2.2",
-    "foundation": "^5.5.3",
-    "angular-ui-router": "ui-router#^0.2.18"
+    "angular-ui-router": "ui-router#^0.2.18",
+    "mdi": "^1.5.54",
+    "downloadjs": "^1.4.2",
+    "Materialize": "materialize#^0.97.6",
+    "angular-youtube-mb": "https://github.com/brandly/angular-youtube-embed.git#^1.1.1"
   }
 }

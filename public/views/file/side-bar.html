@@ -1,0 +1,16 @@
+<youtube-video video-id="$parent.exportFile.id" class="sidebar-player hide-on-med-and-down"></youtube-video>
+
+<form ng-submit="$parent.requestProcess()">
+   <div id="solve-media-container" ng-show="$parent.captchatActive"></div>
+   
+   <button type="submit" ng-hide="$parent.progressStatus == 'ready'" ng-disabled="$parent.processing" ng-class="{'disabled':$parent.processing}" class="col l12 m8 offset-m2 s8 offset-s2 waves-effect waves-light btn large"><i class="mdi mdi-download"></i> Start conversion</button>
+
+   <a class="col l12 m8 offset-m2 s8 offset-s2 waves-effect waves-light btn large" ng-show="$parent.progressStatus == 'ready'" href="{{$parent.exportFile.url}}" ng-click="$parent.tgfDownload();"><i class="mdi mdi-download"></i> Download</a>
+
+</form>
+
+<div class="progress col l12 m8 offset-m2 s8 offset-s2" ng-show="processing">
+   <div ng-class="{'indeterminate' : progress == 0,'determinate':progress != 0}" style="width:{{progress}}%;"></div>
+</div>
+<div id="error-msg-container" class="hide red darken-4 center">Error</div>
+<div id="solve-media-container"></div>

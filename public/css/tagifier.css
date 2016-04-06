@@ -1,0 +1,13 @@
+.collection-item .circle .mdi{
+	font-size:24px;
+	padding: 8px;
+}
+
+.sidebar-player{
+	width:100%;
+	max-height:300px;
+}
+
+.sidebar{
+	margin:0.5rem 0 1rem 0;
+}

@@ -1,5 +1,6 @@
 var app = angular.module('tagifier', [
 'ui.router',
+'youtube-embed'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {
@@ -17,6 +18,10 @@ app.config(function($stateProvider, $urlRouterProvider) {
       templateUrl: "views/index.html",
       reload:true
     })
+    .state('about', {
+      url: "/about",
+      templateUrl: "views/about.html"
+    })
     .state('file', {
       url: "/{fileId}",
       templateUrl: "views/file.html",
@@ -27,6 +32,12 @@ app.config(function($stateProvider, $urlRouterProvider) {
 
 app.controller('mainCtrl', ['$scope', '$http','$rootScope', function($scope, $http,$rootScope)
 {
+  
+  $scope.socket = io.connect('http://localhost:8080');
+  $scope.socket.on('connect', function()
+  {
+    console.log("Socket connected !");
+  });
 
   $rootScope.$on('$stateChangeStart', 
   function(event, toState, toParams, fromState, fromParams)
@@ -38,3 +49,15 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope', function($scope, $ht
   });
 
 }]);
+
+app.directive('targetBlank', function () {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+          var href = element.href;
+          if(true) {  // replace with your condition
+            element.attr("target", "_blank");
+          }
+        }
+    };
+});

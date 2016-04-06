@@ -7,6 +7,11 @@ bower_components
 .bower-registry
 .bower-tmp
 
+## Tagifier ##
+config.json
+exports
+temps
+
 
 ### Node ###
 # Logs
