@@ -30,8 +30,8 @@
     "jquery": "^2.2.2",
     "angular-ui-router": "ui-router#^0.2.18",
     "mdi": "^1.5.54",
-    "bootstrap": "^3.3.6",
-    "angular-notify": "^2.5.0",
-    "downloadjs": "^1.4.2"
+    "downloadjs": "^1.4.2",
+    "Materialize": "materialize#^0.97.6",
+    "angular-youtube-mb": "https://github.com/brandly/angular-youtube-embed.git#^1.1.1"
   }
 }

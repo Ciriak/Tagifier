@@ -1,16 +1,14 @@
-app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
+app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 {
-	$('[data-toggle="tooltip"]').tooltip();	//initialize tooltips
 	$scope.baseStr;
 	$scope.userPattern;
 	$scope.pattern;
-	$scope.canDownload = false;
 	$scope.processing = false;
 	$scope.canEditTags = true;
 	$scope.file = {};
-	$scope.fileHeadingLabel = {};
 	$scope.progress = 0;
-	$scope.progressStatus = 'waiting',
+	$scope.progressStatus = 'waiting';
+	$scope.captchatActive = false;
 
 	$scope.exportFile = {};
 	$http({
@@ -51,10 +49,11 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
 			$scope.vars[i] = $scope.vars[i].replace("%","").replace("%",""); //remove %x%
 		};
 		
+		console.log($scope.baseStr);
 		var extrData = $scope.baseStr.match(new RegExp($scope.pattern));
+		console.log(extrData);
 		if(!extrData)
 		{
-			console.log("Invalid regex");
 			$scope.canDownload = false;
 			return;
 		}
@@ -66,26 +65,27 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
 				$scope.exportFile[$scope.vars[i]] = extrData[i+1];
 			}
 		};
-
-		$scope.fileHeadingLabel.h1 = $scope.exportFile.title;
-		$scope.fileHeadingLabel.h2 = $scope.exportFile.artist;
-
-		$scope.canDownload = true;
-		$scope.processing = false;
+		
 	}
 
 	$scope.requestFile = function(){
 		$scope.processing = true;
 		$scope.socket.emit("fileRequest",{file:$scope.exportFile});
-		$scope.fileHeadingLabel.h2 = "In Waiting list..";
 	}
 
-	$scope.showConfirmModal = function(){
-		$('#confirm-dl-modal').modal();
-		$scope.generateCaptchat();
+	$scope.requestProcess = function(){
+		if($scope.captchatActive){
+			$scope.checkCaptchat();
+		}
+		else {
+			Materialize.toast('Veuillez remplir le Captchat', 4000);
+			$scope.generateCaptchat();
+		}
+		
 	}
 
 	$scope.generateCaptchat = function(){
+		$scope.captchatActive = true;
 		ACPuzzle.create('buxt.317r8uls-ge9STPl6ilzpmYgl8G', 'solve-media-container', "");
 	}
 
@@ -101,12 +101,12 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
 		  	resp : resp
 		  }
 		}).then(function successCallback(r) {
-			$('#confirm-dl-modal').modal('hide');
+			$scope.captchatActive = false;
 			$scope.processing = true;
 			$scope.requestFile();
 		}, function errorCallback(r) {
 			$scope.processing = false;
-			notify({ message:'The captchat is invalid !', duration:5000} );
+			Materialize.toast('The Captchat is invalid !', 4000);
 			$scope.generateCaptchat();
 		});
 	}
@@ -118,25 +118,28 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,notify)
 				$scope.processing = true;
 				$scope.progress = ev.data.progress.percentage;
 				$scope.progressStatus = "processing";
-				$scope.fileHeadingLabel.h2 = "Processing... ("+Math.round(ev.data.progress.percentage)+"%)";
 				$scope.$apply();
 			}
 		}
 		if(ev["event"] == "error"){
 			$scope.buttonLabel = "Download";
 			$scope.processing = false;
-			notify({ message:'Internal error, please retry', duration:5000} );
+			Materialize.toast('Internal error, please retry', 4000);
 		}
 		if(ev["event"] == "finished"){
 			$scope.progressStatus = "ready";
-			var url = ev.data.file.replace("public/","");
-			setTimeout(function(){
-				download(url, $scope.exportFile.fileName+".mp3","audio/mp3");
-			},1000);
+			$scope.processing = false;
+			$scope.exportFile.url = ev.data.file.replace("exports/","musics/");
+			Materialize.toast('Your file is ready', 4000);
+			$scope.tgfDownload();
 		}
 
 		$scope.$apply();
 	});
+
+	$scope.tgfDownload = function(){
+		window.open($scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title);
+	};
 });
 
 var getBestThumbnail = function(t){

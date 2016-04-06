@@ -1,15 +1,25 @@
-<div id="welcome-container">
-	<div class="row text-center">
-		<div class="col-sm-12 col-md-6 col-md-offset-3">
-			<div id="welcome-logo" style="background-image:url('img/tgf/icon.png');"></div>
-			<h1>TAGIFIER</h1>
-		</div>
+<div class="col s12 center-align screen active" id="welcome">
+
+  <div id="welcome-bg">
+    
+  </div>
+
+	<div class="row center-align" id="welcome-content">
+    <img src="img/tgf/icon.png" id="welcome-logo" class="responsive-img circle hide-on-small-only load" style="height:150px;">
+		<h3>Lorem ipsum</h3>
 	</div>
-	<div class="row" ng-controller="mainInputCtrl">
-		<div class="col-sm-8 col-sm-offset-2 col-md-4 col-md-offset-4">
-			<form ng-submit="miSubmit()">
-				<input class="form-control input-lg" type="text" placeholder="http://youtu.be/cG4OlW" ng-change="checkUrl()"  ng-model="currentUrl" ng-class="{good_url: goodUrl}">
-			</form>
-		</div>
-	</div>
+
+    <div class="input-field col s12" ng-controller="mainInputCtrl">
+      	<form ng-submit="miSubmit()">
+      		<input id="youtube-url" type="url" class="validate" autocomplete="off" placeholder="https://www.youtube.com/watch?v=ihYVZFl-Ck0" id="youtube-url" ng-change="checkUrl()"  ng-model="currentUrl" ng-class="{good_url: goodUrl}" autofocus>
+      	</form>
+      <label for="password"><?php echo $label["welcomePlaceHolder"]; ?></label>
+    </div>
+
+    <div class="row" id="#welcome-form">
+    	<div class="col s12 center">
+    		<button class="waves-effect waves-light btn-large" id="step-1-button"><i class="material-icons left">queue_music</i>Go</button>
+    	</div>
+    </div>
+    
 </div>

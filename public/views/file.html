@@ -1,90 +1,33 @@
-<div class="container-fluid" id="file-container" ng-hide="processing">
-  <div id="file-heading" class="row marged">
-    <!--<img ng-src="{{exportFile.image}}" id="file-bg" class="img-responsive">-->
-    <div class="col-md-3 col-md-offset-3">
-      <img ng-src="{{exportFile.image}}" id="file-image" class="img-responsive"></div>
-    <div class="col-md-3">
-      <h1>{{fileHeadingLabel.h1}}</h1>
-      <h2>{{fileHeadingLabel.h2}}</h2>
-    </div>
-  </div>
-
-  <div class="row col-md-6 col-md-offset-3 marged" id="file-body-container">
-
-    <div class="col-md-12" id="file-tags" ng-class="{'hidden':!canEditTags}">
-      <div class="row">
-        <div class="col-md-6">
-          <div class="checkbox">
-            <label>
-              <input type="checkbox"> Use pattern
-            </label>
-          </div>
-        </div>
-        <div class="col-md-6"></div>
+<div id="video-preloader-ghost"></div>
+<div id="video-preloader" class="hide valign-wrapper center-align">
+   <div class="row col s12">
+      <div id="video-preloader-icon" class="animated infinite pulse">
+         <img src="img/tgf/icon.png">
       </div>
-      <div class="row">
-        <div class="col-md-6">Filename</div>
-        <div class="col-md-6">
-          <input type="text" class="form-control" ng-model="baseStr" ng-change="genPattern()">
-        </div>
+      <h5 class="valign col s12" id="video-preloader-label">Loading video infos</h5>
+      <div class="progress">
+         <div class="determinate" style="width: 0%"></div>
       </div>
-      <div class="row">
-        <div class="col-md-6">Pattern</div>
-        <div class="col-md-6" data-toggle="tooltip" data-placement="right" title="Tooltip on right">
-          <input type="text" class="form-control" ng-model="userPattern" ng-change="genPattern()">
-        </div>
+      <div id="video-preloader-error-buttons" class="hide">
+         <a id="return-button" class="btn-flat grey-text text-lighten-5 waves-effect waves-light" href="./"><i class="material-icons left">skip_previous</i>Retours</a>
+         <a id="retry-button" class="btn waves-effect waves-light" href=""><i class="material-icons left">replay</i>Retry</a>
       </div>
-    	<div class="row">
-    		<div class="col-md-6">Title</div>
-    		<div class="col-md-6">
-    			<input type="text" class="form-control" ng-model="exportFile.title">
-    		</div>
-    	</div>
-    	<div class="row">
-    		<div class="col-md-6">Artist</div>
-    		<div class="col-md-6">
-    			<input type="text" class="form-control" ng-model="exportFile.artist">
-    		</div>
-    	</div>
-      <div class="row">
-        <div class="col-md-6">Gender</div>
-        <div class="col-md-6"><input type="text" class="form-control" ng-model="exportFile.gender"></div>
-      </div>
-    	<div class="row">
-    		<div class="col-md-6">TrackNum</div>
-    		<div class="col-md-6"><input type="text" class="form-control" ng-model="exportFile.track"></div>
-    	</div>
-    	<div class="row">
-    		<div class="col-md-6">Lorem</div>
-    		<div class="col-md-6"> ipsum</div>
-    	</div>
-    </div>
-    <div class="row col-md-6 col-md-offset-3 marged">
-      <button type="button" id="following" class="btn btn-primary btn-lg col-xs-12" href="#tab3" data-toggle="tab" ng-click="showConfirmModal()">Download <i class="mdi mdi-download" aria-hidden="true"></i>
-      </button>
-    </div>
-
-  </div>
+   </div>
 </div>
-
-
-<div class="modal" id="confirm-dl-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
-  <form class="modal-dialog" role="document" ng-submit="checkCaptchat()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="exampleModalLabel">One final effort</h4>
+<div class="" id="video">
+   <div id="custom-tags-label" class="hide">Custom tags</div>
+   <div class="row">
+      <div class="col l8 s12" ng-include="'views/file/tags.html'">
       </div>
-      <div class="modal-body">
-        <form>
-          <div id="solve-media-container"></div>
-        </form>
+      <div class="col l4 s12 sidebar" ng-include="'views/file/side-bar.html'"></div>
+   </div>
+   <div id="tags-hash-modal" class="modal blue-grey darken-3 blue-grey-text text-lighten-5">
+      <div class="modal-content">
+         <h4>label getHashModalTitle</h4>
+         <input type="url" id="tags-hash-input" onfocus="this.select();" onmouseup="return false;">
       </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-primary btn-lg"><i class="mdi mdi-download"></i> Download</button>
+      <div class="modal-footer modal blue-grey darken-3">
+         <a href="#" class="modal-action modal-close waves-effect btn-flat">label getHashModalClose</a>
       </div>
-    </div>
-  </form>
+   </div>
 </div>
-
-<div ng-include="'views/processing.html'" ng-show="processing"></div>

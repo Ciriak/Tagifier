@@ -21,7 +21,7 @@ var config = {};
 
 var YD = new YoutubeMp3Downloader({
     "ffmpegPath": "ffmpeg/ffmpeg.exe",        // Where is the FFmpeg binary located? 
-    "outputPath": "public/exports",    // Where should the downloaded and encoded files be stored? 
+    "outputPath": "exports",    // Where should the downloaded and encoded files be stored? 
     "youtubeVideoQuality": "highest",       // What video quality should be used? 
     "queueParallelism": 2,                  // How many parallel downloads/encodes should be started? 
     "progressTimeout": 1000                 // How long should be the interval of the progress reports 
@@ -78,6 +78,13 @@ app.post('/checker', function(req,res)
 //
 //
 //
+
+//
+
+
+app.get('/musics/:file', function(req,res){
+  res.download('exports/'+req.params.file,req.query.name+".mp3");
+});
 
 app.get('/api/:fileId(*{1,11})', function(req,res){
 	var uriInfos = "https://www.googleapis.com/youtube/v3/videos?id="+req.params.fileId+"&part=snippet&key="+config.youtube_api_key;
@@ -158,3 +165,5 @@ io.on('connection', function (socket){
     });
   });
 });
+
+app.use('/', express.static(__dirname + '/public/'));
