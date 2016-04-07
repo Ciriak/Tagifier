@@ -32,6 +32,8 @@
     "mdi": "^1.5.54",
     "downloadjs": "^1.4.2",
     "Materialize": "materialize#^0.97.6",
-    "angular-youtube-mb": "https://github.com/brandly/angular-youtube-embed.git#^1.1.1"
+    "angular-youtube-mb": "https://github.com/brandly/angular-youtube-embed.git#^1.1.1",
+    "angular-translate": "^2.11.0",
+    "angular-sanitize": "^1.5.3"
   }
 }
