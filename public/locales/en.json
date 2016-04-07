@@ -1,0 +1,12 @@
+{
+  "global" : {
+    "ok": "Ok",
+    "about" : "About",
+    "facebook" : "Facebook"
+  },
+  "index" : {
+    "welcomeMessage" : "An easy way to Tag and Download Youtube videos",
+    "welcomeButtonLabel" : "Tag this file",
+    "invalidLinkMessage" : "This link seem to be invalid !"
+  }
+}

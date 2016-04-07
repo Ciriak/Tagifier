@@ -1,6 +1,8 @@
 var app = angular.module('tagifier', [
 'ui.router',
-'youtube-embed'
+'youtube-embed',
+'ngSanitize',
+'pascalprecht.translate'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {
@@ -30,9 +32,31 @@ app.config(function($stateProvider, $urlRouterProvider) {
     });
 });
 
-app.controller('mainCtrl', ['$scope', '$http','$rootScope', function($scope, $http,$rootScope)
-{
+app.config(['$translateProvider', function($translateProvider) {
+  $translateProvider.useSanitizeValueStrategy('sanitize');
   
+  var availableLang = [
+  'fr',
+  'en'];
+
+  for (var i = 0; i < availableLang.length; i++)
+  {
+
+  };
+  $translateProvider.useStaticFilesLoader({
+    prefix: '../locales/',
+    suffix: '.json'
+});
+  $translateProvider.preferredLanguage('en');
+}]);
+
+app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', function($scope, $http,$rootScope,$translate)
+{
+  $scope.docReady = false;
+  $(window).load(function(){
+    $scope.docReady = true;
+    $scope.$apply();
+  });
   $scope.socket = io.connect('http://localhost:8080');
   $scope.socket.on('connect', function()
   {
