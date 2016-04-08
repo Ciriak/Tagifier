@@ -12,11 +12,15 @@ app.controller('mainInputCtrl', function($scope,$state)
 	  	{
 	  		$scope.goodUrl = false;
 	  	}
+	  	console.log($scope.goodUrl);
 	}
 
 	$scope.miSubmit = function(){
 		if($scope.goodUrl){
 			$state.go('file',{fileId:$scope.currentId});
+		}
+		else{
+			Materialize.toast('This link seem invalid', 4000);
 		}
 	};
 

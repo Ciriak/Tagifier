@@ -1,6 +1,6 @@
 var http = require('http');
 var fs = require('fs');
-var port = 8080;
+var port = 80;
 var express = require('express');
 var request = require('request');
 var nodeID3 = require('node-id3');
@@ -14,7 +14,9 @@ var fidOpt = {
 }
 
 var app = express();
-var server = app.listen(port);
+var server = app.listen(port,function(){
+  console.log("Tagifier is listening on port "+port);
+});
 var io = require('socket.io').listen(server);
 
 var config = {};
