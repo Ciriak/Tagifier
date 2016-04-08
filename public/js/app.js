@@ -34,15 +34,6 @@ app.config(function($stateProvider, $urlRouterProvider) {
 
 app.config(['$translateProvider', function($translateProvider) {
   $translateProvider.useSanitizeValueStrategy('sanitize');
-  
-  var availableLang = [
-  'fr',
-  'en'];
-
-  for (var i = 0; i < availableLang.length; i++)
-  {
-
-  };
   $translateProvider.useStaticFilesLoader({
     prefix: '../locales/',
     suffix: '.json'
@@ -63,13 +54,7 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
     console.log("Socket connected !");
   });
 
-  $rootScope.$on('$stateChangeStart', 
-  function(event, toState, toParams, fromState, fromParams)
-  {
-    /*if(!$cookies.get("sbstr_token") && document.location.hash != "#/"){ //auto redirect unlogged users
-      document.location.hash = "/";
-      location.reload();
-    }*/
+  $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
   });
 
 }]);
