@@ -13,12 +13,15 @@
   "file" : {
     "fileName" : "File Name",
     "pattern" : "Pattern",
-    "title" : "title",
+    "title" : "Title",
     "artist" : "Artist",
     "album" : "Album",
     "year" : "Year",
     "pleaseEnterCaptchat" : "Please complete the captchat",
     "invalidCaptchat" : "The captchat seem to be invalid !",
     "internalError" : "Internal error, please retry"
+  },
+  "about" : {
+    "description" : "Tagifier provide you an easy and fast way to convert and tag Youtube video as mp3 files."
   }
 }

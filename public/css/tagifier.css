@@ -1,4 +1,4 @@
-#welcome-container{
+#welcome-container,#about-container{
 	height: calc(100vh - 65px);
 	padding-top: 20vh;
 }
