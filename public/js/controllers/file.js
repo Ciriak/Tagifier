@@ -1,4 +1,4 @@
-app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
+app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 {
 	$scope.baseStr;
 	$scope.userPattern;
@@ -78,7 +78,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 			$scope.checkCaptchat();
 		}
 		else {
-			Materialize.toast('Veuillez remplir le Captchat', 4000);
+			Materialize.toast($translate.instant("file.pleaseEnterCaptchat"), 4000);
 			$scope.generateCaptchat();
 		}
 		
@@ -106,7 +106,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 			$scope.requestFile();
 		}, function errorCallback(r) {
 			$scope.processing = false;
-			Materialize.toast('The Captchat is invalid !', 4000);
+			Materialize.toast($translate.instant("file.invalidCaptchat"), 4000);
 			$scope.generateCaptchat();
 		});
 	}
@@ -130,7 +130,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams)
 			$scope.progressStatus = "ready";
 			$scope.processing = false;
 			$scope.exportFile.url = ev.data.file.replace("exports/","musics/");
-			Materialize.toast('Your file is ready', 4000);
+			Materialize.toast($translate.instant("file.internalError"), 4000);
 			$scope.tgfDownload();
 		}
 

@@ -16,6 +16,9 @@
     "title" : "title",
     "artist" : "Artist",
     "album" : "Album",
-    "year" : "Year"
+    "year" : "Year",
+    "pleaseEnterCaptchat" : "Please complete the captchat",
+    "invalidCaptchat" : "The captchat seem to be invalid !",
+    "internalError" : "Internal error, please retry"
   }
 }
