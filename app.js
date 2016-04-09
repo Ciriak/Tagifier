@@ -1,13 +1,13 @@
 var http = require('http');
-var fs = require('fs');
+var fs = require('fs-sync');
+var ofs = require('fs');  // old fs
 var port = 80;
 var express = require('express');
 var request = require('request');
 var nodeID3 = require('node-id3');
 var random = require('random-gen');
-var AutoUpdater = require('auto-updater');
 var bodyParser = require('body-parser')
-var YoutubeMp3Downloader = require('youtube-mp3-downloader');
+var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
 var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
@@ -23,21 +23,22 @@ var server = app.listen(port,function(){
 
 // dir cleaner function
 var rmDir = function(dirPath, removeSelf) {
-  if (removeSelf === undefined)
-    removeSelf = true;
-  try { var files = fs.readdirSync(dirPath); }
-  catch(e) { return; }
-  if (files.length > 0)
-    for (var i = 0; i < files.length; i++) {
-      var filePath = dirPath + '/' + files[i];
-      if (fs.statSync(filePath).isFile())
-        fs.unlinkSync(filePath);
-      else
-        rmDir(filePath);
-    }
-  if (removeSelf)
-    fs.rmdirSync(dirPath);
-};
+      if (removeSelf === undefined)
+        removeSelf = true;
+      try { var files = ofs.readdirSync(dirPath); }
+      catch(e) { return; }
+      if (files.length > 0)
+        for (var i = 0; i < files.length; i++) {
+          var filePath = dirPath + '/' + files[i];
+          if (ofs.statSync(filePath).isFile())
+            fs.remove(filePath);
+          else
+            rmDir(filePath);
+        }
+      if (removeSelf)
+        ofs.rmdirSync(dirPath);
+    };
+
 
 rmDir('./public/img/temps',false);
 rmDir('./exports',false);
@@ -47,26 +48,8 @@ var io = require('socket.io').listen(server);
 
 var config = {};
 
-var YD = new YoutubeMp3Downloader({
-    "ffmpegPath": "ffmpeg/ffmpeg.exe",        // Where is the FFmpeg binary located? 
-    "outputPath": "exports",    // Where should the downloaded and encoded files be stored? 
-    "youtubeVideoQuality": "highest",       // What video quality should be used? 
-    "queueParallelism": 2,                  // How many parallel downloads/encodes should be started? 
-    "progressTimeout": 1000                 // How long should be the interval of the progress reports 
-});
-
 // retreive config file
-fs.readFile("config.json", function (err, data) {
-    if(err) {
-      console.error(err);
-      return;
-    }
-    try {
-      config = JSON.parse(data);
-    } catch(exception) {
-      console.error(exception);
-    }
-  });
+config = fs.readJSON("config.json");
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -115,31 +98,13 @@ app.get('/musics/:file', function(req,res){
 });
 
 app.get('/api/:fileId(*{1,11})', function(req,res){
-	var uriInfos = "https://www.googleapis.com/youtube/v3/videos?id="+req.params.fileId+"&part=snippet&key="+config.youtube_api_key;
-	var uriDetails = "https://www.googleapis.com/youtube/v3/videos?id="+req.params.fileId+"&part=contentDetails&key="+config.youtube_api_key;
-	var vid = {};
-
-	request(uriInfos, function (error, response, body) {
-  	if (!error && response.statusCode == 200) {
-  		body = JSON.parse(body);
-  		for (var attr in body.items[0]) { vid[attr] = body.items[0][attr]; }
-    	request(uriDetails, function (error2, response2, body2) {
-	  	if (!error2 && response2.statusCode == 200) {
-	    	body2 = JSON.parse(body2);
-	    	for (var attr in body2.items[0]) { vid[attr] = body2.items[0][attr]; }
-	    	res.send(vid);
-	  	}
-	  	else
-	  	{
-	  		res.send("Invalid query for contentDetails");
-	  	}
-		});
-  	}
-  	else
-  	{
-  		res.send("Invalid query for Snippet");
-  	}
-	});
+	retreiveVideoInfos(req.params.fileId,function(infos,err){
+    if(err){
+      res.send(err);
+      return;
+    }
+    res.send(infos);
+  });
 });
 
 io.on('connection', function (socket){
@@ -154,109 +119,116 @@ io.on('connection', function (socket){
       } else {
         
         var dir = "./public/img/temps"; // create the temp folder if not exist (thumbnail)
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
+        if (!fs.exists(dir)){
+            fs.mkdir(dir);
         }
 
         dir = "./exports"; // create the export folder if not exist (mp3)
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir);
+        if (!fs.exists(dir)){
+            fs.mkdir(dir);
         }
 
         var imgPath = "./public/img/temps/"+session+"."+img.fileType.ext;
-        fs.writeFile(imgPath, img.body, function(err) {
-          if(err) {
-              return console.log(err);
-          }
+        fs.write(imgPath, img.body);
+        file.image = imgPath;
+            
+        var poptions = {
+          url: "https://youtu.be/"+data.file.id,
+          exportPath : dir+"/"+session+".mp3"
+        };
 
-            file.image = imgPath;
-            console.log(imgPath);
-            YD.download(file.id,session+".mp3");
+        youtubedl.getInfo(poptions.url, function(err, info) {
+          if (err) throw err;
+          file.info = info;
 
-            YD.on("finished", function(data) {
-                var success = nodeID3.write(file, data.file);   //Pass tags and filepath
-                console.log(success); 
-                if (fs.existsSync(imgPath)) {
-                  fs.unlink(imgPath);
+          //
+          // check if the download can be done
+          //
+          retreiveVideoInfos(data.file.id,function(infos,err){
+            if(err){
+
+            }
+            var ytDur = YTDurationToSeconds(infos.contentDetails.duration);
+            var maxDur = 10*60;
+
+            if(ytDur > maxDur){
+              var validE = "VIDEO_TOO_LONG";
+            }
+
+            if(validE){
+              socket.emit("yd_event",{event:"error",data:err});
+              return;
+            }
+
+                // START DOWNLOAD
+
+            var v = youtubedl.exec(poptions.url, ['-x', '--audio-format', 'mp3','--output','exports/'+session+'.%(ext)s"'], {}, function(err, output) {
+            if (err){
+              socket.emit("yd_event",{event:"error",data:err});
+              return;
+            }
+            
+            // little ad :)
+            file.encodedBy = "tagifier.net";
+            file.remixArtist = "tagifier.net";
+
+            var t = nodeID3.write(file, poptions.exportPath);   //Pass tags and filepath 
+              if (fs.exists(imgPath)) {
+                fs.remove(imgPath);
+              }
+              file.url = poptions.exportPath;
+              socket.emit("yd_event",{event:"finished",data:file});
+
+              setTimeout(function(){
+                if (fs.exists(poptions.exportPath)) {
+                  fs.remove(poptions.exportPath);
                 }
-                socket.emit("yd_event",{event:"finished",data:data});
+              },600*1000); //remove the file after 10 min (600 sec)*/
 
-                setTimeout(function(){
-                  if (fs.existsSync(data.file)) {
-                    fs.unlink(data.file);
-                  }
-                },600*1000); //remove the file after 10 min (600 sec)
             });
-             
-            YD.on("error", function(error) {
-                console.log(error);
-                socket.emit("yd_event",{event:"error",data:error});
-            });
-             
-            YD.on("progress", function(progress) {
-                socket.emit("yd_event",{event:"progress",data:progress});
-            });
-        }); 
+
+          });
+
+        });
       }
     });
   });
 });
 
-app.get('/update',function(res,ret){
-  //auto updater
-  var autoupdater = new AutoUpdater({
-   pathToJson: '',
-   autoupdate: true,
-   checkgit: true,
-   jsonhost: 'raw.githubusercontent.com',
-   contenthost: 'codeload.github.com',
-   progressDebounce: 0,
-   devmode: false
+function retreiveVideoInfos(id,callback){
+  var uriInfos = "https://www.googleapis.com/youtube/v3/videos?id="+id+"&part=snippet&key="+config.youtube_api_key;
+  var uriDetails = "https://www.googleapis.com/youtube/v3/videos?id="+id+"&part=contentDetails&key="+config.youtube_api_key;
+  var vid = {};
+
+  request(uriInfos, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      body = JSON.parse(body);
+      for (var attr in body.items[0]) { vid[attr] = body.items[0][attr]; }
+      request(uriDetails, function (error2, response2, body2) {
+      if (!error2 && response2.statusCode == 200) {
+        body2 = JSON.parse(body2);
+        for (var attr in body2.items[0]) { vid[attr] = body2.items[0][attr]; }
+        callback(vid);
+      }
+      else{
+        callback("","Invalid query for contentDetails");
+      }
+    });
+    }
+    else{
+      callback("","Invalid query for contentDetails");
+    }
   });
+}
 
-  autoupdater.on('git-clone', function() {
-      console.log("You have a clone of the repository. Use 'git pull' to be up-to-date");
-    });
-    autoupdater.on('check.up-to-date', function(v) {
-      console.info("You have the latest version: " + v);
-    });
-    autoupdater.on('check.out-dated', function(v_old, v) {
-      console.warn("Your version is outdated. " + v_old + " of " + v);
-      autoupdater.fire('download-update'); // If autoupdate: false, you'll have to do this manually. 
-      // Maybe ask if the'd like to download the update. 
-    });
-    autoupdater.on('update.downloaded', function() {
-      console.log("Update downloaded and ready for install");
-      autoupdater.fire('extract'); // If autoupdate: false, you'll have to do this manually. 
-    });
-    autoupdater.on('update.not-installed', function() {
-      console.log("The Update was already in your folder! It's read for install");
-      autoupdater.fire('extract'); // If autoupdate: false, you'll have to do this manually. 
-    });
-    autoupdater.on('update.extracted', function() {
-      console.log("Update extracted successfully!");
-      console.warn("RESTART THE APP!");
-    });
-    autoupdater.on('download.start', function(name) {
-      console.log("Starting downloading: " + name);
-    });
-    autoupdater.on('download.progress', function(name, perc) {
-      process.stdout.write("Downloading " + perc + "% \033[0G");
-    });
-    autoupdater.on('download.end', function(name) {
-      console.log("Downloaded " + name);
-    });
-    autoupdater.on('download.error', function(err) {
-      console.error("Error when downloading: " + err);
-    });
-    autoupdater.on('end', function() {
-      console.log("The app is ready to function");
-    });
-    autoupdater.on('error', function(name, e) {
-      console.error(name, e);
-    });
+function YTDurationToSeconds(duration) {
+  var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
 
-    autoupdater.fire('download-update');
-}); 
+  var hours = (parseInt(match[1]) || 0);
+  var minutes = (parseInt(match[2]) || 0);
+  var seconds = (parseInt(match[3]) || 0);
+
+  return hours * 3600 + minutes * 60 + seconds;
+}
 
 app.use('/', express.static(__dirname + '/public/'));

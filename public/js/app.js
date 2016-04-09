@@ -54,6 +54,20 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
     console.log("Socket connected !");
   });
 
+  //retreive last commit infos
+  $scope.lastCommit = "Tagifier";
+  $http({
+  	method: 'GET',
+  	url: 'https://api.github.com/repos/CYRIAQU3/tagifier/commits'
+	}).then(function successCallback(response) {
+    	$scope.lastCommit = response.data[0].sha.substring(0,8);
+    	$scope.lastUser = response.data[0].author.login;
+  });
+
+	// request permission for notifications (used when the file is ready)
+  	if (Notification.permission !== 'denied' || Notification.permission === "default") {
+    	Notification.requestPermission();
+  	}
   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
   });
 

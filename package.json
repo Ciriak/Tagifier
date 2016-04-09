@@ -6,9 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "auto-updater":{
-    "repo":"/CYRIAQU3/tagifier",
-    "branch":"master"
+  "auto-updater": {
+    "repo": "/CYRIAQU3/tagifier",
+    "branch": "master"
   },
   "repository": {
     "type": "git",
@@ -27,14 +27,14 @@
   },
   "homepage": "https://github.com/CYRIAQU3/tagifier#readme",
   "dependencies": {
-    "auto-updater": "^1.0.2",
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
     "fast-image-downloader": "0.0.4",
+    "fs-sync": "^1.0.2",
     "node-id3": "0.0.4",
     "random-gen": "^0.1.0",
     "request": "^2.69.0",
     "socket.io": "^1.4.5",
-    "youtube-mp3-downloader": "^0.4.2"
+    "youtube-dl": "^1.11.1"
   }
 }

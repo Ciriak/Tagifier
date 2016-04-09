@@ -9,6 +9,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	$scope.progress = 0;
 	$scope.progressStatus = 'waiting';
 	$scope.captchatActive = false;
+	$scope.notified = false;
 
 	$scope.exportFile = {};
 	$http({
@@ -127,18 +128,33 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			Materialize.toast('Internal error, please retry', 4000);
 		}
 		if(ev["event"] == "finished"){
-			$scope.progressStatus = "ready";
-			$scope.processing = false;
-			$scope.exportFile.url = ev.data.file.replace("exports/","musics/");
-			//Materialize.toast($translate.instant("file.internalError"), 4000);
-			$scope.tgfDownload();
+			if(ev.data.id == $scope.exportFile.id){
+				$scope.progressStatus = "ready";
+				$scope.processing = false;
+				$scope.exportFile.url = ev.data.url.replace("./exports/","musics/");
+				$scope.tgfDownload();
+			}
 		}
 
 		$scope.$apply();
 	});
 
 	$scope.tgfDownload = function(){
-		window.open($scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title);
+		var notification;
+		var nOptions = {
+			title : "File Ready",
+		    body: "Your file is ready to download, click on this notification to download it !",
+		    icon: "img/tgf/icon_circle.png"
+		}
+
+		if (Notification.permission === "granted" && !$scope.notified) {
+			$scope.notified = true;
+			var notification = new Notification(nOptions.title,nOptions);
+			notification.onclick = function() {
+				window.open($scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title, '_blank');
+				notification.close();
+			};
+		}
 	};
 });
 
