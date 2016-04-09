@@ -9,6 +9,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	$scope.progress = 0;
 	$scope.progressStatus = 'waiting';
 	$scope.captchatActive = false;
+	$scope.notified = false;
 
 	$scope.exportFile = {};
 	$http({
@@ -131,7 +132,6 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 				$scope.progressStatus = "ready";
 				$scope.processing = false;
 				$scope.exportFile.url = ev.data.url.replace("./exports/","musics/");
-				console.log($scope.exportFile);
 				$scope.tgfDownload();
 			}
 		}
@@ -140,7 +140,21 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	});
 
 	$scope.tgfDownload = function(){
-		window.open($scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title);
+		var notification;
+		var nOptions = {
+			title : "File Ready",
+		    body: "Your file is ready to download, click on this notification to download it !",
+		    icon: "img/tgf/icon_circle.png"
+		}
+
+		if (Notification.permission === "granted" && !$scope.notified) {
+			$scope.notified = true;
+			var notification = new Notification(nOptions.title,nOptions);
+			notification.onclick = function() {
+				window.open($scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title, '_blank');
+				notification.close();
+			};
+		}
 	};
 });
 
