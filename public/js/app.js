@@ -66,10 +66,11 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
 
 	// request permission for notifications (used when the file is ready)
   	if (Notification.permission !== 'denied' || Notification.permission === "default") {
-    	if(isNewNotificationSupported())
-		{
-			Notification.requestPermission();
-		}
+    	if(!isMobile.any)
+  		{
+        console.log("notMobile");
+  			Notification.requestPermission();
+  		}
   	}
   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
   });
@@ -87,17 +88,3 @@ app.directive('targetBlank', function () {
         }
     };
 });
-
-function isNewNotificationSupported() {
-    if (!window.Notification || !Notification.requestPermission)
-        return false;
-    if (Notification.permission == 'granted')
-        //throw new Error('You must only call this *before* calling Notification.requestPermission(), otherwise this feature detect would bug the user with an actual notification!');
-    try {
-        new Notification('');
-    } catch (e) {
-        if (e.name == 'TypeError')
-            return false;
-    }
-    return true;
-}
