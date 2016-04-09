@@ -147,7 +147,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		    icon: "img/tgf/icon_circle.png"
 		}
 
-		if (Notification.permission === "granted" && !$scope.notified) {
+		if (Notification.permission === "granted" && !$scope.notified && isNewNotificationSupported()) {
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {
