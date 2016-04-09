@@ -17,6 +17,32 @@ var app = express();
 var server = app.listen(port,function(){
   console.log("Tagifier is listening on port "+port);
 });
+
+// clean function remove all temp thumbnails and mp3
+
+// dir cleaner function
+var rmDir = function(dirPath, removeSelf) {
+      if (removeSelf === undefined)
+        removeSelf = true;
+      try { var files = fs.readdirSync(dirPath); }
+      catch(e) { return; }
+      if (files.length > 0)
+        for (var i = 0; i < files.length; i++) {
+          var filePath = dirPath + '/' + files[i];
+          if (fs.statSync(filePath).isFile())
+            fs.unlinkSync(filePath);
+          else
+            rmDir(filePath);
+        }
+      if (removeSelf)
+        fs.rmdirSync(dirPath);
+    };
+
+
+rmDir('./public/img/temps',false);
+rmDir('./exports',false);
+console.log("Temp files cleaned");
+
 var io = require('socket.io').listen(server);
 
 var config = {};
@@ -128,7 +154,16 @@ io.on('connection', function (socket){
         console.log(err.error);
       } else {
         
-        console.log(data);
+        var dir = "./public/img/temps"; // create the temp folder if not exist (thumbnail)
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
+
+        dir = "./exports"; // create the export folder if not exist (mp3)
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
+
         var imgPath = "./public/img/temps/"+session+"."+img.fileType.ext;
         fs.writeFile(imgPath, img.body, function(err) {
           if(err) {
