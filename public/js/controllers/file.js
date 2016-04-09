@@ -127,11 +127,13 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			Materialize.toast('Internal error, please retry', 4000);
 		}
 		if(ev["event"] == "finished"){
-			$scope.progressStatus = "ready";
-			$scope.processing = false;
-			$scope.exportFile.url = ev.data.file.replace("exports/","musics/");
-			//Materialize.toast($translate.instant("file.internalError"), 4000);
-			$scope.tgfDownload();
+			if(ev.data.id == $scope.exportFile.id){
+				$scope.progressStatus = "ready";
+				$scope.processing = false;
+				$scope.exportFile.url = ev.data.url.replace("exports/","musics/");
+				//Materialize.toast($translate.instant("file.internalError"), 4000);
+				$scope.tgfDownload();
+			}
 		}
 
 		$scope.$apply();
