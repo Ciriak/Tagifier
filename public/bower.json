@@ -35,6 +35,7 @@
     "angular-youtube-mb": "https://github.com/brandly/angular-youtube-embed.git#^1.1.1",
     "angular-translate": "^2.11.0",
     "angular-sanitize": "^1.5.3",
-    "angular-translate-loader-static-files": "^2.11.0"
+    "angular-translate-loader-static-files": "^2.11.0",
+    "isMobile": "^0.4.0"
   }
 }

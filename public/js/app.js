@@ -66,7 +66,11 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
 
 	// request permission for notifications (used when the file is ready)
   	if (Notification.permission !== 'denied' || Notification.permission === "default") {
-    	Notification.requestPermission();
+    	if(!isMobile.any)
+  		{
+        console.log("notMobile");
+  			Notification.requestPermission();
+  		}
   	}
   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
   });

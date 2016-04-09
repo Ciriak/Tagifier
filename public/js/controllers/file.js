@@ -147,13 +147,16 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		    icon: "img/tgf/icon_circle.png"
 		}
 
-		if (Notification.permission === "granted" && !$scope.notified) {
+		if (Notification.permission === "granted" && !$scope.notified && !isMobile.any) {
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {
 				window.open($scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title, '_blank');
 				notification.close();
 			};
+		}
+		else{
+			Materialize.toast("Your file is ready", 4000);
 		}
 	};
 });
