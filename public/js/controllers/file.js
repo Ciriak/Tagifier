@@ -130,7 +130,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			if(ev.data.id == $scope.exportFile.id){
 				$scope.progressStatus = "ready";
 				$scope.processing = false;
-				$scope.exportFile.url = ev.data.url.replace("exports/","musics/");
+				$scope.exportFile.url = ev.data.url.replace("./exports/","musics/");
 				//Materialize.toast($translate.instant("file.internalError"), 4000);
 				$scope.tgfDownload();
 			}
