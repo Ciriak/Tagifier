@@ -5,7 +5,7 @@
    
    <button type="submit" ng-hide="$parent.progressStatus == 'ready'" ng-disabled="$parent.processing" ng-class="{'disabled':$parent.processing}" class="col l12 m8 offset-m2 s8 offset-s2 waves-effect waves-light btn large"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</button>
 
-   <a class="col l12 m8 offset-m2 s8 offset-s2 waves-effect waves-light btn large" ng-show="$parent.progressStatus == 'ready'" href="{{$parent.exportFile.url}}" ng-click="$parent.tgfDownload();"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</a>
+   <a class="col l12 m8 offset-m2 s8 offset-s2 waves-effect waves-light btn large" ng-show="$parent.progressStatus == 'ready'" href="{{$parent.exportFile.url}}?name={{$parent.exportFile.artist}} - {{$parent.exportFile.title}}" ng-click="$parent.tgfDownload();"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</a>
 
 </form>
 
