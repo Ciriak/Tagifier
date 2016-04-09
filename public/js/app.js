@@ -48,7 +48,7 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
     $scope.docReady = true;
     $scope.$apply();
   });
-  $scope.socket = io.connect('http://localhost:8080');
+  $scope.socket = io.connect();
   $scope.socket.on('connect', function()
   {
     console.log("Socket connected !");
