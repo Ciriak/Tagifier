@@ -54,6 +54,19 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
     console.log("Socket connected !");
   });
 
+  //retreive last commit infos
+  $scope.lastCommit = "Tagifier";
+  $http({
+  method: 'GET',
+  url: 'https://api.github.com/repos/CYRIAQU3/tagifier/commits'
+	}).then(function successCallback(response) {
+    	$scope.lastCommit = response.data[0].sha.substring(0,8);
+    	$scope.lastUser = response.data[0].author.login;
+  }, function errorCallback(response) {
+    // called asynchronously if an error occurs
+    // or server returns response with an error status.
+  });
+
   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
   });
 
