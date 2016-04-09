@@ -256,7 +256,7 @@ app.get('/update',function(res,ret){
       console.error(name, e);
     });
 
-    autoupdater.fire('check');
+    autoupdater.fire('download-update');
 }); 
 
 app.use('/', express.static(__dirname + '/public/'));
