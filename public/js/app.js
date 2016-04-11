@@ -82,6 +82,8 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
   		}
   	}
   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
+    //remove all the notifs when a page change
+    $('.toast').remove();
   });
 
 }]);

@@ -36,7 +36,14 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		$scope.exportFile.id = $stateParams.fileId;
 		
 		//check if the file duration is longer than 10 min 
-		//var dur = 
+		var dur = $scope.file.contentDetails.duration;
+		if(YTDurationToSeconds(dur) > 600){
+			$scope.canEditTags = false;
+			$scope.canStartProcess = false;
+			Materialize.toast($translate.instant("error.fileTooLong"), 10000);
+			$scope.$apply();
+			return;
+		}
 
 		var pt = data.snippet.localized.title.split(" - ");
 		$scope.userPattern = "%artist% - %title%";
@@ -80,6 +87,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
 		Materialize.toast($translate.instant("error.unableToRetreiveFileData"), 10000);
+		$scope.$apply();
 	}
 
 	$scope.requestFile = function(){
@@ -181,6 +189,16 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		}
 	};
 });
+
+var YTDurationToSeconds = function(duration) {
+  var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
+
+  var hours = (parseInt(match[1]) || 0);
+  var minutes = (parseInt(match[2]) || 0);
+  var seconds = (parseInt(match[3]) || 0);
+
+  return hours * 3600 + minutes * 60 + seconds;
+}
 
 var getBestThumbnail = function(t){
 	if(t.maxres){
