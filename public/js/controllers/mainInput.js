@@ -20,7 +20,7 @@ app.controller('mainInputCtrl', function($scope,$state)
 			$state.go('file',{fileId:$scope.currentId});
 		}
 		else{
-			Materialize.toast('This link seem invalid', 4000);
+			Materialize.toast($translate.instant("error.invalidLink"), 4000);
 		}
 	};
 

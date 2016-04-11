@@ -26,6 +26,7 @@
     "invalidCaptchat" : "The captchat seem to be invalid !",
     "internalError" : "Internal error, please retry",
     "unableToRetreiveFileData" : "Unable to retreive file informations",
-    "fileTooLong" : "Sorry, we do not convert videos longer than 10 min :("
+    "fileTooLong" : "Sorry, we do not convert videos longer than 10 min :(",
+    "invalidLink" : "This lnik seem to be invalid"
   }
 }
