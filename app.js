@@ -171,6 +171,7 @@ io.on('connection', function (socket){
             // little ad :)
             file.encodedBy = "tagifier.net";
             file.remixArtist = "tagifier.net";
+            file.comment = "tagifier.net";
 
             var t = nodeID3.write(file, poptions.exportPath);   //Pass tags and filepath 
               if (fs.exists(imgPath)) {

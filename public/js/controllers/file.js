@@ -33,6 +33,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		}
 
 		$scope.exportFile.image = getBestThumbnail(data.snippet.thumbnails);
+		$scope.exportFile.year = $scope.file.snippet.publishedAt.substr(0,4);
 		$scope.exportFile.id = $stateParams.fileId;
 		
 		//check if the file duration is longer than 10 min 

@@ -58,18 +58,17 @@
             </div>
          </li>
 
-      </ul>
-      <a class="btn-floating btn waves-effect waves-light lightblue" ng-click="toggleAdvancedMode()" style="display:none;">More tags</a>
-      <ul class="collection blue-grey darken-4" ng-show="advancedMode == true">
          <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle blue"><i class="mdi mdi-account"></i></div> 
+            <div class="circle orange" title="%year%"><i class="mdi mdi-calendar"></i></div> 
             <div class="input-field col s6">
-               <input type="text" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.year">
+               <input type="text" id="tag-year" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.year">
+               <label class="active" for="tag-year">{{ 'file.year' | translate }}</label>
             </div>
             <div class="col s6">
                <!-- some other stuff -->
             </div>
          </li>
+
       </ul>
    </div>
 </div>
