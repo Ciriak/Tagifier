@@ -29,6 +29,12 @@ app.config(function($stateProvider, $urlRouterProvider) {
       templateUrl: "views/file.html",
       controller: "fileCtrl",
       reload:true
+    })
+    .state('playlist', {
+      url: "/playlist/{fileId}",
+      templateUrl: "views/playlist.html",
+      controller: "playlistCtrl",
+      reload:true
     });
 });
 

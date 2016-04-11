@@ -15,7 +15,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	$scope.exportFile = {};
 	$http({
 	  method: 'GET',
-	  url: '/api/'+$stateParams.fileId
+	  url: '/api/file/'+$stateParams.fileId
 	}).then(function successCallback(response) {
 		parseFileData(response.data);
 		$scope.canEditTags = true;

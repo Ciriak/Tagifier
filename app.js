@@ -97,8 +97,18 @@ app.get('/musics/:file', function(req,res){
   res.download('exports/'+req.params.file,req.query.name+".mp3");
 });
 
-app.get('/api/:fileId(*{1,11})', function(req,res){
+app.get('/api/file/:fileId(*{1,11})', function(req,res){
 	retreiveVideoInfos(req.params.fileId,function(infos,err){
+    if(err){
+      res.send(err);
+      return;
+    }
+    res.send(infos);
+  });
+});
+
+app.get('/api/playlist/:fileId', function(req,res){
+  retreivePlaylistInfos(req.params.fileId,function(infos,err){
     if(err){
       res.send(err);
       return;
@@ -212,12 +222,45 @@ function retreiveVideoInfos(id,callback){
         callback(vid);
       }
       else{
-        callback("","Invalid query for contentDetails");
+        callback("","Invalid query for video contentDetails");
       }
     });
     }
     else{
-      callback("","Invalid query for contentDetails");
+      callback("","Invalid query for video Snippet");
+    }
+  });
+}
+
+function retreivePlaylistInfos(id,callback){
+  var uriInfos = "https://www.googleapis.com/youtube/v3/playlists?id="+id+"&part=snippet&key="+config.youtube_api_key;
+  var uriDetails = "https://www.googleapis.com/youtube/v3/playlists?id="+id+"&part=contentDetails&key="+config.youtube_api_key;
+  var uriItemsInfos = "https://www.googleapis.com/youtube/v3/playlistItems?playlistId="+id+"&part=snippet&maxResults=50&pageToken=CGQQAA&key="+config.youtube_api_key;
+  var uriItemsDetails = "https://www.googleapis.com/youtube/v3/playlistItems?playlistId="+id+"&part=contentDetails&key="+config.youtube_api_key;
+  var pl = {
+    videos : []
+  };
+
+  request(uriDetails, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      body = JSON.parse(body);
+      for (var attr in body.items[0]) { pl[attr] = body.items[0][attr]; }
+
+      //call the videos infos
+      request(uriItemsInfos, function (error2, response2, body2) {
+      if (!error2 && response2.statusCode == 200) {
+        body2 = JSON.parse(body2);
+        pl.videos = body2;
+        //for (var attr in body2.items[0]) { pl.videos[attr] = body2.items[0][attr]; }
+        callback(pl);
+      }
+      else{
+        callback("","Invalid query for playlist contentDetails");
+      }
+    });
+    }
+    else{
+      callback("","Invalid query for playlist Snippet");
     }
   });
 }
