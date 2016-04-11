@@ -17,11 +17,15 @@
     "artist" : "Artist",
     "album" : "Album",
     "year" : "Year",
-    "pleaseEnterCaptchat" : "Please complete the captchat",
-    "invalidCaptchat" : "The captchat seem to be invalid !",
-    "internalError" : "Internal error, please retry"
+    "pleaseEnterCaptchat" : "Please complete the captchat"
   },
   "about" : {
     "description" : "Tagifier provide you an easy and fast way to convert and tag Youtube video as mp3 files."
+  },
+  "error" : {
+    "invalidCaptchat" : "The captchat seem to be invalid !",
+    "internalError" : "Internal error, please retry",
+    "unableToRetreiveFileData" : "Unable to retreive file informations",
+    "fileTooLong" : "Sorry, we do not convert videos longer than 10 min :("
   }
 }

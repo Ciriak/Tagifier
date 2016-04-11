@@ -3,8 +3,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	$scope.baseStr;
 	$scope.userPattern;
 	$scope.pattern;
+	$scope.canStartProcess = false;
 	$scope.processing = false;
-	$scope.canEditTags = true;
+	$scope.canEditTags = false;
 	$scope.file = {};
 	$scope.progress = 0;
 	$scope.progressStatus = 'waiting';
@@ -17,16 +18,25 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	  url: '/api/'+$stateParams.fileId
 	}).then(function successCallback(response) {
 		parseFileData(response.data);
+		$scope.canEditTags = true;
+		$scope.canStartProcess = true;
 	}, function errorCallback(response) {
-		console.log(response);
+		$scope.retreiveInfoError();
 	});
 
 	var parseFileData = function(data){
-		console.log(data);
 		$scope.file = data;
+
+		if(!data.snippet){	//stop the process if the data received are partials
+			$scope.retreiveInfoError();
+			return;
+		}
+
 		$scope.exportFile.image = getBestThumbnail(data.snippet.thumbnails);
 		$scope.exportFile.id = $stateParams.fileId;
 		
+		//check if the file duration is longer than 10 min 
+		//var dur = 
 
 		var pt = data.snippet.localized.title.split(" - ");
 		$scope.userPattern = "%artist% - %title%";
@@ -49,10 +59,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		{
 			$scope.vars[i] = $scope.vars[i].replace("%","").replace("%",""); //remove %x%
 		};
-		
-		console.log($scope.baseStr);
 		var extrData = $scope.baseStr.match(new RegExp($scope.pattern));
-		console.log(extrData);
 		if(!extrData)
 		{
 			$scope.canDownload = false;
@@ -67,6 +74,12 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			}
 		};
 		
+	}
+
+	$scope.retreiveInfoError = function(){
+		$scope.canEditTags = false;
+		$scope.canStartProcess = false;
+		Materialize.toast($translate.instant("error.unableToRetreiveFileData"), 10000);
 	}
 
 	$scope.requestFile = function(){
@@ -104,10 +117,12 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		}).then(function successCallback(r) {
 			$scope.captchatActive = false;
 			$scope.processing = true;
+			$scope.canEditTags = false;
+			$scope.canStartProcess = false;
 			$scope.requestFile();
 		}, function errorCallback(r) {
 			$scope.processing = false;
-			Materialize.toast($translate.instant("file.invalidCaptchat"), 4000);
+			Materialize.toast($translate.instant("error.invalidCaptchat"), 4000);
 			$scope.generateCaptchat();
 		});
 	}
@@ -117,6 +132,8 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		if(ev["event"] == "progress"){
 			if(ev.data.videoId == $scope.exportFile.id){
 				$scope.processing = true;
+				$scope.canEditTags = false;
+				$scope.canStartProcess = false;
 				$scope.progress = ev.data.progress.percentage;
 				$scope.progressStatus = "processing";
 				$scope.$apply();
@@ -125,12 +142,16 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		if(ev["event"] == "error"){
 			$scope.buttonLabel = "Download";
 			$scope.processing = false;
-			Materialize.toast('Internal error, please retry', 4000);
+			$scope.canEditTags = true;
+			$scope.canStartProcess = true;
+			Materialize.toast($translate.instant("error.internalError"), 4000);
 		}
 		if(ev["event"] == "finished"){
 			if(ev.data.id == $scope.exportFile.id){
 				$scope.progressStatus = "ready";
 				$scope.processing = false;
+				$scope.canEditTags = true;
+				$scope.canStartProcess = true;
 				$scope.exportFile.url = ev.data.url.replace("./exports/","musics/");
 				$scope.tgfDownload();
 			}
