@@ -54,6 +54,15 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
     console.log("Socket connected !");
   });
 
+  //auto focus the form
+  $(document).hover(function(){
+    $("#youtube-url").focus();
+  });
+
+  $(document).click(function(){
+    $("#youtube-url").focus();
+  });
+
   //retreive last commit infos
   $scope.lastCommit = "Tagifier";
   $http({
