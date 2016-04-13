@@ -47,10 +47,12 @@ app.config(['$translateProvider', function($translateProvider) {
   $translateProvider.preferredLanguage('en');
 }]);
 
-app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', function($scope, $http,$rootScope,$translate)
+app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window','$location', function($scope, $http,$rootScope,$translate,$window,$location)
 {
   $scope.docReady = false;
   $(window).load(function(){
+
+    $window.ga('create', 'UA-48635201-13', 'auto');  //initialize GA
     $scope.docReady = true;
     $scope.$apply();
 
@@ -94,6 +96,10 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
     //remove all the notifs when a page change
     $('.toast').remove();
+  });
+  $rootScope.$on('$stateChangeSuccess', function (event) {
+      //ga event for page change
+      $window.ga('send', 'pageview', $location.path());
   });
 
 }]);
