@@ -15,8 +15,11 @@
     <meta property="og:description"        content="Convert Youtube video to Mp3 tagged file" />
     <meta property="og:image"              content="http://www.tagifier.net/img/og.jpg" />
   </head>
-  <body>
-    <body class="blue-grey darken-3 blue-grey-text text-lighten-5">
+  <body class="blue-grey darken-3 blue-grey-text text-lighten-5">
+
+  	<div id="preloader" ng-hide="docReady">
+  		<img src="img/tgf/icon.png" class="animated pulse infinite">
+  	</div>
 
     <nav class="navbar-fixed grey darken-4">
         <div class="nav-wrapper">
@@ -56,7 +59,7 @@
               </div>
             </div>
           </div>
-        </footer>
+    </footer>
 
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/Materialize/dist/js/materialize.min.js"></script>
@@ -73,13 +76,16 @@
     <script src="bower_components/isMobile/isMobile.min.js"></script>
 
     <div id="fb-root"></div>
-    <script>(function(d, s, id) {
+    <script>
+    	//fb likebox init
+  	(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
       js.src = "//connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v2.5&appId=1890630394494455";
       fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>
+    }(document, 'script', 'facebook-jssdk'));
+    </script>
 
     <!-- Angular components -->
     <script src="js/app.js"></script>

@@ -53,7 +53,11 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate', functio
   $(window).load(function(){
     $scope.docReady = true;
     $scope.$apply();
+
+    // load the fb plugin after a small delay (prevent screen freezing)
+    setTimeout(function(){FB.XFBML.parse(),500});
   });
+
   $scope.socket = io.connect();
   $scope.socket.on('connect', function()
   {
