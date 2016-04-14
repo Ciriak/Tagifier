@@ -21,6 +21,7 @@ app.controller('playlistCtrl', function($scope,$state,$http,$stateParams,$transl
 		$scope.canEditTags = true;
 		$scope.canStartProcess = true;
 	}, function errorCallback(response) {
+		
 		$scope.retreiveInfoError();
 	});
 

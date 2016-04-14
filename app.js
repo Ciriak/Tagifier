@@ -9,6 +9,7 @@ var random = require('random-gen');
 var bodyParser = require('body-parser')
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
+var ypi = require('youtube-playlist-info');
 var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
   ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
@@ -232,36 +233,9 @@ function retreiveVideoInfos(id,callback){
   });
 }
 
-function retreivePlaylistInfos(id,callback){
-  var uriInfos = "https://www.googleapis.com/youtube/v3/playlists?id="+id+"&part=snippet&key="+config.youtube_api_key;
-  var uriDetails = "https://www.googleapis.com/youtube/v3/playlists?id="+id+"&part=contentDetails&key="+config.youtube_api_key;
-  var uriItemsInfos = "https://www.googleapis.com/youtube/v3/playlistItems?playlistId="+id+"&part=snippet&maxResults=50&pageToken=CGQQAA&key="+config.youtube_api_key;
-  var uriItemsDetails = "https://www.googleapis.com/youtube/v3/playlistItems?playlistId="+id+"&part=contentDetails&key="+config.youtube_api_key;
-  var pl = {
-    videos : []
-  };
-
-  request(uriDetails, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      body = JSON.parse(body);
-      for (var attr in body.items[0]) { pl[attr] = body.items[0][attr]; }
-
-      //call the videos infos
-      request(uriItemsInfos, function (error2, response2, body2) {
-      if (!error2 && response2.statusCode == 200) {
-        body2 = JSON.parse(body2);
-        pl.videos = body2;
-        //for (var attr in body2.items[0]) { pl.videos[attr] = body2.items[0][attr]; }
-        callback(pl);
-      }
-      else{
-        callback("","Invalid query for playlist contentDetails");
-      }
-    });
-    }
-    else{
-      callback("","Invalid query for playlist Snippet");
-    }
+function retreivePlaylistInfos(id,callback){      
+  ypi.playlistInfo(config.youtube_api_key, id, function(playlistItems) {
+    callback(playlistItems);
   });
 }
 
