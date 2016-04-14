@@ -9,7 +9,11 @@ var random = require('random-gen');
 var bodyParser = require('body-parser')
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
+
+var YouTube = require('youtube-node');
 var ypi = require('youtube-playlist-info');
+var youTube = new YouTube();
+
 var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
   ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
@@ -51,6 +55,7 @@ var config = {};
 
 // retreive config file
 config = fs.readJSON("config.json");
+youTube.setKey(config.youtube_api_key);
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -208,27 +213,12 @@ io.on('connection', function (socket){
 });
 
 function retreiveVideoInfos(id,callback){
-  var uriInfos = "https://www.googleapis.com/youtube/v3/videos?id="+id+"&part=snippet&key="+config.youtube_api_key;
-  var uriDetails = "https://www.googleapis.com/youtube/v3/videos?id="+id+"&part=contentDetails&key="+config.youtube_api_key;
-  var vid = {};
-
-  request(uriInfos, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      body = JSON.parse(body);
-      for (var attr in body.items[0]) { vid[attr] = body.items[0][attr]; }
-      request(uriDetails, function (error2, response2, body2) {
-      if (!error2 && response2.statusCode == 200) {
-        body2 = JSON.parse(body2);
-        for (var attr in body2.items[0]) { vid[attr] = body2.items[0][attr]; }
-        callback(vid);
-      }
-      else{
-        callback("","Invalid query for video contentDetails");
-      }
-    });
+  youTube.getById(id, function(error, result) {
+    if (error) {
+      callback("",error);
     }
-    else{
-      callback("","Invalid query for video Snippet");
+    else {
+      callback(result);
     }
   });
 }
