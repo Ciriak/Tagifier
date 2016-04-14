@@ -47,7 +47,7 @@ app.controller('mainInputCtrl', function($scope,$state)
 	        return false;
 	    }
 	    
-	    regExp = /(?:(?:\?|&)list=)((?!videoseries)[a-zA-Z0-9_]*)/g;
+	    regExp = /(?:(?:\?|&)list=)((?!videoseries)[a-zA-Z0-9_-]*)/g;
 		var match = regExp.exec(url);
 		if(match && match[1]){
 			r.playlist = match[1];
