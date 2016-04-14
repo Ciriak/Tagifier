@@ -162,9 +162,10 @@ io.on('connection', function (socket){
           //
           retreiveVideoInfos(data.file.id,function(infos,err){
             if(err){
-
+              return;
             }
-            var ytDur = YTDurationToSeconds(infos.contentDetails.duration);
+            var file = infos.items[0];
+            var ytDur = YTDurationToSeconds(file.contentDetails.duration);
             var maxDur = 10*60;
 
             if(ytDur > maxDur){

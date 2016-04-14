@@ -25,14 +25,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	});
 
 	var parseFileData = function(data){
-		$scope.file = data;
+		$scope.file = data.items[0];
 
-		if(!data.snippet){	//stop the process if the data received are partials
-			$scope.retreiveInfoError();
-			return;
-		}
-
-		$scope.exportFile.image = getBestThumbnail(data.snippet.thumbnails);
+		$scope.exportFile.image = getBestThumbnail($scope.file.snippet.thumbnails);
 		$scope.exportFile.year = $scope.file.snippet.publishedAt.substr(0,4);
 		$scope.exportFile.id = $stateParams.fileId;
 		
@@ -46,15 +41,15 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			return;
 		}
 
-		var pt = data.snippet.localized.title.split(" - ");
+		var pt = $scope.file.snippet.localized.title.split(" - ");
 		$scope.userPattern = "%artist% - %title%";
 		// if xx - xx format
 		if(pt.length == 2){
-			$scope.baseStr =  data.snippet.localized.title;
+			$scope.baseStr =  $scope.file.snippet.localized.title;
 		}
 
 		else {
-			$scope.baseStr =  data.snippet.channelTitle+" - "+data.snippet.localized.title;
+			$scope.baseStr =  $scope.file.snippet.channelTitle+" - "+$scope.file.snippet.localized.title;
 		}
 
 		$scope.genPattern();
