@@ -26,36 +26,32 @@ app.controller('playlistCtrl', function($scope,$state,$http,$stateParams,$transl
 	});
 
 	var parseFileData = function(data){
-		$scope.file = data;
+		console.log(data);
+		$scope.file = data[0];
 
-		if(!data.snippet){	//stop the process if the data received are partials
-			$scope.retreiveInfoError();
-			return;
-		}
-
-		$scope.exportFile.image = getBestThumbnail(data.snippet.thumbnails);
-		$scope.exportFile.year = $scope.file.snippet.publishedAt.substr(0,4);
+		$scope.exportFile.image = getBestThumbnail($scope.file.thumbnails);
+		$scope.exportFile.year = $scope.file.publishedAt.substr(0,4);
 		$scope.exportFile.id = $stateParams.fileId;
 		
 		//check if the file duration is longer than 10 min 
-		var dur = $scope.file.contentDetails.duration;
+		/*var dur = $scope.file.contentDetails.duration;
 		if(YTDurationToSeconds(dur) > 600){
 			$scope.canEditTags = false;
 			$scope.canStartProcess = false;
 			Materialize.toast($translate.instant("error.fileTooLong"), 10000);
 			$scope.$apply();
 			return;
-		}
+		}*/
 
-		var pt = data.snippet.localized.title.split(" - ");
+		var pt = $scope.file.title.split(" - ");
 		$scope.userPattern = "%artist% - %title%";
 		// if xx - xx format
 		if(pt.length == 2){
-			$scope.baseStr =  data.snippet.localized.title;
+			$scope.baseStr =  $scope.file.title;
 		}
 
 		else {
-			$scope.baseStr =  data.snippet.channelTitle+" - "+data.snippet.localized.title;
+			$scope.baseStr =  $scope.file.channelTitle+" - "+$scope.file.localized.title;
 		}
 
 		$scope.genPattern();
