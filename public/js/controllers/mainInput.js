@@ -1,4 +1,4 @@
-app.controller('mainInputCtrl', function($scope,$state)
+app.controller('mainInputCtrl', function($scope,$state,$translate)
 {
 	$scope.currentUrl;
 	$scope.goodUrl = false;
@@ -6,20 +6,20 @@ app.controller('mainInputCtrl', function($scope,$state)
 	$scope.currentId;
   	$scope.checkUrl = function() {
   		var r = youtube_parser($scope.currentUrl);
+	  	if(!r.id && !r.playlist){
+	  		console.log(r);
+	  		$scope.goodUrl = false;
+	  		console.log("bad");
+	  		return;
+	  	}
 	  	if(r.id){
 	  		$scope.goodUrl = true;
 	  		$scope.currentId = r.id;
-	  		if(r.playlist){
-	  			$scope.playlist = true;
-	  			$scope.currentId = r.playlist;
-	  		}
-	  		else{
-	  			$scope.playlist = false;
-	  		}
 	  	}
-	  	else
-	  	{
-	  		$scope.goodUrl = false;
+	  	if(r.playlist){
+	  		$scope.goodUrl = true;
+	  		$scope.playlist = true;
+	  		$scope.currentId = r.playlist;
 	  	}
 	}
 
@@ -43,8 +43,6 @@ app.controller('mainInputCtrl', function($scope,$state)
 	    var match = url.match(regExp);
 	    if ( match && match[7].length == 11 ){
 	        r.id = match[7];
-	    }else{
-	        return false;
 	    }
 	    
 	    regExp = /(?:(?:\?|&)list=)((?!videoseries)[a-zA-Z0-9_-]*)/g;
@@ -52,7 +50,6 @@ app.controller('mainInputCtrl', function($scope,$state)
 		if(match && match[1]){
 			r.playlist = match[1];
 		}
-		console.log(r);
 		return r;
 	    
 	}
