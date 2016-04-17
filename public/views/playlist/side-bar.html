@@ -1,4 +1,6 @@
-<youtube-video video-id="$parent.exportFile.id" class="sidebar-player hide-on-med-and-down"></youtube-video>
+<ul class="collection grey darken-4">
+  <li class="collection-item grey darken-4" ng-repeat="track in playlist">{{$index+1}} {{track.title}}</li>
+</ul>
 
 <form ng-submit="$parent.requestProcess()">
    <div id="solve-media-container" ng-show="$parent.captchatActive"></div>

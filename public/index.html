@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tagifier | Convert Youtube video to Mp3 tagged file</title>
     <link rel="icon" type="image/png" href="img/tgf/favicon.png" />
-    <link rel="stylesheet" href="bower_components/Materialize/dist/css/materialize.min.css" />
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="bower_components/mdi/css/materialdesignicons.min.css" />
     <link rel="stylesheet" href="bower_components/animate.css/animate.min.css">
     <link rel="stylesheet" href="css/tagifier.css" />
@@ -15,26 +15,28 @@
     <meta property="og:description"        content="Convert Youtube video to Mp3 tagged file" />
     <meta property="og:image"              content="http://www.tagifier.net/img/og.jpg" />
   </head>
-  <body class="blue-grey darken-3 blue-grey-text text-lighten-5">
+  <body>
 
   	<div id="preloader" ng-hide="docReady">
   		<img src="img/tgf/icon.png" class="animated pulse infinite">
   	</div>
 
-    <nav class="navbar-fixed grey darken-4">
-        <div class="nav-wrapper">
-          <a href="./" class="brand-logo">
-            <img src="img/tgf/header-logo-beta.png" class="responsive-img" style="height:40px; margin:12px">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">
+            <img alt="Brand" src="img/tgf/header-logo-beta.png" style="height:100%;">
           </a>
         </div>
-      </nav>
+      </div>
+    </nav>
 
-	<div ui-view></div>
+	 <div ui-view></div>
 
-    <footer class="page-footer blue-grey darken-4">
+    <footer class="page-footer">
           <div class="container">
             <div class="row">
-              <div class="col l6 s12">
+              <div class="col-md-6 col-sm-12">
                 <img src="img/tgf/header-logo.png" style="height:25px;">
                 <div class="fb-page hide-on-small-only" data-href="https://www.facebook.com/Tagifier-1172453299437404" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="false" data-show-posts="false"></div>
               </div>
@@ -62,7 +64,7 @@
     </footer>
 
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="bower_components/Materialize/dist/js/materialize.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>

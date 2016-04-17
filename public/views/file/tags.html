@@ -1,74 +1,61 @@
-<div class="card grey darken-4">
-    <div class="card-image" style="height:100px; overflow:hidden;">
-      <img ng-src="{{exportFile.image}}">
-      <span class="card-title">{{exportFile.title}}</span>
-    </div>
-   <div class="card-content">
-      <ul class="collection blue-grey darken-4">
-         <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle grey"><i class="mdi mdi-file-music"></i></div> 
-            <div class="input-field col s6">
-               <input type="text" id="tag-file-name" ng-disabled="!$parent.canEditTags" ng-model="$parent.baseStr" ng-change="$parent.genPattern()">
-               <label class="active" for="tag-file-name">{{ 'file.fileName' | translate }}</label>
-            </div>
-            <div class="col s6">
-               <!-- some other stuff -->
-            </div>
-         </li>
-         <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle grey">
-               <i class="mdi mdi-code-braces"></i>
-            </div> 
-            <div class="input-field col s6">
-               <input type="text" id="tag-user-pattern" ng-disabled="!$parent.canEditTags" ng-model="$parent.userPattern" ng-change="$parent.genPattern()">
-               <label class="active" for="tag-user-pattern">{{ 'file.pattern' | translate }}</label>
-            </div>
-            <div class="col s6">
-               <!-- some other stuff -->
-            </div>
-         </li>
-         <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle blue" title="%title%"><i class="mdi mdi-music-note"></i></div> 
-            <div class="input-field col s6">
-               <input type="text" id="tag-title" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.title">
-               <label class="active" for="tag-title">{{ 'file.title' | translate }}</label>
-            </div>
-            <div class="col s6">
-               <!-- some other stuff -->
-            </div>
-         </li>
-         <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle green" title="%artist%"><i class="mdi mdi-account"></i></div> 
-            <div class="input-field col s6">
-               <input type="text" id="tag-artist" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.artist">
-               <label class="active" for="tag-artist">{{ 'file.artist' | translate }}</label>
-            </div>
-            <div class="col s6">
-               <!-- some other stuff -->
-            </div>
-         </li>
-         <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle red" title="%album%"><i class="mdi mdi-album"></i></div> 
-            <div class="input-field col s6">
-               <input type="text" id="tag-album" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.album">
-               <label class="active" for="tag-album">{{ 'file.album' | translate }}</label>
-            </div>
-            <div class="col s6">
-               <!-- some other stuff -->
-            </div>
-         </li>
-
-         <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle orange" title="%year%"><i class="mdi mdi-calendar"></i></div> 
-            <div class="input-field col s6">
-               <input type="text" id="tag-year" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.year">
-               <label class="active" for="tag-year">{{ 'file.year' | translate }}</label>
-            </div>
-            <div class="col s6">
-               <!-- some other stuff -->
-            </div>
-         </li>
-
-      </ul>
+<div id="tags-bg">
+   <img ng-src="{{exportFile.image}}">
+</div>
+<div id="tags-content">
+   <h1>{{exportFile.title}}</h1>
+   <p>{{exportFile.artist}}</p>
+   <div class="row">
+      <button class="btn btn-sm btn-primary"><i class="mdi mdi-play"></i></button>
+      <button class="btn btn-sm btn-primary">Pattern Button</button>
    </div>
+   <table class="table">
+      <tr>
+         <td>
+            {{ 'file.fileName' | translate }}
+         </td>
+         <td>
+            <input type="text" class="form-control" ng-disabled="!$parent.canEditTags" ng-model="$parent.baseStr" ng-change="$parent.genPattern()">
+         </td>
+      </tr>
+      <tr>
+         <td>
+            {{ 'file.pattern' | translate }}
+         </td>
+         <td>
+            <input type="text" class="form-control" ng-disabled="!$parent.canEditTags" ng-model="$parent.userPattern" ng-change="$parent.genPattern()">
+         </td>
+      </tr>
+      <tr>
+         <td>
+            {{ 'file.title' | translate }}
+         </td>
+         <td>
+            <input type="text" class="form-control" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.title">
+         </td>
+      </tr>
+      <tr>
+         <td>
+            {{ 'file.artist' | translate }}
+         </td>
+         <td>
+            <input type="text" class="form-control" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.artist">
+         </td>
+      </tr>
+      <tr>
+         <td>
+            {{ 'file.album' | translate }}
+         </td>
+         <td>
+            <input type="text" class="form-control" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.album">
+         </td>
+      </tr>
+      <tr>
+         <td>
+            {{ 'file.year' | translate }}
+         </td>
+         <td>
+            <input type="text" class="form-control" ng-disabled="!$parent.canEditTags" ng-model="$parent.exportFile.year">
+         </td>
+      </tr>
+   </table>
 </div>
