@@ -1,0 +1,35 @@
+<div class="container">
+   <div id="video-preloader-ghost"></div>
+   <div id="video-preloader" class="hide valign-wrapper center-align">
+      <div class="row col s12">
+         <div id="video-preloader-icon" class="animated infinite pulse">
+            <img src="img/tgf/icon.png">
+         </div>
+         <h5 class="valign col s12" id="video-preloader-label">Loading video infos</h5>
+         <div class="progress">
+            <div class="determinate" style="width: 0%"></div>
+         </div>
+         <div id="video-preloader-error-buttons" class="hide">
+            <a id="return-button" class="btn-flat grey-text text-lighten-5 waves-effect waves-light" href="./"><i class="material-icons left">skip_previous</i>Retours</a>
+            <a id="retry-button" class="btn waves-effect waves-light" href=""><i class="material-icons left">replay</i>Retry</a>
+         </div>
+      </div>
+   </div>
+   <div class="" id="video">
+      <div id="custom-tags-label" class="hide">Custom tags</div>
+      <div class="row">
+         <div class="col l8 s12" ng-include="'views/playlist/tags.html'">
+         </div>
+         <div class="col l4 s12 sidebar" ng-include="'views/playlist/side-bar.html'"></div>
+      </div>
+      <div id="tags-hash-modal" class="modal blue-grey darken-3 blue-grey-text text-lighten-5">
+         <div class="modal-content">
+            <h4>label getHashModalTitle</h4>
+            <input type="url" id="tags-hash-input" onfocus="this.select();" onmouseup="return false;">
+         </div>
+         <div class="modal-footer modal blue-grey darken-3">
+            <a href="#" class="modal-action modal-close waves-effect btn-flat">label getHashModalClose</a>
+         </div>
+      </div>
+   </div>
+</div>
