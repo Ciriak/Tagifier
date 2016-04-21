@@ -32,6 +32,7 @@
     "express": "^4.13.4",
     "fast-image-downloader": "0.0.4",
     "fs-sync": "^1.0.2",
+    "gulp": "^3.9.1",
     "node-id3": "0.0.4",
     "random-gen": "^0.1.0",
     "request": "^2.69.0",
