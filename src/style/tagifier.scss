@@ -49,8 +49,15 @@ h2,h3,h4,h5,p{
 }
 
 .btn-primary:hover{
-	background-color: #00897B;
+	background-color: #181A1F;
 	border:1px #181A1F solid;
+}
+
+.progress{
+	background-color:#181A1F;
+	.progress-bar{
+		background-color:#00897B;
+	}
 }
 
 #preloader{

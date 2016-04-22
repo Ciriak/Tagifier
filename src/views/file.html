@@ -10,10 +10,24 @@
 			</div>
 			<div class="col-md-3 dl-button-container">
 				<button type="submit" ng-hide="progressStatus == 'ready'" ng-disabled="!canStartProcess" ng-class="{'disabled':!canStartProcess}" class="btn btn-primary btn-lg"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</button>
+
+				<!-- button that appear for downloading the file -->
+				<div class="btn-group ng-hide" ng-show="progressStatus == 'ready'">
+				  <a class="btn btn-primary btn-lg" ng-href="{{exportFile.fullUrl}}" target="_blank"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</a>
+				  <button type="button" class="btn btn-default btn-lg" ng-click="location.reload()"><i class="mdi mdi-reload"></i></button>
+				</div>
 			</div>
 		</div>
 	</header>
 	<div class="container">
+		<div class="col-md-12 ng-hide" ng-show="processing == true">
+			<br>
+			<div class="progress">
+			  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%">
+			    <span class="sr-only">{{progress}}%</span>
+			  </div>
+			</div>
+		</div>
 		<div class="col-md-4">
 			<table class="table">
 		      <tr>

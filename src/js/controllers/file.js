@@ -164,6 +164,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 				$scope.canEditTags = true;
 				$scope.canStartProcess = true;
 				$scope.exportFile.url = ev.data.url.replace("./exports/","musics/");
+				$scope.exportFile.fullUrl = $scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title;
 				$scope.tgfDownload();
 			}
 		}
@@ -183,7 +184,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {
-				window.open($scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title, '_blank');
+				window.open($scope.exportFile.fullUrl, '_blank');
 				notification.close();
 			};
 		}
