@@ -32,6 +32,14 @@ h2,h3,h4,h5,p{
 
 .btn{
 	border-radius: 3px;
+	background-color: #181A1F;
+	color:#ffffff;
+	border:1px #181A1F solid;
+}
+
+.btn:hover{
+	background-color: #282C34;
+	color:#ffffff;
 	border:1px #181A1F solid;
 }
 
@@ -78,9 +86,23 @@ h2,h3,h4,h5,p{
 	width: 100%!important;
 }
 
-.collection-item .circle .mdi{
-	font-size:24px;
-	padding: 8px;
+.modal-content{
+	background-color: #222222;
+}
+
+.modal-header{
+	border-bottom-color: #181A1F;
+}
+
+.modal-footer{
+	border-top-color: #181A1F;
+}
+
+.input-group-addon{
+	background-color: #222222;
+	border-color: #181A1F;
+	color:#9DA5AC;
+	font-size: 20px;
 }
 
 .file{
@@ -88,7 +110,7 @@ h2,h3,h4,h5,p{
 		background-color: #000000;
 		position: relative;
 		overflow: hidden;
-		height: 40vh;
+		padding:5rem;
 		.bg{
 			position: absolute;
 			left: 0;
@@ -99,7 +121,8 @@ h2,h3,h4,h5,p{
 			-webkit-filter: blur(80px);
 			opacity: 0.4;
 		}
-		.bg-filter{
+
+		/*.bg-filter{
 
 		}
 
@@ -123,6 +146,6 @@ h2,h3,h4,h5,p{
 		}
 		.dl-button-container{
 			margin-top: 10vh;
-		}
+		}*/
 	}
 }

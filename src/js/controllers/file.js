@@ -12,6 +12,10 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	$scope.captchatActive = false;
 	$scope.notified = false;
 
+	$(function () {		//instantiate tooltip
+	  $('[data-toggle="tooltip"]').tooltip()
+	});
+
 	$scope.exportFile = {};
 	$http({
 	  method: 'GET',

@@ -33,33 +33,29 @@
 
 	 <div ui-view></div>
 
-    <footer class="page-footer">
-          <div class="container">
-            <div class="row">
-              <div class="col-md-6 col-sm-12">
-                <img src="img/tgf/header-logo.png" style="height:25px;">
-                <div class="fb-page hide-on-small-only" data-href="https://www.facebook.com/Tagifier-1172453299437404" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="false" data-show-posts="false"></div>
-              </div>
-              <div class="col l4 offset-l2 s12">
-                <ul>
-                    <li>
-                        <a class="grey-text text-lighten-3" ui-sref="about">{{ 'global.about' | translate }}</a>
-                    </li>
-                    <li>
-                        <a class="grey-text text-lighten-3" href="https://www.facebook.com/Tagifier-1172453299437404" target="_blank">{{ 'global.facebook' | translate }}</a>
-                    </li>
-                    <li>
-                      © 2016 Tagifier
-                    </li>
-                    <li>
-                      Deployed from <a href="https://github.com/CYRIAQU3/tagifier/commits/master" target="_blank"><i class="mdi mdi-git"></i>{{lastCommit}}</a>
-                    </li>
-                    <li>
-                       Made by <a href="http://www.cyriaquedelaunay.fr" target="_blank">CYRIAQU3</a>
-                    </li>
-                </ul>
-              </div>
+    <footer class="page-footer container">
+          <div class="col-md-6 col-sm-12">
+            <div class="col-md-12">
+              <img src="img/tgf/header-logo.png" style="height:25px;">
             </div>
+            <div class="fb-page" data-href="https://www.facebook.com/Tagifier-1172453299437404" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="false" data-show-posts="false"></div>
+          </div>
+          <div class="col-md-6 col-sm-12 text-left">
+              <p>
+                  <a class="grey-text text-lighten-3" ui-sref="about">{{ 'global.about' | translate }}</a>
+              </p>
+              <p>
+                  <a class="grey-text text-lighten-3" href="https://www.facebook.com/Tagifier-1172453299437404" target="_blank">{{ 'global.facebook' | translate }}</a>
+              </p>
+              <p>
+                © 2016 Tagifier
+              </p>
+              <p>
+                Deployed from <a href="https://github.com/CYRIAQU3/tagifier/commits/master" target="_blank"><i class="mdi mdi-git"></i>{{lastCommit}}</a>
+              </p>
+              <p>
+                 Made by <a href="http://www.cyriaquedelaunay.fr" target="_blank">CYRIAQU3</a>
+              </p>
           </div>
     </footer>
 
