@@ -30,13 +30,13 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		$scope.exportFile.image = getBestThumbnail($scope.file.snippet.thumbnails);
 		$scope.exportFile.year = $scope.file.snippet.publishedAt.substr(0,4);
 		$scope.exportFile.id = $stateParams.fileId;
-		
-		//check if the file duration is longer than 10 min 
+
+		//check if the file duration is longer than 10 min
 		var dur = $scope.file.contentDetails.duration;
 		if(YTDurationToSeconds(dur) > 600){
 			$scope.canEditTags = false;
 			$scope.canStartProcess = false;
-			Materialize.toast($translate.instant("error.fileTooLong"), 10000);
+			console.log($translate.instant("error.fileTooLong"), 10000);
 			$scope.$apply();
 			return;
 		}
@@ -76,13 +76,13 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 				$scope.exportFile[$scope.vars[i]] = extrData[i+1];
 			}
 		};
-		
+
 	}
 
 	$scope.retreiveInfoError = function(){
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
-		Materialize.toast($translate.instant("error.unableToRetreiveFileData"), 10000);
+		console.log($translate.instant("error.unableToRetreiveFileData"), 10000);
 		$scope.$apply();
 	}
 
@@ -96,10 +96,11 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			$scope.checkCaptchat();
 		}
 		else {
-			Materialize.toast($translate.instant("file.pleaseEnterCaptchat"), 4000);
+			console.log($translate.instant("file.pleaseEnterCaptchat"));
 			$scope.generateCaptchat();
+			$('#captchat-modal').modal('show');
 		}
-		
+
 	}
 
 	$scope.generateCaptchat = function(){
@@ -119,14 +120,16 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		  	resp : resp
 		  }
 		}).then(function successCallback(r) {
+			$('#captchat-modal').modal('hide');
 			$scope.captchatActive = false;
 			$scope.processing = true;
 			$scope.canEditTags = false;
 			$scope.canStartProcess = false;
 			$scope.requestFile();
 		}, function errorCallback(r) {
+			$('#captchat-modal').modal('show');
 			$scope.processing = false;
-			Materialize.toast($translate.instant("error.invalidCaptchat"), 4000);
+			console.log($translate.instant("error.invalidCaptchat"));
 			$scope.generateCaptchat();
 		});
 	}
@@ -148,7 +151,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			$scope.processing = false;
 			$scope.canEditTags = true;
 			$scope.canStartProcess = true;
-			Materialize.toast($translate.instant("error.internalError"), 4000);
+			console.log($translate.instant("error.internalError"));
 		}
 		if(ev["event"] == "finished"){
 			if(ev.data.id == $scope.exportFile.id){
@@ -181,7 +184,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			};
 		}
 		else{
-			Materialize.toast("Your file is ready", 4000);
+			console.log("Your file is ready");
 		}
 	};
 });
