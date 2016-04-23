@@ -14,7 +14,7 @@
 				<!-- button that appear for downloading the file -->
 				<div class="btn-group ng-hide" ng-show="progressStatus == 'ready'">
 				  <a class="btn btn-primary btn-lg" ng-href="{{exportFile.fullUrl}}" target="_blank"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</a>
-				  <button type="button" class="btn btn-default btn-lg" ng-click="location.reload()"><i class="mdi mdi-reload"></i></button>
+				  <button type="button" class="btn btn-default btn-lg" ng-click="reloadPage()"><i class="mdi mdi-reload"></i></button>
 				</div>
 			</div>
 		</div>
@@ -23,7 +23,7 @@
 		<div class="col-md-12 ng-hide" ng-show="processing == true">
 			<br>
 			<div class="progress">
-			  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%">
+			  <div class="progress-bar progress-bar-striped active" style="min-width: 2em;" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%">
 			    <span class="sr-only">{{progress}}%</span>
 			  </div>
 			</div>
@@ -31,19 +31,19 @@
 		<div class="col-md-4">
 			<table class="table">
 		      <tr>
-		         <td  class="input-group" data-toggle="tooltip" data-placement="top" title="{{ 'file.fileName' | translate }}">
+		         <td  class="input-group"  uib-tooltip="{{ 'file.fileName' | translate }}">
 							 <span class="input-group-addon"><i class="mdi mdi-file-document"></i></span>
 								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="baseStr" ng-change="genPattern()">
 		         </td>
 		      </tr>
 		      <tr>
-		         <td  class="input-group input-lg" data-toggle="tooltip" data-placement="top" title="{{ 'file.pattern' | translate }}">
+		         <td  class="input-group input-lg"  uib-tooltip="{{ 'file.pattern' | translate }}">
 							 <span class="input-group-addon"><i class="mdi mdi-code-braces"></i></span>
 								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="userPattern" ng-change="genPattern()">
 		         </td>
 		      </tr>
 					<tr>
-		         <td  class="input-group" data-toggle="tooltip" data-placement="top" title="{{ 'file.cover' | translate }}">
+		         <td  class="input-group"  uib-tooltip="{{ 'file.cover' | translate }}">
       		 			<span class="input-group-addon"><i class="mdi mdi-image"></i></span>
 		            <input type="url" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile.image">
 		         </td>
@@ -53,25 +53,25 @@
 		<div class="col-md-8">
 			<table class="table">
 		      <tr>
-		         <td  class="input-group" data-toggle="tooltip" data-placement="top" title="{{ 'file.title' | translate }}">
+		         <td  class="input-group"  uib-tooltip="{{ 'file.title' | translate }}">
 							  <span class="input-group-addon"><i class="mdi mdi-file-music"></i></span>
 								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile.title">
 		         </td>
 		      </tr>
 		      <tr>
-		         <td  class="input-group" data-toggle="tooltip" data-placement="top" title="{{ 'file.artist' | translate }}">
+		         <td  class="input-group"  uib-tooltip="{{ 'file.artist' | translate }}">
 							  <span class="input-group-addon"><i class="mdi mdi-account"></i></span>
 								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile.artist">
 		         </td>
 		      </tr>
 		      <tr>
-		         <td  class="input-group" data-toggle="tooltip" data-placement="top" title="{{ 'file.album' | translate }}">
+		         <td  class="input-group"  uib-tooltip="{{ 'file.album' | translate }}">
 							  <span class="input-group-addon"><i class="mdi mdi-album"></i></span>
 								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile.album">
 		         </td>
 		      </tr>
 		      <tr>
-		         <td  class="input-group" data-toggle="tooltip" data-placement="top" title="{{ 'file.year' | translate }}">
+		         <td  class="input-group"  uib-tooltip="{{ 'file.year' | translate }}">
 							 <span class="input-group-addon"><i class="mdi mdi-calendar-text"></i></span>
 								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile.year">
 		         </td>

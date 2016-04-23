@@ -60,7 +60,7 @@ youTube.setKey(config.youtube_api_key);
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
-})); 
+}));
 
 app.use('/', express.static(__dirname + '/public/'));
 
@@ -133,7 +133,7 @@ io.on('connection', function (socket){
       if (err) {
         console.log(err.error);
       } else {
-        
+
         var dir = "./public/img/temps"; // create the temp folder if not exist (thumbnail)
         if (!fs.exists(dir)){
             fs.mkdir(dir);
@@ -147,7 +147,7 @@ io.on('connection', function (socket){
         var imgPath = "./public/img/temps/"+session+"."+img.fileType.ext;
         fs.write(imgPath, img.body);
         file.image = imgPath;
-            
+
         var poptions = {
           url: "https://youtu.be/"+data.file.id,
           exportPath : dir+"/"+session+".mp3"
@@ -184,13 +184,17 @@ io.on('connection', function (socket){
               socket.emit("yd_event",{event:"error",data:err});
               return;
             }
-            
+
             // little ad :)
             file.encodedBy = "tagifier.net";
             file.remixArtist = "tagifier.net";
             file.comment = "tagifier.net";
 
-            var t = nodeID3.write(file, poptions.exportPath);   //Pass tags and filepath 
+            var t = nodeID3.write(file, poptions.exportPath);   //Pass tags and filepath
+            if(!t){
+              socket.emit("yd_event",{event:"error",data:"tag"});
+              return;
+            }
               if (fs.exists(imgPath)) {
                 fs.remove(imgPath);
               }
@@ -224,7 +228,7 @@ function retreiveVideoInfos(id,callback){
   });
 }
 
-function retreivePlaylistInfos(id,callback){      
+function retreivePlaylistInfos(id,callback){
   ypi.playlistInfo(config.youtube_api_key, id, function(playlistItems) {
     callback(playlistItems);
   });

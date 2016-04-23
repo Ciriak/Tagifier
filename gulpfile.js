@@ -6,6 +6,7 @@ var htmlmin = require('gulp-htmlmin');
 var jsonminify = require('gulp-jsonminify');
 var del = require('del');
 var imageop = require('gulp-image-optimization');
+var ngmin = require('gulp-ngmin');
 var gulpsync = require('gulp-sync')(gulp);
 
 gulp.task('sass', function () {
@@ -20,7 +21,8 @@ gulp.task('clean:public', function() {
 
 gulp.task('scripts', function() {
   return gulp.src('./src/js/**/*.js')
-  	//.pipe(uglify())
+    .pipe(ngmin())
+  	.pipe(uglify({mangle: false}))
     .pipe(concat('tagifier.js'))
     .pipe(gulp.dest('./public/js/'));
 });
@@ -57,10 +59,10 @@ gulp.task('watch', function () {
 });
 
 gulp.task('default', gulpsync.sync([
-    // sync 
+    // sync
     'clean:public',
     [
-        // async 
+        // async
         'sass',
         'scripts',
         'html',

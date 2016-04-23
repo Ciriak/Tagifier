@@ -33,7 +33,7 @@ app.controller('mainInputCtrl', function($scope,$state,$translate)
 			$state.go('file',{fileId:$scope.currentId});
 		}
 		else{
-			Materialize.toast($translate.instant("error.invalidLink"), 4000);
+			alert($translate.instant("error.invalidLink"));
 		}
 	};
 
@@ -44,14 +44,14 @@ app.controller('mainInputCtrl', function($scope,$state,$translate)
 	    if ( match && match[7].length == 11 ){
 	        r.id = match[7];
 	    }
-	    
+
 	    regExp = /(?:(?:\?|&)list=)((?!videoseries)[a-zA-Z0-9_-]*)/g;
 		var match = regExp.exec(url);
 		if(match && match[1]){
 			r.playlist = match[1];
 		}
 		return r;
-	    
+
 	}
 
 	var ytPlaylistChecker = function(url){

@@ -30,7 +30,10 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 
 	var parseFileData = function(data){
 		$scope.file = data.items[0];
-
+		if(!$scope.file){
+			$scope.retreiveInfoError();
+			return;
+		}
 		$scope.exportFile.image = getBestThumbnail($scope.file.snippet.thumbnails);
 		$scope.exportFile.year = $scope.file.snippet.publishedAt.substr(0,4);
 		$scope.exportFile.id = $stateParams.fileId;
@@ -40,8 +43,8 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		if(YTDurationToSeconds(dur) > 600){
 			$scope.canEditTags = false;
 			$scope.canStartProcess = false;
-			console.log($translate.instant("error.fileTooLong"), 10000);
-			$scope.$apply();
+			alert($translate.instant("error.fileTooLong"));
+			$state.go("^.main");
 			return;
 		}
 
@@ -86,14 +89,18 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	$scope.retreiveInfoError = function(){
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
-		console.log($translate.instant("error.unableToRetreiveFileData"), 10000);
-		$scope.$apply();
+		alert($translate.instant("error.unableToRetreiveFileData"));
+		$state.go('^.main');
 	}
 
 	$scope.requestFile = function(){
 		$scope.processing = true;
 		$scope.socket.emit("fileRequest",{file:$scope.exportFile});
 	}
+
+	$scope.reloadPage = function(){
+		location.reload();
+	};
 
 	$scope.requestProcess = function(){
 		if($scope.captchatActive){
@@ -133,13 +140,13 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		}, function errorCallback(r) {
 			$('#captchat-modal').modal('show');
 			$scope.processing = false;
-			console.log($translate.instant("error.invalidCaptchat"));
+			alert($translate.instant("error.invalidCaptchat"));
 			$scope.generateCaptchat();
 		});
 	}
 
 	$scope.socket.on("yd_event",function(ev){
-		console.log(ev);
+		//console.log(ev);
 		if(ev["event"] == "progress"){
 			if(ev.data.videoId == $scope.exportFile.id){
 				$scope.processing = true;
@@ -155,7 +162,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			$scope.processing = false;
 			$scope.canEditTags = true;
 			$scope.canStartProcess = true;
-			console.log($translate.instant("error.internalError"));
+			alert($translate.instant("error.internalError"));
 		}
 		if(ev["event"] == "finished"){
 			if(ev.data.id == $scope.exportFile.id){

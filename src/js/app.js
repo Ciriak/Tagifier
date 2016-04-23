@@ -1,5 +1,6 @@
 var app = angular.module('tagifier', [
 'ui.router',
+'ui.bootstrap',
 'youtube-embed',
 'ngSanitize',
 'pascalprecht.translate'
