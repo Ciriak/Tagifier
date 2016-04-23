@@ -9,6 +9,11 @@ var random = require('random-gen');
 var bodyParser = require('body-parser')
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
+
+var YouTube = require('youtube-node');
+var ypi = require('youtube-playlist-info');
+var youTube = new YouTube();
+
 var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
   ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
@@ -50,11 +55,12 @@ var config = {};
 
 // retreive config file
 config = fs.readJSON("config.json");
+youTube.setKey(config.youtube_api_key);
 
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
-})); 
+}));
 
 app.use('/', express.static(__dirname + '/public/'));
 
@@ -97,8 +103,18 @@ app.get('/musics/:file', function(req,res){
   res.download('exports/'+req.params.file,req.query.name+".mp3");
 });
 
-app.get('/api/:fileId(*{1,11})', function(req,res){
+app.get('/api/file/:fileId(*{1,11})', function(req,res){
 	retreiveVideoInfos(req.params.fileId,function(infos,err){
+    if(err){
+      res.send(err);
+      return;
+    }
+    res.send(infos);
+  });
+});
+
+app.get('/api/playlist/:fileId', function(req,res){
+  retreivePlaylistInfos(req.params.fileId,function(infos,err){
     if(err){
       res.send(err);
       return;
@@ -117,7 +133,7 @@ io.on('connection', function (socket){
       if (err) {
         console.log(err.error);
       } else {
-        
+
         var dir = "./public/img/temps"; // create the temp folder if not exist (thumbnail)
         if (!fs.exists(dir)){
             fs.mkdir(dir);
@@ -131,7 +147,7 @@ io.on('connection', function (socket){
         var imgPath = "./public/img/temps/"+session+"."+img.fileType.ext;
         fs.write(imgPath, img.body);
         file.image = imgPath;
-            
+
         var poptions = {
           url: "https://youtu.be/"+data.file.id,
           exportPath : dir+"/"+session+".mp3"
@@ -146,9 +162,10 @@ io.on('connection', function (socket){
           //
           retreiveVideoInfos(data.file.id,function(infos,err){
             if(err){
-
+              return;
             }
-            var ytDur = YTDurationToSeconds(infos.contentDetails.duration);
+            var file = infos.items[0];
+            var ytDur = YTDurationToSeconds(file.contentDetails.duration);
             var maxDur = 10*60;
 
             if(ytDur > maxDur){
@@ -167,12 +184,17 @@ io.on('connection', function (socket){
               socket.emit("yd_event",{event:"error",data:err});
               return;
             }
-            
+
             // little ad :)
             file.encodedBy = "tagifier.net";
             file.remixArtist = "tagifier.net";
+            file.comment = "tagifier.net";
 
-            var t = nodeID3.write(file, poptions.exportPath);   //Pass tags and filepath 
+            var t = nodeID3.write(file, poptions.exportPath);   //Pass tags and filepath
+            if(!t){
+              socket.emit("yd_event",{event:"error",data:"tag"});
+              return;
+            }
               if (fs.exists(imgPath)) {
                 fs.remove(imgPath);
               }
@@ -196,28 +218,19 @@ io.on('connection', function (socket){
 });
 
 function retreiveVideoInfos(id,callback){
-  var uriInfos = "https://www.googleapis.com/youtube/v3/videos?id="+id+"&part=snippet&key="+config.youtube_api_key;
-  var uriDetails = "https://www.googleapis.com/youtube/v3/videos?id="+id+"&part=contentDetails&key="+config.youtube_api_key;
-  var vid = {};
+  youTube.getById(id, function(error, result) {
+    if (error) {
+      callback("",error);
+    }
+    else {
+      callback(result);
+    }
+  });
+}
 
-  request(uriInfos, function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      body = JSON.parse(body);
-      for (var attr in body.items[0]) { vid[attr] = body.items[0][attr]; }
-      request(uriDetails, function (error2, response2, body2) {
-      if (!error2 && response2.statusCode == 200) {
-        body2 = JSON.parse(body2);
-        for (var attr in body2.items[0]) { vid[attr] = body2.items[0][attr]; }
-        callback(vid);
-      }
-      else{
-        callback("","Invalid query for contentDetails");
-      }
-    });
-    }
-    else{
-      callback("","Invalid query for contentDetails");
-    }
+function retreivePlaylistInfos(id,callback){
+  ypi.playlistInfo(config.youtube_api_key, id, function(playlistItems) {
+    callback(playlistItems);
   });
 }
 

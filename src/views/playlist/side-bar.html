@@ -1,9 +1,11 @@
-<youtube-video video-id="$parent.exportFile.id" class="sidebar-player hide-on-med-and-down"></youtube-video>
+<ul class="collection grey darken-4">
+  <li class="collection-item grey darken-4" ng-repeat="track in playlist">{{$index+1}} {{track.title}}</li>
+</ul>
 
 <form ng-submit="$parent.requestProcess()">
    <div id="solve-media-container" ng-show="$parent.captchatActive"></div>
    
-   <button type="submit" ng-hide="$parent.progressStatus == 'ready'" ng-disabled="$parent.processing" ng-class="{'disabled':$parent.processing}" class="col l12 m8 offset-m2 s8 offset-s2 waves-effect waves-light btn large"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</button>
+   <button type="submit" ng-hide="$parent.progressStatus == 'ready'" ng-disabled="!$parent.canStartProcess" ng-class="{'disabled':!$parent.canStartProcess}" class="col l12 m8 offset-m2 s8 offset-s2 waves-effect waves-light btn large"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</button>
 
    <a class="col l12 m8 offset-m2 s8 offset-s2 waves-effect waves-light btn large" ng-show="$parent.progressStatus == 'ready'" href="{{$parent.exportFile.url}}?name={{$parent.exportFile.artist}} - {{$parent.exportFile.title}}" ng-click="$parent.tgfDownload();"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</a>
 

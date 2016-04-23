@@ -1,14 +1,14 @@
 <div class="card grey darken-4">
     <div class="card-image" style="height:100px; overflow:hidden;">
-      <img ng-src="{{exportFile.image}}">
-      <span class="card-title">{{exportFile.title}}</span>
+      <img ng-src="{{modelFile.image}}">
+      <span class="card-title">{{$parent.modelFile.album}}</span>
     </div>
    <div class="card-content">
       <ul class="collection blue-grey darken-4">
          <li class="collection-item avatar blue-grey darken-4">
             <div class="circle grey"><i class="mdi mdi-file-music"></i></div> 
             <div class="input-field col s6">
-               <input type="text" id="tag-file-name" ng-disabled="$parent.processing" ng-model="$parent.baseStr" ng-change="$parent.genPattern()">
+               <input type="text" id="tag-file-name" ng-disabled="!$parent.canEditTags" ng-model="$parent.baseStr" ng-change="$parent.genPattern()">
                <label class="active" for="tag-file-name">{{ 'file.fileName' | translate }}</label>
             </div>
             <div class="col s6">
@@ -20,18 +20,8 @@
                <i class="mdi mdi-code-braces"></i>
             </div> 
             <div class="input-field col s6">
-               <input type="text" id="tag-user-pattern" ng-disabled="$parent.processing" ng-model="$parent.userPattern" ng-change="$parent.genPattern()">
+               <input type="text" id="tag-user-pattern" ng-disabled="!$parent.canEditTags" ng-model="$parent.userPattern" ng-change="$parent.genPattern()">
                <label class="active" for="tag-user-pattern">{{ 'file.pattern' | translate }}</label>
-            </div>
-            <div class="col s6">
-               <!-- some other stuff -->
-            </div>
-         </li>
-         <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle blue" title="%title%"><i class="mdi mdi-music-note"></i></div> 
-            <div class="input-field col s6">
-               <input type="text" id="tag-title" ng-disabled="$parent.processing" ng-model="$parent.exportFile.title">
-               <label class="active" for="tag-title">{{ 'file.title' | translate }}</label>
             </div>
             <div class="col s6">
                <!-- some other stuff -->
@@ -40,7 +30,7 @@
          <li class="collection-item avatar blue-grey darken-4">
             <div class="circle green" title="%artist%"><i class="mdi mdi-account"></i></div> 
             <div class="input-field col s6">
-               <input type="text" id="tag-artist" ng-disabled="$parent.processing" ng-model="$parent.exportFile.artist">
+               <input type="text" id="tag-artist" ng-disabled="!$parent.canEditTags" ng-model="$parent.modelFile.artist">
                <label class="active" for="tag-artist">{{ 'file.artist' | translate }}</label>
             </div>
             <div class="col s6">
@@ -50,7 +40,7 @@
          <li class="collection-item avatar blue-grey darken-4">
             <div class="circle red" title="%album%"><i class="mdi mdi-album"></i></div> 
             <div class="input-field col s6">
-               <input type="text" id="tag-album" ng-disabled="$parent.processing" ng-model="$parent.exportFile.album">
+               <input type="text" id="tag-album" ng-disabled="!$parent.canEditTags" ng-model="$parent.modelFile.album">
                <label class="active" for="tag-album">{{ 'file.album' | translate }}</label>
             </div>
             <div class="col s6">
@@ -58,18 +48,17 @@
             </div>
          </li>
 
-      </ul>
-      <a class="btn-floating btn waves-effect waves-light lightblue" ng-click="toggleAdvancedMode()" style="display:none;">More tags</a>
-      <ul class="collection blue-grey darken-4" ng-show="advancedMode == true">
          <li class="collection-item avatar blue-grey darken-4">
-            <div class="circle blue"><i class="mdi mdi-account"></i></div> 
+            <div class="circle orange" title="%year%"><i class="mdi mdi-calendar"></i></div> 
             <div class="input-field col s6">
-               <input type="text" ng-disabled="$parent.processing" ng-model="$parent.exportFile.year">
+               <input type="text" id="tag-year" ng-disabled="!$parent.canEditTags" ng-model="$parent.modelFile.year">
+               <label class="active" for="tag-year">{{ 'file.year' | translate }}</label>
             </div>
             <div class="col s6">
                <!-- some other stuff -->
             </div>
          </li>
+
       </ul>
    </div>
 </div>

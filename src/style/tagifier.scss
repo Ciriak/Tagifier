@@ -1,0 +1,166 @@
+body{
+	margin-top:50px;
+	background-color: #282C34;
+	color:#9DA5AC;
+}
+
+h1{
+	color:#ffffff;
+}
+
+h2,h3,h4,h5,p{
+	color:#cccccc;
+}
+
+/* table border*/
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th{
+	border-top: 1px #181A1F solid;
+}
+
+.form-control,.form-control:focus{
+	background-color: #181A1F;
+	border:0;
+	color:#9DA5AC;
+	box-shadow: 0px 0px 0px;
+}
+
+.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control{
+	background-color: #181A1F;
+	color:#9DA5AC;
+		opacity: 0.5;
+}
+
+.btn{
+	border-radius: 3px;
+	background-color: #181A1F;
+	color:#ffffff;
+	border:1px #181A1F solid;
+}
+
+.btn:hover{
+	background-color: #282C34;
+	color:#ffffff;
+	border:1px #181A1F solid;
+}
+
+.btn-primary{
+	background-color: #00897B;
+	border:1px #181A1F solid;
+}
+
+.btn-primary:hover{
+	background-color: #181A1F;
+	border:1px #181A1F solid;
+}
+
+.progress{
+	background-color:#181A1F;
+	.progress-bar{
+		background-color:#00897B;
+	}
+}
+
+#preloader{
+	position: fixed;
+	top:0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color:#37474F;
+	z-index: 5;
+	text-align: center;
+}
+
+#preloader img{
+	margin-top:40vh;
+	width: 20vw;
+	height:20vw;
+	max-width: 100px;
+	max-height: 100px;
+	border-radius: 100%;
+}
+
+#welcome-container,#about-container{
+	height: calc(100vh - 65px);
+	padding-top: 20vh;
+}
+
+.tgf-hidden{
+	opacity: 0;
+}
+
+#adcopy-outer{
+	width: 100%!important;
+}
+
+.modal-content{
+	background-color: #222222;
+}
+
+.modal-header{
+	border-bottom-color: #181A1F;
+}
+
+.modal-footer{
+	border-top-color: #181A1F;
+}
+
+.input-group-addon{
+	background-color: #222222;
+	border-color: #181A1F;
+	color:#9DA5AC;
+	font-size: 20px;
+}
+
+.page-footer{
+	border-top:1px #181A1F solid;
+	padding-top: 10px;
+	img{
+		margin: 10px;
+	}
+}
+
+.file{
+	header{
+		background-color: #000000;
+		position: relative;
+		overflow: hidden;
+		padding:5rem;
+		.bg{
+			position: absolute;
+			left: 0;
+			top:0;
+			width: 100%;
+			min-height: 100%;
+			margin-top: -20%;
+			-webkit-filter: blur(80px);
+			opacity: 0.4;
+		}
+
+		/*.bg-filter{
+
+		}
+
+		.album-cover{
+			position: absolute;
+			width: 30vh;
+			height:30vh;
+			background-size: cover;
+			background-position: center;
+			z-index: 2;
+			margin: 5vh;
+			margin-left: 20vh;
+			border:2px #000000 solid;
+			border-radius: 3px;
+		}
+
+		.info{
+			position: absolute;
+			z-index: 2;
+			margin-top: 5vh;
+		}
+		.dl-button-container{
+			margin-top: 10vh;
+		}*/
+	}
+}
