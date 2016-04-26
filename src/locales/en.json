@@ -17,6 +17,8 @@
     "artist" : "Artist",
     "album" : "Album",
     "year" : "Year",
+    "inputChain" : "Input Chain",
+    "fileNamePattern" : "File Name Pattern",
     "pleaseEnterCaptchat" : "Please complete the captchat"
   },
   "about" : {
