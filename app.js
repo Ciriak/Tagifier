@@ -6,7 +6,8 @@ var express = require('express');
 var request = require('request');
 var nodeID3 = require('node-id3');
 var random = require('random-gen');
-var bodyParser = require('body-parser')
+var bodyParser = require('body-parser');
+var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
 
@@ -57,6 +58,7 @@ var config = {};
 config = fs.readJSON("config.json");
 youTube.setKey(config.youtube_api_key);
 
+app.use(compression());
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
@@ -157,6 +159,9 @@ io.on('connection', function (socket){
           if (err) throw err;
           file.info = info;
 
+          file.size = retreiveFileSize(info);
+          socket.emit("yd_event",{event:"file_infos",data:file});
+
           //
           // check if the download can be done
           //
@@ -177,13 +182,29 @@ io.on('connection', function (socket){
               return;
             }
 
-                // START DOWNLOAD
+
+                //
+                // START DOWNLOAD //
+                //
+
+                // send the file size every 500 ms
+            var progressPing = setInterval(function(){
+              /*var stats = ofs.statSync(poptions.exportPath);
+              var fileSizeInBytes = stats["size"];
+              socket.emit("yd_event",{event:"progress",data:fileSizeInBytes});*/
+            },500);
 
             var v = youtubedl.exec(poptions.url, ['-x', '--audio-format', 'mp3','--output','exports/'+session+'.%(ext)s"'], {}, function(err, output) {
+              console.log(output.join('\n'));
             if (err){
               socket.emit("yd_event",{event:"error",data:err});
+              clearInterval(progressPing);
               return;
             }
+
+            console.log(output);
+
+
 
             // little ad :)
             file.encodedBy = "tagifier.net";
@@ -193,6 +214,7 @@ io.on('connection', function (socket){
             var t = nodeID3.write(file, poptions.exportPath);   //Pass tags and filepath
             if(!t){
               socket.emit("yd_event",{event:"error",data:"tag"});
+              clearInterval(progressPing);
               return;
             }
               if (fs.exists(imgPath)) {
@@ -200,6 +222,7 @@ io.on('connection', function (socket){
               }
               file.url = poptions.exportPath;
               socket.emit("yd_event",{event:"finished",data:file});
+              clearInterval(progressPing);
 
               setTimeout(function(){
                 if (fs.exists(poptions.exportPath)) {
@@ -216,6 +239,18 @@ io.on('connection', function (socket){
     });
   });
 });
+
+function retreiveFileSize(info){
+  var f = 0;
+  for (var i = 0; i < info.formats.length; i++) {
+    if(info.formats[i].filesize){
+      if(info.formats[i].filesize > f){
+        f = info.formats[i].filesize;
+      }
+    }
+  }
+  return f;
+}
 
 function retreiveVideoInfos(id,callback){
   youTube.getById(id, function(error, result) {

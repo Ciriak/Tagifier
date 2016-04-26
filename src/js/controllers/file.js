@@ -146,12 +146,18 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	}
 
 	$scope.socket.on("yd_event",function(ev){
-		//console.log(ev);
+		console.log(ev);
+
+		if(ev["event"] == "file_infos"){
+			console.log(ev.data);
+		}
+
 		if(ev["event"] == "progress"){
 			if(ev.data.videoId == $scope.exportFile.id){
 				$scope.processing = true;
 				$scope.canEditTags = false;
 				$scope.canStartProcess = false;
+				var dlSize = ev.data;
 				$scope.progress = ev.data.progress.percentage;
 				$scope.progressStatus = "processing";
 				$scope.$apply();
