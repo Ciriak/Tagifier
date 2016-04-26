@@ -38,6 +38,10 @@ h2,h3,h4,h5,p{
 }
 
 .btn:hover{
+	text-decoration: none;
+}
+
+.btn:hover{
 	background-color: #282C34;
 	color:#ffffff;
 	border:1px #181A1F solid;
