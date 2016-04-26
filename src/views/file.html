@@ -31,7 +31,7 @@
 		<div class="col-md-4">
 			<table class="table">
 		      <tr>
-		         <td  class="input-group"  uib-tooltip="{{ 'file.fileName' | translate }}">
+		         <td  class="input-group"  uib-tooltip="{{ 'file.inputChain' | translate }}">
 							 <span class="input-group-addon"><i class="mdi mdi-file-document"></i></span>
 								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="baseStr" ng-change="genPattern()">
 		         </td>
@@ -40,6 +40,12 @@
 		         <td  class="input-group input-lg"  uib-tooltip="{{ 'file.pattern' | translate }}">
 							 <span class="input-group-addon"><i class="mdi mdi-code-braces"></i></span>
 								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="userPattern" ng-change="genPattern()">
+		         </td>
+		      </tr>
+					<tr>
+		         <td  class="input-group input-lg"  uib-tooltip="{{ 'file.fileNamePattern' | translate }}">
+							 <span class="input-group-addon"><i class="mdi mdi-file-xml"></i></span>
+								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="fileNamePattern" ng-change="genPattern()">
 		         </td>
 		      </tr>
 					<tr>

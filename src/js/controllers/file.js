@@ -2,6 +2,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 {
 	$scope.baseStr;
 	$scope.userPattern;
+	$scope.fileNamePattern;
 	$scope.pattern;
 	$scope.canStartProcess = false;
 	$scope.processing = false;
@@ -50,6 +51,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 
 		var pt = $scope.file.snippet.localized.title.split(" - ");
 		$scope.userPattern = "%artist% - %title%";
+		$scope.fileNamePattern = "%artist% - %title%";
 		// if xx - xx format
 		if(pt.length == 2){
 			$scope.baseStr =  $scope.file.snippet.localized.title;
@@ -64,6 +66,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 
 	$scope.genPattern = function(){
 		$scope.pattern = $scope.userPattern.replace(/%([a-zA-Z0-9])\w+%/g,"(.*)");
+
 		$scope.vars = $scope.userPattern.match(/%([a-zA-Z0-9])\w+%/g);
 		for (var i = 0; i < $scope.vars.length; i++)
 		{
