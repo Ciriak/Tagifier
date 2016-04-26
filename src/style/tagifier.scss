@@ -64,6 +64,26 @@ h2,h3,h4,h5,p{
 	}
 }
 
+.list-group-item{
+	margin-top: 10px;
+	background-color: #333842;
+	border: 1px #181A1F solid;
+	border-radius: 5px;
+}
+
+a.list-group-item, button.list-group-item{
+	color:#cccccc;
+}
+
+a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, button.list-group-item:hover{
+	background-color: #333842;
+}
+
+a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, button.list-group-item:hover{
+	color:#cccccc;
+	outline:0;
+}
+
 #preloader{
 	position: fixed;
 	top:0;

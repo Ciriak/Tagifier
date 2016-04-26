@@ -105,18 +105,10 @@ app.get('/musics/:file', function(req,res){
   res.download('exports/'+req.params.file,req.query.name+".mp3");
 });
 
-app.get('/api/file/:fileId(*{1,11})', function(req,res){
-	retreiveVideoInfos(req.params.fileId,function(infos,err){
-    if(err){
-      res.send(err);
-      return;
-    }
-    res.send(infos);
-  });
-});
-
-app.get('/api/playlist/:fileId', function(req,res){
-  retreivePlaylistInfos(req.params.fileId,function(infos,err){
+app.get('/api/infos/:fileId(*)', function(req,res){
+  var fileUrl = req.params.fileId+getToStr(req.query);
+  console.log(fileUrl);
+	retreiveVideoInfos(fileUrl,function(infos,err){
     if(err){
       res.send(err);
       return;
@@ -252,21 +244,26 @@ function retreiveFileSize(info){
   return f;
 }
 
-function retreiveVideoInfos(id,callback){
-  youTube.getById(id, function(error, result) {
-    if (error) {
-      callback("",error);
+function retreiveVideoInfos(url,callback){
+  youtubedl.getInfo(url, "", function(err, info) {
+    if (err) {
+      callback("",err);
     }
     else {
-      callback(result);
+      callback(info);
     }
   });
 }
 
-function retreivePlaylistInfos(id,callback){
-  ypi.playlistInfo(config.youtube_api_key, id, function(playlistItems) {
-    callback(playlistItems);
-  });
+// convert an $_get object to a string list
+function getToStr(get){
+  var separator = "?";
+  var ret = "";
+  for(var key in get) {
+      ret+=""+separator+""+key+"="+get[key];
+      separator = "&";
+  }
+  return ret;
 }
 
 function YTDurationToSeconds(duration) {

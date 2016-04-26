@@ -1,27 +1,28 @@
-app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
+app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,$location)
 {
 	$scope.baseStr;
-	$scope.userPattern;
+	$scope.fileTagPattern;
 	$scope.fileNamePattern;
 	$scope.pattern;
 	$scope.canStartProcess = false;
 	$scope.processing = false;
 	$scope.canEditTags = false;
-	$scope.file = {};
+	$scope.singleFile = true;
+	$scope.files = {};
+	$scope.currentFileIndex = 0;
+	$scope.exportFiles = {};
 	$scope.progress = 0;
 	$scope.progressStatus = 'waiting';
 	$scope.captchatActive = false;
 	$scope.notified = false;
+	$scope.requestUrl = $location.url().substr(1);
 
-	$(function () {		//instantiate tooltip
-	  $('[data-toggle="tooltip"]').tooltip()
-	});
-
-	$scope.exportFile = {};
 	$http({
 	  method: 'GET',
-	  url: '/api/file/'+$stateParams.fileId
+	  url: '/api/infos/'+$scope.requestUrl
 	}).then(function successCallback(response) {
+		console.log($location);
+		console.log(response);
 		parseFileData(response.data);
 		$scope.canEditTags = true;
 		$scope.canStartProcess = true;
@@ -30,44 +31,36 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 	});
 
 	var parseFileData = function(data){
-		$scope.file = data.items[0];
-		if(!$scope.file){
-			$scope.retreiveInfoError();
-			return;
+		if(data.constructor === Object){	// 1 item
+			$scope.files[0] = data;
 		}
-		$scope.exportFile.image = getBestThumbnail($scope.file.snippet.thumbnails);
-		$scope.exportFile.year = $scope.file.snippet.publishedAt.substr(0,4);
-		$scope.exportFile.id = $stateParams.fileId;
-
-		//check if the file duration is longer than 10 min
-		var dur = $scope.file.contentDetails.duration;
-		if(YTDurationToSeconds(dur) > 600){
-			$scope.canEditTags = false;
-			$scope.canStartProcess = false;
-			alert($translate.instant("error.fileTooLong"));
-			$state.go("^.main");
-			return;
+		else{
+			$scope.singleFile = false;
+			for (var i = 0; i < $scope.files.length; i++) {
+					$scope.setFileVars(i,data[i]);
+			}
 		}
 
-		var pt = $scope.file.snippet.localized.title.split(" - ");
-		$scope.userPattern = "%artist% - %title%";
+
+		var pt = $scope.files[0].fulltitle.split(" - ");
+		$scope.fileTagPattern = "%artist% - %title%";
 		$scope.fileNamePattern = "%artist% - %title%";
 		// if xx - xx format
 		if(pt.length == 2){
-			$scope.baseStr =  $scope.file.snippet.localized.title;
+			$scope.baseStr =  $scope.files[0].fulltitle;
 		}
 
 		else {
-			$scope.baseStr =  $scope.file.snippet.channelTitle+" - "+$scope.file.snippet.localized.title;
+			$scope.baseStr =  $scope.files[0].uploader+" - "+$scope.files[0].fulltitle;
 		}
 
 		$scope.genPattern();
 	}
 
 	$scope.genPattern = function(){
-		$scope.pattern = $scope.userPattern.replace(/%([a-zA-Z0-9])\w+%/g,"(.*)");
+		$scope.pattern = $scope.fileTagPattern.replace(/%([a-zA-Z0-9])\w+%/g,"(.*)");
 
-		$scope.vars = $scope.userPattern.match(/%([a-zA-Z0-9])\w+%/g);
+		$scope.vars = $scope.fileTagPattern.match(/%([a-zA-Z0-9])\w+%/g);
 		for (var i = 0; i < $scope.vars.length; i++)
 		{
 			$scope.vars[i] = $scope.vars[i].replace("%","").replace("%",""); //remove %x%
@@ -83,7 +76,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		{
 			if(extrData[i+1])
 			{
-				$scope.exportFile[$scope.vars[i]] = extrData[i+1];
+				$scope.exportFiles[$scope.vars[i]] = extrData[i+1];
 			}
 		};
 
@@ -188,6 +181,16 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		$scope.$apply();
 	});
 
+	$scope.setFileVars = function(index,data){
+		$scope.files[index] = data[index];
+		$scope.exportFiles[index] = {};
+		$scope.exportFiles[index].image = getBestThumbnail($scope.files[index].thumbnails);
+		$scope.exportFiles[index].year = $scope.files[index].publishedAt.substr(0,4);
+
+		//check if the file duration is longer than 10 min
+		//TODO
+	};
+
 	$scope.tgfDownload = function(){
 		var notification;
 		var nOptions = {
@@ -236,4 +239,4 @@ var getBestThumbnail = function(t){
 	else{
 		return "";
 	}
-}
+};

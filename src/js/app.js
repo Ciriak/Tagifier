@@ -10,9 +10,6 @@ app.config(function($stateProvider, $urlRouterProvider) {
   //
   // For any unmatched url, redirect to /
   $urlRouterProvider.otherwise("/");
-  $urlRouterProvider.when('/{sheetId:int}', '/{sheetId:int}/chat');
-  $urlRouterProvider.when('/{sheetId:int}/settings', '/{sheetId:int}/settings/info');
-  $urlRouterProvider.when('/{sheetId:int}/users', '/{sheetId:int}/users/list');
   //
   // Now set up the states
   $stateProvider
@@ -26,15 +23,9 @@ app.config(function($stateProvider, $urlRouterProvider) {
       templateUrl: "views/about.html"
     })
     .state('file', {
-      url: "/{fileId}",
+      url: "/{fileId:.*?}",
       templateUrl: "views/file.html",
       controller: "fileCtrl",
-      reload:true
-    })
-    .state('playlist', {
-      url: "/playlist/{fileId}",
-      templateUrl: "views/playlist.html",
-      controller: "playlistCtrl",
       reload:true
     });
 });
