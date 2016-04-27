@@ -11,10 +11,6 @@ var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
 
-var YouTube = require('youtube-node');
-var ypi = require('youtube-playlist-info');
-var youTube = new YouTube();
-
 var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
   ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
@@ -56,7 +52,6 @@ var config = {};
 
 // retreive config file
 config = fs.readJSON("config.json");
-youTube.setKey(config.youtube_api_key);
 
 app.use(compression());
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
