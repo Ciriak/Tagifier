@@ -1,98 +1,86 @@
 <!--<youtube-video video-id="exportFile.id" class="sidebar-player hide-on-med-and-down"></youtube-video>-->
-<form class="file" ng-submit="requestProcess()">
-	<header class="container-fluid text-center">
-		<img class="bg" ng-src="{{exportFiles[currentFileIndex].image}}">
-		<div class="row">
-			<img class="album-cover img-responsive col-md-3" ng-src="{{exportFiles[currentFileIndex].image}}">
-			<div class="col-md-6 info">
-				<h1>{{exportFiles[currentFileIndex].title}}</h1>
-				<h2>{{exportFiles[currentFileIndex].artist}}</h2>
-			</div>
-			<div class="col-md-3 dl-button-container">
-				<button type="submit" ng-hide="progressStatus == 'ready'" ng-disabled="!canStartProcess" ng-class="{'disabled':!canStartProcess}" class="btn btn-primary btn-lg"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</button>
+<form class="container-fluid file" ng-submit="requestProcess()">
+	<div class="panel col-md-3 info">
+		<img class="album-cover img-responsive" ng-src="{{exportFiles[currentFileIndex].image}}">
+		<h1>{{exportFiles[currentFileIndex].title}}</h1>
+		<h2>{{exportFiles[currentFileIndex].artist}}</h2>
+	</div>
+	<div class="col-md-6">
 
-				<!-- button that appear for downloading the file -->
-				<div class="btn-group ng-hide" ng-show="progressStatus == 'ready'">
-				  <a class="btn btn-primary btn-lg" ng-href="{{exportFile.fullUrl}}" target="_blank"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</a>
-				  <button type="button" class="btn btn-default btn-lg" ng-click="reloadPage()"><i class="mdi mdi-reload"></i></button>
-				</div>
-			</div>
-		</div>
-	</header>
-	<div class="container">
-		<div class="col-md-12 ng-hide" ng-show="processing == true">
-			<br>
-			<div class="progress">
-			  <div class="progress-bar progress-bar-striped active" style="min-width: 2em;" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%">
-			    <span class="sr-only">{{progress}}%</span>
-			  </div>
-			</div>
-		</div>
-		<div class="col-md-4">
-			<table class="table">
-		      <tr>
-		         <td  class="input-group"  uib-tooltip="{{ 'file.inputChain' | translate }}">
-							 <span class="input-group-addon"><i class="mdi mdi-file-document"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="baseStr" ng-change="genPattern()">
-		         </td>
-		      </tr>
-		      <tr>
-		         <td  class="input-group input-lg"  uib-tooltip="{{ 'file.pattern' | translate }}">
-							 <span class="input-group-addon"><i class="mdi mdi-code-braces"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="fileTagPattern" ng-change="genPattern()">
-		         </td>
-		      </tr>
-					<tr>
-		         <td  class="input-group input-lg"  uib-tooltip="{{ 'file.fileNamePattern' | translate }}">
-							 <span class="input-group-addon"><i class="mdi mdi-file-xml"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="fileNamePattern" ng-change="genPattern()">
-		         </td>
-		      </tr>
-					<tr>
-		         <td  class="input-group"  uib-tooltip="{{ 'file.cover' | translate }}">
-      		 			<span class="input-group-addon"><i class="mdi mdi-image"></i></span>
-		            <input type="url" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile[currentFileIndex].image">
-		         </td>
-		      </tr>
-		     </table>
-		</div>
-		<div class="col-md-4">
-			<table class="table">
-		      <tr>
-		         <td  class="input-group"  uib-tooltip="{{ 'file.title' | translate }}">
-							  <span class="input-group-addon"><i class="mdi mdi-file-music"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFiles[currentFileIndex].title">
-		         </td>
-		      </tr>
-		      <tr>
-		         <td  class="input-group"  uib-tooltip="{{ 'file.artist' | translate }}">
-							  <span class="input-group-addon"><i class="mdi mdi-account"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFiles[currentFileIndex].artist">
-		         </td>
-		      </tr>
-		      <tr>
-		         <td  class="input-group"  uib-tooltip="{{ 'file.album' | translate }}">
-							  <span class="input-group-addon"><i class="mdi mdi-album"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFiles[currentFileIndex].album">
-		         </td>
-		      </tr>
-		      <tr>
-		         <td  class="input-group"  uib-tooltip="{{ 'file.year' | translate }}">
-							 <span class="input-group-addon"><i class="mdi mdi-calendar-text"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFiles[currentFileIndex].year">
-		         </td>
-		      </tr>
-		   </table>
-		</div>
-		<!-- Files LIST -->
-		<div class="col-md-4">
-			<div class="list-group">
-			  <div class="list-group-item btn" ng-repeat="f in exportFiles" ng-click="setCurrentFile(f.track-1);" style="text-align:left;">
+		<table class="table">
+				<tr>
+					 <td class="input-group" uib-tooltip="{{ 'file.inputChain' | translate }}">
+						 <span class="input-group-addon"><i class="mdi mdi-file-document"></i></span>
+							<input type="text" class="form-control" disabled="disabled" ng-value="files[currentFileIndex].fulltitle">
+					 </td>
+				</tr>
+				<tr>
+					 <td class="input-group">
+						 	<span class="input-group-addon"><i class="mdi mdi-code-braces"></i></span>
+							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('tagPattern',currentFileIndex)" ng-model="exportFiles[currentFileIndex].tagPattern" ng-change="genPattern(currentFileIndex)" uib-tooltip="{{ 'file.pattern' | translate }}">
+							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('tagPattern',currentFileIndex,true)" uib-tooltip="{{ 'file.applyPatternToAll' | translate }}"><i class="mdi mdi-auto-fix"></i></span>
+							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('tagPattern',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
+					 </td>
+				</tr>
+				<tr>
+					 <td class="input-group">
+						 	<span class="input-group-addon"><i class="mdi mdi-file-xml"></i></span>
+							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('fileNamePattern',currentFileIndex)" ng-model="exportFiles[currentFileIndex].fileNamePattern" ng-change="genPattern(currentFileIndex)" uib-tooltip="{{ 'file.fileNamePattern' | translate }}">
+							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('fileNamePattern',currentFileIndex,true)" uib-tooltip="{{ 'file.applyPatternToAll' | translate }}"><i class="mdi mdi-auto-fix"></i></span>
+							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('fileNamePattern',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
+					 </td>
+				</tr>
+				<tr>
+					 <td class="input-group">
+							<span class="input-group-addon"><i class="mdi mdi-image"></i></span>
+							<input type="url" class="form-control" ng-disabled="!canEditTags || propIsLocked('image',currentFileIndex)" ng-model="exportFiles[currentFileIndex].image"   uib-tooltip="{{ 'file.cover' | translate }}">
+							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('image',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
+							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('image',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
+					 </td>
+				</tr>
+				<tr>
+					 <td class="input-group">
+							<span class="input-group-addon"><i class="mdi mdi-file-music"></i></span>
+							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('title',currentFileIndex)" ng-model="exportFiles[currentFileIndex].title"  uib-tooltip="{{ 'file.title' | translate }}">
+							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('title',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
+							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('title',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
+					 </td>
+				</tr>
+				<tr>
+					 <td class="input-group">
+							<span class="input-group-addon"><i class="mdi mdi-account"></i></span>
+							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('artist',currentFileIndex)" ng-model="exportFiles[currentFileIndex].artist" uib-tooltip="{{ 'file.artist' | translate }}">
+							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('artist',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
+							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('artist',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
+					 </td>
+				</tr>
+				<tr>
+					 <td class="input-group">
+							<span class="input-group-addon"><i class="mdi mdi-album"></i></span>
+							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('album',currentFileIndex)" ng-model="exportFiles[currentFileIndex].album"   uib-tooltip="{{ 'file.album' | translate }}">
+							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('album',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
+							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('album',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
+					 </td>
+				</tr>
+				<tr>
+					 <td class="input-group" >
+						 <span class="input-group-addon"><i class="mdi mdi-calendar-text"></i></span>
+							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('year',currentFileIndex)" ng-model="exportFiles[currentFileIndex].year" uib-tooltip="{{ 'file.year' | translate }}">
+							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('year',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
+							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('year',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
+					 </td>
+				</tr>
+		 </table>
+
+	</div>
+	<div class="panel col-md-3 files-list">
+	  <div class="panel-body">
+			<div class="row">
+			  <div class="btn col-md-12 col-sm-12" ng-repeat="f in exportFiles" ng-click="setCurrentFile(f.track-1);" style="text-align:left;">
 					<img ng-src="{{f.image}}" style="height:24px; float:left;" />
-					{{files[$index].fulltitle}}</div>
+					{{f.fileName}}<span>.mp3</span></div>
 			</div>
-		</div>
-		<!-- end file list -->
+	  </div>
 	</div>
 </form>
 

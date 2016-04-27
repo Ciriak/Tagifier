@@ -1,9 +1,5 @@
 app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,$location)
 {
-	$scope.baseStr;
-	$scope.fileTagPattern;
-	$scope.fileNamePattern;
-	$scope.pattern;
 	$scope.canStartProcess = false;
 	$scope.processing = false;
 	$scope.canEditTags = false;
@@ -39,51 +35,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 					$scope.setFileVars(i,data[i]);
 			}
 		}
-
-		var pt = $scope.files[0].fulltitle.split(" - ");
-		$scope.fileTagPattern = "%artist% - %title%";
-		$scope.fileNamePattern = "%artist% - %title%";
-		// if xx - xx format
-		if(pt.length == 2){
-			$scope.baseStr =  $scope.files[0].fulltitle;
-		}
-
-		else {
-			$scope.baseStr =  $scope.files[0].uploader+" - "+$scope.files[0].fulltitle;
-		}
-
-		$scope.genPattern();
 	};
-
-	$scope.genPattern = function(){
-
-		$scope.pattern = $scope.fileTagPattern.replace(/%([a-zA-Z0-9])\w+%/g,"(.*)");
-
-		$scope.vars = $scope.fileTagPattern.match(/%([a-zA-Z0-9])\w+%/g);
-		for (var i = 0; i < $scope.vars.length; i++)
-		{
-			$scope.vars[i] = $scope.vars[i].replace("%","").replace("%",""); //remove %x%
-		};
-		var extrData = $scope.baseStr.match(new RegExp($scope.pattern));
-		if(!extrData)
-		{
-			$scope.canDownload = false;
-			return;
-		}
-
-		for (var a = 0; a < $scope.exportFiles.length; a++) {
-			array[a]
-		}
-
-		for (var i = 0; i < $scope.vars.length; i++)
-		{
-			if(extrData[i+1])
-			{
-				$scope.exportFiles[a][$scope.vars[i]] = extrData[i+1];
-			}
-		};
-
-	}
 
 	$scope.retreiveInfoError = function(){
 		$scope.canEditTags = false;
@@ -191,14 +143,104 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 
 	$scope.setFileVars = function(index,data){
 		$scope.files[index] = data;
-		$scope.exportFiles[index] = {};
+		$scope.exportFiles[index] = {
+			lockedAttrs : []
+		};
 		$scope.exportFiles[index].image = $scope.files[index].thumbnail;
 		$scope.exportFiles[index].year = data.upload_date.substr(0,4);
 		$scope.exportFiles[index].track = index+1;
-		//$scope.exportFile[index].title =
-		console.log($scope.exportFiles);
+
+		//Define the pattern, depending of the file name format
+		var pt = $scope.files[index].fulltitle.split(" - ");
+		$scope.exportFiles[index].tagPattern = "%artist% - %title%";
+		$scope.exportFiles[index].fileNamePattern = "%artist% - %title%";
+
+		$scope.genPattern(index);
+
 		//check if the file duration is longer than 10 min
 		//TODO
+	};
+
+	$scope.overrideProp = function(propName,sourceIndex,isPattern){
+		for (var file in  $scope.exportFiles) {
+			var targetIndex = parseInt(file);
+			// apply the new defined tag to all files
+			if(sourceIndex != file && !$scope.propIsLocked(propName,targetIndex)){
+				$scope.exportFiles[targetIndex][propName] = $scope.exportFiles[sourceIndex][propName];
+			}
+
+			if(isPattern){	//regen the patern if it has been changed
+				$scope.genPattern(targetIndex);
+			}
+
+		}
+		console.log('The tag "'+$scope.exportFiles[sourceIndex][propName]+'" ('+propName+') from the track '+sourceIndex+' has been applyed to all tracks');
+	};
+
+	$scope.togglePropLock = function(propName,sourceIndex){
+		if(isInArray(propName,$scope.exportFiles[sourceIndex].lockedAttrs)){
+			//remove the attr from array
+			var index = $scope.exportFiles[sourceIndex].lockedAttrs.indexOf(propName);
+			$scope.exportFiles[sourceIndex].lockedAttrs.splice(index, 1);
+		}
+		else {
+			$scope.exportFiles[sourceIndex].lockedAttrs.push(propName);
+		}
+	}
+
+	$scope.propIsLocked = function(propName,sourceIndex){
+		if(isInArray(propName,$scope.exportFiles[sourceIndex].lockedAttrs)){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
+	$scope.genPattern = function(index){
+
+		console.log("Generating pattern for "+$scope.files[index].fulltitle+"...");
+		var fileData = $scope.exportFiles[index];
+		var pattern = fileData.tagPattern.replace(/%([a-zA-Z0-9])\w+%/g, '(.*)');
+		var fileVars = fileData.tagPattern.match(/%([a-zA-Z0-9])\w+%/g);
+
+		for (var i = 0; i < fileVars.length; i++)
+		{
+			fileVars[i] = fileVars[i].replace("%","").replace("%",""); //remove %x%
+		};
+
+		//Find tags inside the fulltitle
+		var extrData = $scope.files[index].fulltitle.match(new RegExp(pattern));
+		if(!extrData)
+		{
+			return;
+		}
+
+		for (var i = 0; i <fileVars.length; i++)
+		{
+			if(extrData[i+1])	//apply tag if prop exist
+			{
+				fileData[fileVars[i]] = extrData[i+1];
+			}
+		};
+
+		//generate the fileName (based on the fileName pattern)
+		if(!fileData.fileNamePattern){	//if no pattern defined set %artist - %title% model
+			fileData.fileName = fileData.artist+" - "+fileData.title;
+			return;
+		}
+
+		var fileVars = fileData.fileNamePattern.match(/%([a-zA-Z0-9])\w+%/g);
+		var altFileVars = [];
+
+		var fnp = fileData.fileNamePattern;	//avoid to replace the in-view tag
+		for (var i = 0; i < fileVars.length; i++)
+		{
+			var tag = fileVars[i].replace("%","").replace("%","");  //remove %x%
+			fnp = fnp.replace(fileVars[i],fileData[tag]);	//%x% -> file.x
+		};
+		fileData.fileName = fnp;
+
 	};
 
 	$scope.tgfDownload = function(){
@@ -250,3 +292,7 @@ var getBestThumbnail = function(t){
 		return "";
 	}
 };
+
+var isInArray = function (value, array) {
+  return array.indexOf(value) > -1;
+}
