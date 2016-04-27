@@ -110,7 +110,7 @@ app.get('/api/infos/:fileId(*)', function(req,res){
   console.log(fileUrl);
 	retreiveVideoInfos(fileUrl,function(infos,err){
     if(err){
-      res.send(err);
+      res.status(405).send(err);
       return;
     }
     res.send(infos);

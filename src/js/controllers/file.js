@@ -15,14 +15,12 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.progressStatus = 'waiting';
 	$scope.captchatActive = false;
 	$scope.notified = false;
-	$scope.requestUrl = $location.url().substr(1);
+	$scope.requestUrl = decodeURI($location.url().substr(1)).replace(/~2F/g,'/');
 
 	$http({
 	  method: 'GET',
 	  url: '/api/infos/'+$scope.requestUrl
 	}).then(function successCallback(response) {
-		console.log($location);
-		console.log(response);
 		parseFileData(response.data);
 		$scope.canEditTags = true;
 		$scope.canStartProcess = true;
@@ -31,16 +29,16 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	});
 
 	var parseFileData = function(data){
+
 		if(data.constructor === Object){	// 1 item
-			$scope.files[0] = data;
+			$scope.setFileVars(0,data);
 		}
 		else{
 			$scope.singleFile = false;
-			for (var i = 0; i < $scope.files.length; i++) {
+			for (var i = 0; i < data.length; i++) {
 					$scope.setFileVars(i,data[i]);
 			}
 		}
-
 
 		var pt = $scope.files[0].fulltitle.split(" - ");
 		$scope.fileTagPattern = "%artist% - %title%";
@@ -55,9 +53,10 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		}
 
 		$scope.genPattern();
-	}
+	};
 
 	$scope.genPattern = function(){
+
 		$scope.pattern = $scope.fileTagPattern.replace(/%([a-zA-Z0-9])\w+%/g,"(.*)");
 
 		$scope.vars = $scope.fileTagPattern.match(/%([a-zA-Z0-9])\w+%/g);
@@ -72,11 +71,15 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			return;
 		}
 
+		for (var a = 0; a < $scope.exportFiles.length; a++) {
+			array[a]
+		}
+
 		for (var i = 0; i < $scope.vars.length; i++)
 		{
 			if(extrData[i+1])
 			{
-				$scope.exportFiles[$scope.vars[i]] = extrData[i+1];
+				$scope.exportFiles[a][$scope.vars[i]] = extrData[i+1];
 			}
 		};
 
@@ -115,6 +118,11 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		ACPuzzle.create('buxt.317r8uls-ge9STPl6ilzpmYgl8G', 'solve-media-container', "");
 	}
 
+	$scope.setCurrentFile = function(i){
+		console.log(i);
+		$scope.currentFileIndex = i;
+	};
+
 	$scope.checkCaptchat = function(){
 		var resp = $("#adcopy_response").val();
 		var chal = $("#adcopy_challenge").val();
@@ -149,7 +157,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		}
 
 		if(ev["event"] == "progress"){
-			if(ev.data.videoId == $scope.exportFile.id){
+			if(ev.data.videoId == $scope.exportFiles.id){
 				$scope.processing = true;
 				$scope.canEditTags = false;
 				$scope.canStartProcess = false;
@@ -182,11 +190,13 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	});
 
 	$scope.setFileVars = function(index,data){
-		$scope.files[index] = data[index];
+		$scope.files[index] = data;
 		$scope.exportFiles[index] = {};
-		$scope.exportFiles[index].image = getBestThumbnail($scope.files[index].thumbnails);
-		$scope.exportFiles[index].year = $scope.files[index].publishedAt.substr(0,4);
-
+		$scope.exportFiles[index].image = $scope.files[index].thumbnail;
+		$scope.exportFiles[index].year = data.upload_date.substr(0,4);
+		$scope.exportFiles[index].track = index+1;
+		//$scope.exportFile[index].title =
+		console.log($scope.exportFiles);
 		//check if the file duration is longer than 10 min
 		//TODO
 	};

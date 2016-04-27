@@ -23,7 +23,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
       templateUrl: "views/about.html"
     })
     .state('file', {
-      url: "/{fileId:.*?}",
+      url: "/{fileUrl:.*?}",
       templateUrl: "views/file.html",
       controller: "fileCtrl",
       reload:true
@@ -47,9 +47,6 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
     $window.ga('create', 'UA-48635201-13', 'auto');  //initialize GA
     $scope.docReady = true;
     $scope.$apply();
-
-    // load the fb plugin after a small delay (prevent screen freezing)
-    setTimeout(function(){FB.XFBML.parse(),500});
   });
 
   $scope.socket = io.connect();

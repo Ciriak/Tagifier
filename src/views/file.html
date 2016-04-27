@@ -1,12 +1,12 @@
 <!--<youtube-video video-id="exportFile.id" class="sidebar-player hide-on-med-and-down"></youtube-video>-->
 <form class="file" ng-submit="requestProcess()">
 	<header class="container-fluid text-center">
-		<img class="bg" ng-src="{{exportFile.image}}">
+		<img class="bg" ng-src="{{exportFiles[currentFileIndex].image}}">
 		<div class="row">
-			<img class="album-cover img-responsive col-md-3" ng-src="{{exportFile.image}}">
+			<img class="album-cover img-responsive col-md-3" ng-src="{{exportFiles[currentFileIndex].image}}">
 			<div class="col-md-6 info">
-				<h1>{{exportFile.title}}</h1>
-				<h2>{{exportFile.artist}}</h2>
+				<h1>{{exportFiles[currentFileIndex].title}}</h1>
+				<h2>{{exportFiles[currentFileIndex].artist}}</h2>
 			</div>
 			<div class="col-md-3 dl-button-container">
 				<button type="submit" ng-hide="progressStatus == 'ready'" ng-disabled="!canStartProcess" ng-class="{'disabled':!canStartProcess}" class="btn btn-primary btn-lg"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</button>
@@ -61,25 +61,25 @@
 		      <tr>
 		         <td  class="input-group"  uib-tooltip="{{ 'file.title' | translate }}">
 							  <span class="input-group-addon"><i class="mdi mdi-file-music"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile[currentFileIndex].title">
+								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFiles[currentFileIndex].title">
 		         </td>
 		      </tr>
 		      <tr>
 		         <td  class="input-group"  uib-tooltip="{{ 'file.artist' | translate }}">
 							  <span class="input-group-addon"><i class="mdi mdi-account"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile[currentFileIndex].artist">
+								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFiles[currentFileIndex].artist">
 		         </td>
 		      </tr>
 		      <tr>
 		         <td  class="input-group"  uib-tooltip="{{ 'file.album' | translate }}">
 							  <span class="input-group-addon"><i class="mdi mdi-album"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile[currentFileIndex].album">
+								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFiles[currentFileIndex].album">
 		         </td>
 		      </tr>
 		      <tr>
 		         <td  class="input-group"  uib-tooltip="{{ 'file.year' | translate }}">
 							 <span class="input-group-addon"><i class="mdi mdi-calendar-text"></i></span>
-								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFile[currentFileIndex].year">
+								<input type="text" class="form-control input-lg" ng-disabled="!canEditTags" ng-model="exportFiles[currentFileIndex].year">
 		         </td>
 		      </tr>
 		   </table>
@@ -87,11 +87,9 @@
 		<!-- Files LIST -->
 		<div class="col-md-4">
 			<div class="list-group">
-			  <button type="button" class="list-group-item">Cras justo odio</button>
-			  <button type="button" class="list-group-item">Dapibus ac facilisis in</button>
-			  <button type="button" class="list-group-item">Morbi leo risus</button>
-			  <button type="button" class="list-group-item">Porta ac consectetur ac</button>
-			  <button type="button" class="list-group-item">Vestibulum at eros</button>
+			  <div class="list-group-item btn" ng-repeat="f in exportFiles" ng-click="setCurrentFile(f.track-1);" style="text-align:left;">
+					<img ng-src="{{f.image}}" style="height:24px; float:left;" />
+					{{files[$index].fulltitle}}</div>
 			</div>
 		</div>
 		<!-- end file list -->
