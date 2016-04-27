@@ -19,7 +19,9 @@
     "year" : "Year",
     "inputChain" : "Input Chain",
     "fileNamePattern" : "File Name Pattern",
-    "pleaseEnterCaptchat" : "Please complete the captchat"
+    "pleaseEnterCaptchat" : "Please complete the captchat",
+    "applyTagToAll" : "Apply this tag to all files",
+    "applyPatternToAll" : "Apply this pattern to all files"
   },
   "about" : {
     "description" : "Tagifier provide you an easy and fast way to convert and tag Youtube video as mp3 files."
