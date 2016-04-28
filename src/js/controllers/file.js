@@ -14,6 +14,8 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.notified = false;
 	$scope.requestUrl = decodeURI($location.url().substr(1)).replace(/~2F/g,'/');
 
+	var date = new Date();
+
 	$http({
 	  method: 'GET',
 	  url: '/api/infos/'+$scope.requestUrl
@@ -148,8 +150,17 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		$scope.exportFiles[index] = {
 			lockedAttrs : []
 		};
+
+
 		$scope.exportFiles[index].image = $scope.files[index].thumbnail;
-		$scope.exportFiles[index].year = data.upload_date.substr(0,4);
+
+		//set release year if defined, else current year
+		$scope.exportFiles[index].year = date.getFullYear();
+		if(data.upload_date){
+			$scope.exportFiles[index].year = data.upload_date.substr(0,4);
+		}
+		//
+
 		$scope.exportFiles[index].track = index+1;
 
 		//Define the pattern, depending of the file name format
