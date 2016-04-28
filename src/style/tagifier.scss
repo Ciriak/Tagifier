@@ -4,6 +4,20 @@ body{
 	color:#9DA5AC;
 }
 
+::-webkit-scrollbar {
+  width: 0.5em;
+  height: 0.5em;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00897B;
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: #222222;
+}
+
 h1{
 	color:#ffffff;
 }
@@ -47,7 +61,7 @@ h2,h3,h4,h5,p{
 	border:1px #181A1F solid;
 }
 
-.btn.active{
+.btn.current{
 	background-color: #282C34;
 	color:#ffffff;
 	border:1px #181A1F solid;
@@ -115,36 +129,70 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	padding-left: 0;
 	padding-right: 0;
 	.file-tags.loading{
-		opacity: 0.5;
+		opacity: 0.2;
 	}
+
 	.file-cover{
+		margin-top:10px;
 		position: relative;
 		background-size: cover;
+		background-position: center;
 		height: 100px;
 		.control{
-			text-align: center;
-			height: 100%;
-			font-size: 6rem;
-			vertical-align: middle;
+			position: absolute;
+			z-index: 5;
+			bottom: 0;
+			right: 0;
+			i{
+				cursor: pointer;
+				text-align: center;
+				background-color: #00897B;
+				border-radius: 100px;
+				border: 2px #00665C solid;
+				color: #cccccc;
+				vertical-align: middle;
+				margin:2rem;
+				font-size: 5rem;
+				transition-duration:0.3s;
+			}
 		}
-		.info{
+
+		.control i:hover{
+			transform: scale(1.1);
+			color:#ffffff;
+		}
+
+		.cover-info{
+			position: absolute;
 			bottom: 0;
 			left: 0;
 			width: 100%;
+			padding: 20px;
+			padding-top: 50px;
+			background-image: linear-gradient(to bottom, transparent, rgba(0,0,0,0.5));
+			overflow:hidden;
+    	text-overflow:ellipsis;
 			h1{
 				font-size: 2rem;
+				padding: 0;
+				margin: 0;
+				padding-bottom:5px;
 			}
 			h2{
 				font-size: 1.8rem;
+				padding-bottom: 0;
+				margin: 0;
 			}
 		}
 	}
 }
 .info,.files-list{
 	height: calc(100vh - 50px);
+	margin-bottom: 0;
 }
 
 .files-list{
+	overflow-y: scroll;
 	.file-btn{
 		border-left-width: 2px;
 		text-align: left;
@@ -153,7 +201,11 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 			color:#9DA5AC;
 		}
 	}
-	.file-btn:hover,.file-btn.active{
+	.add-file-btn{
+		margin-top: 10px;
+		color:#cccccc;
+	}
+	.file-btn:hover,.file-btn.current{
 		border-left-color: #00897B;
 	}
 	.file-btn.tag-updated{
@@ -163,6 +215,9 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	.file-btn.tag-locked{
 		animation-name: tag-locked-anim;
     animation-duration: 0.5s;
+	}
+	.file-btn.processing{
+		background-color: #00897B;
 	}
 }
 
@@ -230,6 +285,7 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 }
 
 .page-footer{
+	text-align: left;
 	border-top:1px #181A1F solid;
 	padding-top: 10px;
 	img{

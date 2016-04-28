@@ -7,14 +7,17 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.singleFile = true;
 	$scope.files = {};
 	$scope.currentFileIndex = 0;
-	$scope.exportFiles = {};
+	$scope.exportFiles = [];
 	$scope.progress = 0;
 	$scope.progressStatus = 'waiting';
 	$scope.captchatActive = false;
 	$scope.notified = false;
+	$scope.filePlayer;
+	$scope.playerStatus = "stop";
 	$scope.requestUrl = decodeURI($location.url().substr(1)).replace(/~2F/g,'/');
 
 	var date = new Date();
+	$scope.filePlayer = document.getElementById("file-player");
 
 	$http({
 	  method: 'GET',
@@ -46,12 +49,12 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		$scope.canStartProcess = false;
 		alert($translate.instant("error.unableToRetreiveFileData"));
 		$state.go('^.main');
-	}
+	};
 
-	$scope.requestFile = function(){
+	$scope.requestFiles = function(){
 		$scope.processing = true;
-		$scope.socket.emit("fileRequest",{file:$scope.exportFile});
-	}
+		$scope.socket.emit("fileRequest",{files:$scope.exportFiles});
+	};
 
 	$scope.reloadPage = function(){
 		location.reload();
@@ -67,15 +70,17 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$('#captchat-modal').modal('show');
 		}
 
-	}
+	};
 
 	$scope.generateCaptchat = function(){
 		$scope.captchatActive = true;
 		ACPuzzle.create('buxt.317r8uls-ge9STPl6ilzpmYgl8G', 'solve-media-container', "");
-	}
+	};
 
 	$scope.setCurrentFile = function(i){
 		$scope.currentFileIndex = i;
+		$scope.filePlayer.pause();	//stop the audio player if playing
+		$scope.playerStatus = "stop";
 	};
 
 	$scope.checkCaptchat = function(){
@@ -102,13 +107,14 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			alert($translate.instant("error.invalidCaptchat"));
 			$scope.generateCaptchat();
 		});
-	}
+	};
 
 	$scope.socket.on("yd_event",function(ev){
 		console.log(ev);
 
-		if(ev["event"] == "file_infos"){
-			console.log(ev.data);
+		if(ev["event"] == "file_download_started"){
+			var index = ev.data;
+			$(".file-"+index).addClass("processing");
 		}
 
 		if(ev["event"] == "progress"){
@@ -130,15 +136,8 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			alert($translate.instant("error.internalError"));
 		}
 		if(ev["event"] == "finished"){
-			if(ev.data.id == $scope.exportFile.id){
-				$scope.progressStatus = "ready";
-				$scope.processing = false;
-				$scope.canEditTags = true;
-				$scope.canStartProcess = true;
-				$scope.exportFile.url = ev.data.url.replace("./exports/","musics/");
-				$scope.exportFile.fullUrl = $scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title;
-				$scope.tgfDownload();
-			}
+				var url = ev.data.path.replace("./exports/","musics/");
+				$scope.tgfDownload(url);
 		}
 
 		$scope.$apply();
@@ -150,7 +149,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			lockedAttrs : []
 		};
 
-
+		$scope.exportFiles[index].webpage_url = $scope.files[index].webpage_url;
 		$scope.exportFiles[index].image = $scope.files[index].thumbnail;
 
 		//set release year if defined, else current year
@@ -247,6 +246,11 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			}
 		};
 
+		$scope.getDynamicHeight = function(elem){
+			var w = $("."+elem).width();
+			return w;
+		}
+
 		//generate the fileName (based on the fileName pattern)
 		if(!fileData.fileNamePattern){	//if no pattern defined set %artist - %title% model
 			fileData.fileName = fileData.artist+" - "+fileData.title;
@@ -266,7 +270,20 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 
 	};
 
-	$scope.tgfDownload = function(){
+	$scope.togglePlayer = function(){
+
+		if($scope.filePlayer.paused){
+			$scope.filePlayer.play();
+			$scope.playerStatus = "play";
+		}
+		else{
+			$scope.filePlayer.pause();
+			$scope.playerStatus = "pause";
+		}
+
+	}
+
+	$scope.tgfDownload = function(url){
 		var notification;
 		var nOptions = {
 			title : "File Ready",
@@ -278,7 +295,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {
-				window.open($scope.exportFile.fullUrl, '_blank');
+				window.open(url, '_blank');
 				notification.close();
 			};
 		}
