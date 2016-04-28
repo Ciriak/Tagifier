@@ -152,8 +152,15 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 
 		//Define the pattern, depending of the file name format
 		var pt = $scope.files[index].fulltitle.split(" - ");
-		$scope.exportFiles[index].tagPattern = "%artist% - %title%";
-		$scope.exportFiles[index].fileNamePattern = "%artist% - %title%";
+		if(pt.length > 1){
+			$scope.exportFiles[index].tagPattern = "%artist% - %title%";
+			$scope.exportFiles[index].fileNamePattern = "%artist% - %title%";
+		}
+		else{
+			$scope.exportFiles[index].tagPattern = "%title%";
+			$scope.exportFiles[index].fileNamePattern = "%title%";
+		}
+
 
 		$scope.genPattern(index);
 

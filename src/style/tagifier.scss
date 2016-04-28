@@ -47,6 +47,12 @@ h2,h3,h4,h5,p{
 	border:1px #181A1F solid;
 }
 
+.btn.active{
+	background-color: #282C34;
+	color:#ffffff;
+	border:1px #181A1F solid;
+}
+
 .btn-primary{
 	background-color: #00897B;
 	border:1px #181A1F solid;
@@ -96,6 +102,20 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 }
 .info,.files-list{
 	height: calc(100vh - 50px);
+}
+
+.files-list{
+	.file-btn{
+		border-left-width: 2px;
+		text-align: left;
+		overflow: hidden;
+		.format-label{
+			color:#9DA5AC;
+		}
+	}
+	.file-btn:hover,.file-btn.active{
+		border-left-color: #00897B;
+	}
 }
 
 #welcome-container,#about-container{

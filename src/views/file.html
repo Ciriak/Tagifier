@@ -76,9 +76,11 @@
 	<div class="panel col-md-3 files-list">
 	  <div class="panel-body">
 			<div class="row">
-			  <div class="btn col-md-12 col-sm-12" ng-repeat="f in exportFiles" ng-click="setCurrentFile(f.track-1);" style="text-align:left;">
+			  <div class="btn col-md-12 col-sm-12 file-btn" ng-repeat="f in exportFiles track by $index" ng-click="setCurrentFile(f.track-1);" ng-class="{'active': $index == currentFileIndex}">
 					<img ng-src="{{f.image}}" style="height:24px; float:left;" />
-					{{f.fileName}}<span>.mp3</span></div>
+					{{f.fileName}}
+					<span class="format-label">.mp3</span>
+				</div>
 			</div>
 	  </div>
 	</div>
