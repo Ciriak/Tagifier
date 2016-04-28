@@ -4,8 +4,13 @@
 		<img src="img/spinner.svg" />
 	</div>
 	<div class="panel col-md-3 info">
-		<div class="file-player col-md-12">
-			<img class="album-cover img-responsive" ng-src="{{exportFiles[currentFileIndex].image}}">
+		<vjs-video-container vjs-ratio="4:3" class="file-player col-md-12">
+	    <video class="video-js vjs-default-skin" controls preload="auto" poster="{{exportFiles[currentFileIndex].image}}">
+	        <source src="example_video.mp4" type="video/mp4">
+	    </video>
+		</vjs-video-container>
+		<div class="">
+			<img class="album-cover img-responsive" ng-src="">
 			<h1>{{exportFiles[currentFileIndex].title}}</h1>
 			<h2>{{exportFiles[currentFileIndex].artist}}</h2>
 		</div>
