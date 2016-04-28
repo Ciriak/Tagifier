@@ -3,6 +3,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.canStartProcess = false;
 	$scope.processing = false;
 	$scope.canEditTags = false;
+	$scope.fileAvailable = false;
 	$scope.singleFile = true;
 	$scope.files = {};
 	$scope.currentFileIndex = 0;
@@ -20,6 +21,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		parseFileData(response.data);
 		$scope.canEditTags = true;
 		$scope.canStartProcess = true;
+		$scope.fileAvailable = true;
 	}, function errorCallback(response) {
 		$scope.retreiveInfoError();
 	});
@@ -174,6 +176,10 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			// apply the new defined tag to all files
 			if(sourceIndex != file && !$scope.propIsLocked(propName,targetIndex)){
 				$scope.exportFiles[targetIndex][propName] = $scope.exportFiles[sourceIndex][propName];
+				setAnimation("tag-updated",$(".file-"+targetIndex));
+			}
+			if(sourceIndex != file && $scope.propIsLocked(propName,targetIndex)){	//different animation if the tag is locked for this track
+				setAnimation("tag-locked",$(".file-"+targetIndex));
 			}
 
 			if(isPattern){	//regen the patern if it has been changed
@@ -303,3 +309,11 @@ var getBestThumbnail = function(t){
 var isInArray = function (value, array) {
   return array.indexOf(value) > -1;
 }
+
+var setAnimation = function(animation,target){
+	target.addClass(animation);
+
+	setTimeout(function () {
+	    target.removeClass(animation);
+	}, 500);
+};
