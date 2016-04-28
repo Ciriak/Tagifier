@@ -4,9 +4,11 @@
 		<img src="img/spinner.svg" />
 	</div>
 	<div class="panel col-md-3 info">
-		<img class="album-cover img-responsive" ng-src="{{exportFiles[currentFileIndex].image}}">
-		<h1>{{exportFiles[currentFileIndex].title}}</h1>
-		<h2>{{exportFiles[currentFileIndex].artist}}</h2>
+		<div class="file-player col-md-12">
+			<img class="album-cover img-responsive" ng-src="{{exportFiles[currentFileIndex].image}}">
+			<h1>{{exportFiles[currentFileIndex].title}}</h1>
+			<h2>{{exportFiles[currentFileIndex].artist}}</h2>
+		</div>
 	</div>
 	<div class="col-md-6 file-tags" ng-class="{'loading': !fileAvailable}">
 

@@ -3,7 +3,8 @@ var app = angular.module('tagifier', [
 'ui.bootstrap',
 'youtube-embed',
 'ngSanitize',
-'pascalprecht.translate'
+'pascalprecht.translate',
+'vjs.video'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {
