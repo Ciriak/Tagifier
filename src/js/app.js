@@ -3,8 +3,7 @@ var app = angular.module('tagifier', [
 'ui.bootstrap',
 'youtube-embed',
 'ngSanitize',
-'pascalprecht.translate',
-'vjs.video'
+'pascalprecht.translate'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {
@@ -38,6 +37,12 @@ app.config(['$translateProvider', function($translateProvider) {
     suffix: '.json'
 });
   $translateProvider.preferredLanguage('en');
+}]);
+
+app.filter("trustUrl", ['$sce', function ($sce) { //used by media player
+    return function (recordingUrl) {
+        return $sce.trustAsResourceUrl(recordingUrl);
+    };
 }]);
 
 app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window','$location', function($scope, $http,$rootScope,$translate,$window,$location)

@@ -117,6 +117,28 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	.file-tags.loading{
 		opacity: 0.5;
 	}
+	.file-cover{
+		position: relative;
+		background-size: cover;
+		height: 100px;
+		.control{
+			text-align: center;
+			height: 100%;
+			font-size: 6rem;
+			vertical-align: middle;
+		}
+		.info{
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			h1{
+				font-size: 2rem;
+			}
+			h2{
+				font-size: 1.8rem;
+			}
+		}
+	}
 }
 .info,.files-list{
 	height: calc(100vh - 50px);

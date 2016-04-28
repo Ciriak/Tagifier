@@ -75,7 +75,6 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	}
 
 	$scope.setCurrentFile = function(i){
-		console.log(i);
 		$scope.currentFileIndex = i;
 	};
 
