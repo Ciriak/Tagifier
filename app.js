@@ -4,12 +4,21 @@ var ofs = require('fs');  // old fs
 var port = 80;
 var express = require('express');
 var request = require('request');
-var nodeID3 = require('node-id3');
+var id3 = require('node-id3');
 var random = require('random-gen');
 var bodyParser = require('body-parser');
 var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
+
+
+// CONVERT VARS
+
+var maxProcess = 3;     //max simul
+var processList = 0;   //list of current processing items
+var waitingList = 0;   // list of items inside the waiting queue
+
+//
 
 var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
@@ -115,27 +124,28 @@ app.get('/api/infos/:fileId(*)', function(req,res){
 io.on('connection', function (socket){
 
   socket.on('fileRequest', function (data) {
-    var session = random.alphaNum(16);
-    var files = data.files;
-    console.log("Receiving a request for "+files.length+" files (session "+session+")");
-    for (var fileIndex = 0; fileIndex < files.length; fileIndex++) {
-      processFileDl(files[fileIndex],session,fileIndex,socket,function(err,data){
-        if(err){
-          console.log("--- PROCESSING ERROR ---");
-          console.log("(Session "+session+" | File "+fileIndex+")");
-          console.log(err);
-          socket.emit("error",err);
-          return;
-        }
+    var session = {
+      id : random.alphaNum(16),
+      processEnded : 0,
+      files : data.files
+    }
+    session.path = "exports/"+session.id;
 
-        socket.emit("yd_event",{event:"finished",data:{path:data.exportPath,index:fileIndex}}); // WE DIT IT !
+    //create the temp session path
+    if (!ofs.existsSync(session.path)){
+      ofs.mkdirSync(session.path);
+    }
 
-      });
+    var processEnded = 0;
+
+    for (var fileIndex = 0; fileIndex < session.files.length; fileIndex++) {
+      requestFileProcess(session,fileIndex,socket);
     }
   });
 });
 
-function processFileDl(file,session,index,socket,callback){
+function processFileDl(session,fileIndex,socket,callback){
+  var file = session.files[fileIndex];
   fid(file.image, fidOpt.TIMEOUT, fidOpt.ALLOWED_TYPES, "", function(err, img){ //download the file image
     if (err) {
       callback(err);  //return error
@@ -147,15 +157,15 @@ function processFileDl(file,session,index,socket,callback){
         fs.mkdir(dir);
     }
 
-    dir = "./exports"; // create the export folder if not exist (mp3)
+    dir = "./exports/"+session.id; // create the export folder if not exist (mp3)
     if (!fs.exists(dir)){
         fs.mkdir(dir);
     }
 
-    var imgPath = "./public/img/temps/"+session+"-"+index+"."+img.fileType.ext;
+    var imgPath = "./public/img/temps/"+session.id+"-"+fileIndex+"."+img.fileType.ext;
     fs.write(imgPath, img.body);
     file.image = imgPath;
-    file.exportPath = dir+"/"+session+"-"+index+".mp3";
+    file.exportPath = dir+"/"+fileIndex+".mp3";
 
     youtubedl.getInfo(file.webpage_url, function(err, info) { //retreive file infos for checking size
       if(err){
@@ -171,32 +181,47 @@ function processFileDl(file,session,index,socket,callback){
       //
 
       // send the file size every 500 ms
+      file.lastProgress = 0;
       var progressPing = setInterval(function(){
-        /*var stats = ofs.statSync(poptions.exportPath);
+        var stats = ofs.statSync(file.exportPath);
         var fileSizeInBytes = stats["size"];
-        socket.emit("yd_event",{event:"progress",data:fileSizeInBytes});*/
-      },500);
+        var sinfo = {
+          session : session.id,
+          index : fileIndex,
+          size : fileSizeInBytes
+        }
+        if(sinfo.size > file.lastProgress){  //send progress only if progress
+          file.lastProgress = sinfo.size;
+
+          socket.emit("yd_event",{event:"progress",data:sinfo});
+        }
+
+      },1000);
 
       var ytdlProcess = youtubedl(file.webpage_url,
         // Optional arguments passed to youtube-dl.
-        ['-x', '--audio-format', 'mp3','--output','exports/'+session+'-'+index+'.%(ext)s"'],
+        ['-x', '--audio-format', 'mp3'],
         // Additional options can be given for calling `child_process.execFile()`.
         { cwd: __dirname });
 
-      ytdlProcess.pipe(ofs.createWriteStream('exports/'+session+'-'+index+'.mp3'));
+      ytdlProcess.pipe(ofs.createWriteStream('exports/'+session.id+'/'+fileIndex+'.mp3'));
 
       // Will be called when the download starts.
       ytdlProcess.on('info', function(info) {
-        socket.emit("yd_event",{event:"file_download_started",data:index}); //send a status for this file
+        socket.emit("yd_event",{event:"file_download_started",data:fileIndex}); //send a status for this file
       });
 
       ytdlProcess.on('error', function error(err) {
-        socket.emit("yd_event",{event:"error",data:err});
+        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
       });
 
       ytdlProcess.on('end', function() {
 
         //file downloaded, apply the tags
+        socket.emit("yd_event",{event:"file_finished",data:{index:fileIndex}});
+
+        clearInterval(progressPing);  //end the filesize ping
+
         processFileTag(file,function(err,ffile){
           callback(null,ffile);   //return the final result
         });
@@ -206,13 +231,20 @@ function processFileDl(file,session,index,socket,callback){
 }
 
 function processFileTag(file,callback){
-  // little ad :)
-  file.encodedBy = "tagifier.net";
-  file.remixArtist = "tagifier.net";
-  file.comment = "tagifier.net";
+  // tags + little ad :)
+  var tags = {
+    encodedBy : "tagifier.net",
+    remixArtist : "tagifier.net",
+    comment : "tagifier.net",
+    title : file.title,
+    artist : file.artist,
+    composer : file.artist,
+    image : file.image,
+    album : file.album,
+    year : file.year
+  }
 
-  var tagsWrite = nodeID3.write(file, file.exportPath);   //Pass tags and filepath
-
+  var tagsWrite = id3.write(tags, file.exportPath);   //Pass tags and filepath
   if(!tagsWrite){
     callback(tagsWrite);  //return error
     return;
@@ -222,13 +254,56 @@ function processFileTag(file,callback){
     fs.remove(file.image);
   }
 
-  setTimeout(function(){
-    if (fs.exists(poptions.exportPath)) {
-      fs.remove(poptions.exportPath);
-    }
-  },600*1000); //remove the file after 10 min (600 sec)*/
-
   callback(null,file);  //success, return the file for socket sending
+}
+
+ //used to insert a file inside a waiting queue and process it when possible
+function requestFileProcess(session,fileIndex,socket){
+  waitingList++;  //increment waiting list count
+  var fileQueue = setInterval(function(){   //check every 5 sec if the process can start
+
+    if(processList >= maxProcess){
+      return; //no place available... retry in 5s
+    }
+
+    //remove from waiting list and place to process list
+    waitingList--;
+    processList++;
+    clearInterval(fileQueue); //stop the loop
+    processFileDl(session,fileIndex,socket,function(err,data){
+      processList--;  // process ended (give a place to the waiting list)
+      if(err){
+        console.log("--- PROCESSING ERROR ---");
+        console.log("(Session "+session.id+" | File "+fileIndex+")");
+        console.log(err);
+        socket.emit("error",err);
+        return;
+      }
+      session.processEnded++;
+
+      if(session.processEnded == session.files.length){ //if all files are converted
+
+
+        //remove the session folder after 10 min (600 sec)*/
+        setTimeout(function(){
+          rmDir(session.path,true);
+        },600*1000);
+
+        if(session.files.length > 1){
+          genZip(session,function(err,path){
+            if(err){
+              socket.emit("error",err);
+              return;
+            }
+            socket.emit("yd_event",{event:"finished",data:{path:path}}); // Return a final zip
+          });
+        }
+        else{
+          socket.emit("yd_event",{event:"finished",data:{path:data.exportPath}}); // return the file
+        }
+      }
+    });
+  },5000);
 }
 
 function retreiveFileSize(info){
@@ -251,6 +326,22 @@ function retreiveVideoInfos(url,callback){
     else {
       callback(info);
     }
+  });
+}
+
+function genZip(session,callback){
+
+  var zipPath = "exports/"+session.id+".zip";
+
+  var zip = new require('node-zip')();
+
+  for (var i = 0; i < session.files.length; i++) {
+    var fileData = ofs.readFileSync(session.files[i].exportPath);
+    zip.file(session.files[i].fileName+".mp3", fileData);
+  }
+  var data = zip.generate({base64:false,compression:'DEFLATE'});
+  ofs.writeFile(zipPath, data, 'binary',function(err,data){
+    callback(null,zipPath);
   });
 }
 
