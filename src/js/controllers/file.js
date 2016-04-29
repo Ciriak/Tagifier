@@ -47,12 +47,17 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.retreiveInfoError = function(){
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
-		alert($translate.instant("error.unableToRetreiveFileData"));
+		//alert($translate.instant("error.unableToRetreiveFileData"));
 		$state.go('^.main');
 	};
 
 	$scope.requestFiles = function(){
+		if($scope.processing){
+			return;
+		}
 		$scope.processing = true;
+		$scope.canEditTags = false;
+		$scope.canStartProcess = false;
 		$scope.socket.emit("fileRequest",{files:$scope.exportFiles});
 	};
 
@@ -114,30 +119,43 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 
 		if(ev["event"] == "file_download_started"){
 			var index = ev.data;
-			$(".file-"+index).addClass("processing");
+			$scope.exportFiles[index].processing = true;
+			$scope.$apply();
 		}
 
 		if(ev["event"] == "progress"){
-			if(ev.data.videoId == $scope.exportFiles.id){
-				$scope.processing = true;
-				$scope.canEditTags = false;
-				$scope.canStartProcess = false;
-				var dlSize = ev.data;
-				$scope.progress = ev.data.progress.percentage;
-				$scope.progressStatus = "processing";
+			var data = ev.data;
+			var perc = data.size/$scope.exportFiles[data.index].filesize*100;
+			if(perc == 100){
+				$scope.exportFiles[data.index].converting = true;
 				$scope.$apply();
 			}
+			$scope.exportFiles[data.index].progress = perc;
 		}
-		if(ev["event"] == "error"){
-			$scope.buttonLabel = "Download";
-			$scope.processing = false;
-			$scope.canEditTags = true;
-			$scope.canStartProcess = true;
-			alert($translate.instant("error.internalError"));
+		if(ev["event"] == "file_error"){
+			var data = ev.data;
+			$scope.exportFiles[data.index].error = true;
+			$scope.$apply();
+		}
+		if(ev["event"] == "file_finished"){
+				var i = ev.data.index;
+				$scope.exportFiles[i].progress = 100;
+				$scope.exportFiles[i].converting = true;
+				$scope.$apply();
 		}
 		if(ev["event"] == "finished"){
 				var url = ev.data.path.replace("./exports/","musics/");
 				$scope.tgfDownload(url);
+				for (var i = 0; i < $scope.exportFiles.length; i++) {
+					$scope.exportFiles[i].progress = 0;
+					$scope.exportFiles[i].converting = false;
+					$scope.exportFiles[i].processing = false;
+					$scope.exportFiles[i].error = false;
+				}
+
+				$scope.processing = false;
+				$scope.canEditTags = true;
+				$scope.canStartProcess = true;
 		}
 
 		$scope.$apply();
@@ -146,11 +164,30 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.setFileVars = function(index,data){
 		$scope.files[index] = data;
 		$scope.exportFiles[index] = {
-			lockedAttrs : []
+			lockedAttrs : [],
+			converting : false,
+			processing : false,
+			error : false,
+			progress : 0
 		};
 
 		$scope.exportFiles[index].webpage_url = $scope.files[index].webpage_url;
 		$scope.exportFiles[index].image = $scope.files[index].thumbnail;
+
+		//set the final filesize (bigger file)
+		$scope.exportFiles[index].filesize = 0;
+		// ... only if specified
+		for (var o = 0; o < $scope.files[index].formats.length; o++) {
+			if($scope.files[index].formats[o].filesize){	//continue only if filesize is specified
+				var t = $scope.files[index].formats[o].filesize;
+				if(t > $scope.exportFiles[index].filesize){	//update only if superior
+					$scope.exportFiles[index].filesize = t;
+				}
+			}
+		}
+		if($scope.files[index].formats[$scope.files[index].formats.length-1].filesize){
+			$scope.exportFiles[index].filesize = $scope.files[index].formats[$scope.files[index].formats.length-1].filesize;
+		}
 
 		//set release year if defined, else current year
 		$scope.exportFiles[index].year = date.getFullYear();

@@ -1,3 +1,7 @@
+$green: #00897B;
+$blue: #528BFF;
+$darkgrey : #181A1F;
+
 body{
 	margin-top:50px;
 	background-color: #282C34;
@@ -10,7 +14,7 @@ body{
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00897B;
+  background: $green;
 	border-radius: 3px;
 }
 
@@ -28,7 +32,7 @@ h2,h3,h4,h5,p{
 
 /* table border*/
 .table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th{
-	border-top: 1px #181A1F solid;
+	border-top: 1px $darkgrey solid;
 }
 
 .form-control,.form-control:focus{
@@ -39,14 +43,14 @@ h2,h3,h4,h5,p{
 }
 
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control{
-	background-color: #181A1F;
+	background-color: $darkgrey;
 	color:#9DA5AC;
 		opacity: 0.5;
 }
 
 .btn{
 	border-radius: 3px;
-	background-color: #181A1F;
+	background-color: $darkgrey;
 	color:#ffffff;
 	border:1px #212121 solid;
 }
@@ -58,29 +62,29 @@ h2,h3,h4,h5,p{
 .btn:hover{
 	background-color: #282C34;
 	color:#ffffff;
-	border:1px #181A1F solid;
+	border:1px $darkgrey solid;
 }
 
 .btn.current{
 	background-color: #282C34;
 	color:#ffffff;
-	border:1px #181A1F solid;
+	border:1px $darkgrey solid;
 }
 
 .btn-primary{
-	background-color: #00897B;
-	border:1px #181A1F solid;
+	background-color: $green;
+	border:1px $darkgrey solid;
 }
 
 .btn-primary:hover{
-	background-color: #181A1F;
-	border:1px #181A1F solid;
+	background-color: $darkgrey;
+	border:1px $darkgrey solid;
 }
 
 .progress{
-	background-color:#181A1F;
+	background-color:$darkgrey;
 	.progress-bar{
-		background-color:#00897B;
+		background-color:$green;
 	}
 }
 
@@ -91,7 +95,7 @@ h2,h3,h4,h5,p{
 .list-group-item{
 	margin-top: 10px;
 	background-color: #333842;
-	border: 1px #181A1F solid;
+	border: 1px $darkgrey solid;
 	border-radius: 5px;
 }
 
@@ -146,7 +150,7 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 			i{
 				cursor: pointer;
 				text-align: center;
-				background-color: #00897B;
+				background-color: $green;
 				border-radius: 100px;
 				border: 2px #00665C solid;
 				color: #cccccc;
@@ -194,11 +198,20 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 .files-list{
 	overflow-y: scroll;
 	.file-btn{
+		position: relative;
 		border-left-width: 2px;
 		text-align: left;
 		overflow: hidden;
 		.format-label{
 			color:#9DA5AC;
+		}
+		.file-progress{
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			height: 2px;
+			background-color: $green;
+			transition-duration: 0.5s;
 		}
 	}
 	.add-file-btn{
@@ -206,29 +219,75 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 		color:#cccccc;
 	}
 	.file-btn:hover,.file-btn.current{
-		border-left-color: #00897B;
+		border-left-color: $blue;
 	}
-	.file-btn.tag-updated{
+	.file-btn.tag-updated{				//animation when a tag is updated
 		animation-name: tag-updated-anim;
     animation-duration: 0.5s;
 	}
-	.file-btn.tag-locked{
+	.file-btn.tag-locked{				//animation when a tag wasnt updated due to a lock
 		animation-name: tag-locked-anim;
     animation-duration: 0.5s;
 	}
-	.file-btn.processing{
-		background-color: #00897B;
+	.file-btn.processing{		// animation when the tag is under processing
+		opacity: 1.0;
+		animation-name: processingFlash;
+		animation-duration: 1s;
+		animation-iteration-count: infinite;
+	}
+	.file-btn.converting{		// animation when the tag is under processing
+		opacity: 1.0;
+		background: repeating-linear-gradient(
+			-45deg,
+			#282C34,
+			#282C34 5px,
+			#212121 5px,
+			#212121 10px
+		);
+		animation: processingBackground 10s linear infinite;
+	}
+	.file-btn.error{		//When the file failed the process
+		border-left-color:#B9121B;
 	}
 }
 
+@keyframes processingBackground {
+    0% { background-position: 0 0; }
+    100% { background-position: -300px 0; }
+}
+
+@keyframes processingFlash {
+    0% { border-left-color: $green; }
+		50% { border-left-color: #00B5A3; }
+    100% { border-left-color: $green; }
+}
+
 @keyframes tag-updated-anim {
-    from {border-left-color: #528BFF;}
+    from {border-left-color: $green;}
     to {border-left-color: #212121;}
 }
 
 @keyframes tag-locked-anim {
     from {border-left-color: #D19A66;}
     to {border-left-color: #212121;}
+}
+
+.processing{
+		opacity : 0.5;
+		cursor: not-allowed;
+}
+
+.btn-primary.processing{
+
+	background-color: $green;
+	background: repeating-linear-gradient(
+		-45deg,
+		$green,
+		$green 5px,
+		#0C6B62 5px,
+		#0C6B62 10px
+	);
+	animation: processingBackground 10s linear infinite;
 }
 
 #welcome-container,#about-container{
@@ -270,23 +329,23 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 }
 
 .modal-header{
-	border-bottom-color: #181A1F;
+	border-bottom-color: $darkgrey;
 }
 
 .modal-footer{
-	border-top-color: #181A1F;
+	border-top-color: $darkgrey;
 }
 
 .input-group-addon{
 	background-color: #222222;
-	border: 1px #181A1F solid;;
+	border: 1px $darkgrey solid;;
 	color:#9DA5AC;
 	font-size: 20px;
 }
 
 .page-footer{
 	text-align: left;
-	border-top:1px #181A1F solid;
+	border-top:1px $darkgrey solid;
 	padding-top: 10px;
 	img{
 		margin: 10px;

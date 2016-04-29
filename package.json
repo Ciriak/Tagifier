@@ -34,6 +34,7 @@
     "fast-image-downloader": "0.0.4",
     "fs-sync": "^1.0.2",
     "node-id3": "0.0.4",
+    "node-zip": "^1.1.1",
     "random-gen": "^0.1.0",
     "request": "^2.69.0",
     "socket.io": "^1.4.5",
