@@ -207,6 +207,10 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		else{
 			$scope.exportFiles[index].tagPattern = "%title%";
 			$scope.exportFiles[index].fileNamePattern = "%title%";
+			// in this case, we set the Uploader as the "artist"
+			if(data.uploader){
+				$scope.exportFiles[index].artist = data.uploader;
+			}
 		}
 
 

@@ -29,6 +29,7 @@ var app = express();
 var server = app.listen(port,function(){
   console.log("Tagifier is listening on port "+port);
 });
+server.timeout = 180000;  //3min
 
 // clean function remove all temp thumbnails and mp3
 
