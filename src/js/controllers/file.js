@@ -1,4 +1,4 @@
-app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,$location)
+app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,$location,notify)
 {
 	$scope.canStartProcess = false;
 	$scope.processing = false;
@@ -216,8 +216,18 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 
 		$scope.genPattern(index);
 
-		//check if the file duration is longer than 10 min
-		//TODO
+		var dur = returnDur($scope.files[index].duration);
+		var duration = moment.duration({
+	    seconds: dur.s,
+	    minutes: dur.m,
+	    hours: dur.h
+		});
+		if(duration.asMinutes() > 10){
+			$scope.canStartProcess = false;
+			$scope.exportFiles[index].error = true;
+			$scope.canStartProcess = false;
+			notify($translate.instant("error.fileTooLong"));
+		}
 	};
 
 	$scope.overrideProp = function(propName,sourceIndex,isPattern){
@@ -373,6 +383,29 @@ var getBestThumbnail = function(t){
 		return "";
 	}
 };
+
+var returnDur = function(dur){
+	var d = {
+		h : 0,
+		m : 0,
+		s : 0
+	};
+	var dur = dur.split(":");
+	if(dur.length == 3){
+		d.h = dur[0];
+		d.m = dur[1];
+		d.s = dur[2];
+	}
+	if(dur.length == 2){
+		d.m = dur[0];
+		d.s = dur[1];
+	}
+	else{
+		d.s = dur[0];
+	}
+
+	return d;
+}
 
 var isInArray = function (value, array) {
   return array.indexOf(value) > -1;

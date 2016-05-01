@@ -248,6 +248,8 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	}
 	.file-btn.error{		//When the file failed the process
 		border-left-color:#B9121B;
+		cursor: not-allowed;
+		background-color: rgba(185,18,27,0.1);
 	}
 }
 

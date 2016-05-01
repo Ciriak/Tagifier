@@ -176,7 +176,16 @@ function processFileDl(session,fileIndex,socket,callback){
 
       file.ytdlInfos = info;
       file.size = retreiveFileSize(file.ytdlInfos);  //retreive file size
-
+      if(!file.ytdlInfos.duration){
+        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:"INVALID_FILE_DURATION"}});
+        return;
+      }
+      file.duration = returnDur(file.ytdlInfos.duration);
+      if(file.duration > 10*60){ //10 min max
+        console.log("File too long - "+file.duration+" seconds");
+        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:"FILE_TOO_LONG"}});
+        return;
+      }
       //
       // START DOWNLOAD //
       //
@@ -346,6 +355,31 @@ function genZip(session,callback){
   });
 }
 
+var returnDur = function(dur){
+	var d = {
+		h : 0,
+		m : 0,
+		s : 0
+	};
+	var dur = dur.split(":");
+	if(dur.length == 3){
+		d.h = dur[0];
+		d.m = dur[1];
+		d.s = dur[2];
+	}
+	if(dur.length == 2){
+		d.m = dur[0];
+		d.s = dur[1];
+	}
+	else{
+		d.s = dur[0];
+	}
+  console.log(d);
+  var f = parseInt(d.s)+parseInt(d.m*60)+parseInt((d.h*60)*60);
+
+	return f;
+}
+
 // convert an $_get object to a string list
 function getToStr(get){
   var separator = "?";
@@ -355,16 +389,6 @@ function getToStr(get){
       separator = "&";
   }
   return ret;
-}
-
-function YTDurationToSeconds(duration) {
-  var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-
-  var hours = (parseInt(match[1]) || 0);
-  var minutes = (parseInt(match[2]) || 0);
-  var seconds = (parseInt(match[3]) || 0);
-
-  return hours * 3600 + minutes * 60 + seconds;
 }
 
 app.use('/', express.static(__dirname + '/public/'));
