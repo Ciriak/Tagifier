@@ -6,10 +6,11 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.fileAvailable = false;
 	$scope.singleFile = true;
 	$scope.files = {};
+	$scope.dlFileUrl;
+	$scope.fileReady = false;
 	$scope.currentFileIndex = 0;
 	$scope.exportFiles = [];
 	$scope.progress = 0;
-	$scope.progressStatus = 'waiting';
 	$scope.captchatActive = false;
 	$scope.notified = false;
 	$scope.filePlayer;
@@ -51,10 +52,11 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		$state.go('^.main');
 	};
 
-	$scope.requestFiles = function(){
+	$scope.requestFiles = function (){
 		if($scope.processing){
 			return;
 		}
+		$scope.fileReady = false;
 		$scope.processing = true;
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
@@ -70,11 +72,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$scope.checkCaptchat();
 		}
 		else {
-			console.log($translate.instant("file.pleaseEnterCaptchat"));
 			$scope.generateCaptchat();
 			$('#captchat-modal').modal('show');
 		}
-
 	};
 
 	$scope.generateCaptchat = function(){
@@ -102,14 +102,13 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		}).then(function successCallback(r) {
 			$('#captchat-modal').modal('hide');
 			$scope.captchatActive = false;
-			$scope.processing = true;
 			$scope.canEditTags = false;
 			$scope.canStartProcess = false;
-			$scope.requestFile();
+			$scope.requestFiles();
 		}, function errorCallback(r) {
 			$('#captchat-modal').modal('show');
 			$scope.processing = false;
-			alert($translate.instant("error.invalidCaptchat"));
+			notify($translate.instant("error.invalidCaptchat"));
 			$scope.generateCaptchat();
 		});
 	};
@@ -118,12 +117,14 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		console.log(ev);
 
 		if(ev["event"] == "file_download_started"){
+			$scope.fileReady = false;
 			var index = ev.data;
 			$scope.exportFiles[index].processing = true;
 			$scope.$apply();
 		}
 
 		if(ev["event"] == "progress"){
+			$scope.fileReady = false;
 			var data = ev.data;
 			var perc = data.size/$scope.exportFiles[data.index].filesize*100;
 			if(perc == 100){
@@ -133,11 +134,13 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$scope.exportFiles[data.index].progress = perc;
 		}
 		if(ev["event"] == "file_error"){
+			$scope.fileReady = false;
 			var data = ev.data;
 			$scope.exportFiles[data.index].error = true;
 			$scope.$apply();
 		}
 		if(ev["event"] == "file_finished"){
+				$scope.fileReady = false;
 				var i = ev.data.index;
 				$scope.exportFiles[i].progress = 100;
 				$scope.exportFiles[i].converting = true;
@@ -145,7 +148,15 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		}
 		if(ev["event"] == "finished"){
 				var url = ev.data.path.replace("./exports/","musics/");
-				$scope.tgfDownload(url);
+				$scope.dlFileUrl = url;
+				$scope.fileReady = true;
+				if($scope.singleFile){
+					$scope.tgfDownload($scope.dlFileUrl,$scope.exportFiles[0].fileName+".mp3");
+				}
+				else{
+					$scope.tgfDownload($scope.dlFileUrl,$scope.exportFiles[0].album+".zip");
+				}
+
 				for (var i = 0; i < $scope.exportFiles.length; i++) {
 					$scope.exportFiles[i].progress = 0;
 					$scope.exportFiles[i].converting = false;
@@ -334,7 +345,8 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 
 	}
 
-	$scope.tgfDownload = function(url){
+	$scope.tgfDownload = function(url,name){
+		var fullUrl = url+"?name="+name;
 		var notification;
 		var nOptions = {
 			title : "File Ready",
@@ -346,12 +358,12 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {
-				window.open(url, '_blank');
+				window.open(fullUrl, '_blank');
 				notification.close();
 			};
 		}
 		else{
-			console.log("Your file is ready");
+			window.open(fullUrl, '_blank');
 		}
 	};
 });

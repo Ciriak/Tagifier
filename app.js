@@ -71,6 +71,22 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 app.use('/', express.static(__dirname + '/public/'));
 
+app.get('/musics/:file(*)', function(req,res){
+  res.download('exports/'+req.params.file,req.query.name);
+});
+
+app.get('/api/infos/:fileId(*)', function(req,res){
+  var fileUrl = req.params.fileId+getToStr(req.query);
+  console.log(fileUrl);
+	retreiveVideoInfos(fileUrl,function(infos,err){
+    if(err){
+      res.status(405).send(err);
+      return;
+    }
+    res.send(infos);
+  });
+});
+
 //
 // Used for Captchat confirmation
 //
@@ -106,22 +122,6 @@ app.post('/checker', function(req,res)
 //
 
 
-app.get('/musics/:file', function(req,res){
-  res.download('exports/'+req.params.file,req.query.name+".mp3");
-});
-
-app.get('/api/infos/:fileId(*)', function(req,res){
-  var fileUrl = req.params.fileId+getToStr(req.query);
-  console.log(fileUrl);
-	retreiveVideoInfos(fileUrl,function(infos,err){
-    if(err){
-      res.status(405).send(err);
-      return;
-    }
-    res.send(infos);
-  });
-});
-
 io.on('connection', function (socket){
 
   socket.on('fileRequest', function (data) {
@@ -130,6 +130,10 @@ io.on('connection', function (socket){
       processEnded : 0,
       files : data.files
     }
+
+    console.log("-- Receiving a file request --");
+    console.log("Session : "+session.id);
+
     session.path = "exports/"+session.id;
 
     //create the temp session path
@@ -374,7 +378,6 @@ var returnDur = function(dur){
 	else{
 		d.s = dur[0];
 	}
-  console.log(d);
   var f = parseInt(d.s)+parseInt(d.m*60)+parseInt((d.h*60)*60);
 
 	return f;
