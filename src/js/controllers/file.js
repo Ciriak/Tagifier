@@ -154,7 +154,11 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 					$scope.tgfDownload($scope.dlFileUrl,$scope.exportFiles[0].fileName+".mp3");
 				}
 				else{
-					$scope.tgfDownload($scope.dlFileUrl,$scope.exportFiles[0].album+".zip");
+					var zipFileName = "Album.zip";
+					if($scope.exportFiles[0].album){
+						zipFileName = $scope.exportFiles[0].album+".zip";
+					}
+					$scope.tgfDownload($scope.dlFileUrl,zipFileName);
 				}
 
 				for (var i = 0; i < $scope.exportFiles.length; i++) {

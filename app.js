@@ -71,22 +71,6 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 
 app.use('/', express.static(__dirname + '/public/'));
 
-app.get('/musics/:file(*)', function(req,res){
-  res.download('exports/'+req.params.file,req.query.name);
-});
-
-app.get('/api/infos/:fileId(*)', function(req,res){
-  var fileUrl = req.params.fileId+getToStr(req.query);
-  console.log(fileUrl);
-	retreiveVideoInfos(fileUrl,function(infos,err){
-    if(err){
-      res.status(405).send(err);
-      return;
-    }
-    res.send(infos);
-  });
-});
-
 //
 // Used for Captchat confirmation
 //
@@ -122,6 +106,26 @@ app.post('/checker', function(req,res)
 //
 
 
+app.get('/musics/:file', function(req,res){
+  res.download('exports/'+req.params.file, req.query.name, function(err){
+    if (err) {
+      console.log(err);
+    }
+  });
+});
+
+app.get('/api/infos/:fileId(*)', function(req,res){
+  var fileUrl = req.params.fileId+getToStr(req.query);
+  console.log(fileUrl);
+	retreiveVideoInfos(fileUrl,function(infos,err){
+    if(err){
+      res.status(405).send(err);
+      return;
+    }
+    res.send(infos);
+  });
+});
+
 io.on('connection', function (socket){
 
   socket.on('fileRequest', function (data) {
@@ -130,10 +134,6 @@ io.on('connection', function (socket){
       processEnded : 0,
       files : data.files
     }
-
-    console.log("-- Receiving a file request --");
-    console.log("Session : "+session.id);
-
     session.path = "exports/"+session.id;
 
     //create the temp session path
@@ -180,14 +180,17 @@ function processFileDl(session,fileIndex,socket,callback){
 
       file.ytdlInfos = info;
       file.size = retreiveFileSize(file.ytdlInfos);  //retreive file size
-      if(!file.ytdlInfos.duration){
-        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:"INVALID_FILE_DURATION"}});
+      if(!file.size){
+        var err = "INVALID_FILE_SIZE";
+        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
+        callback(err);  //return error
         return;
       }
-      file.duration = returnDur(file.ytdlInfos.duration);
-      if(file.duration > 10*60){ //10 min max
-        console.log("File too long - "+file.duration+" seconds");
-        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:"FILE_TOO_LONG"}});
+
+      if(file.size > 1677721600){ //200 mo
+        var err = "FILE_TOO_BIG";
+        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
+        callback(err);  //return error
         return;
       }
       //
@@ -345,7 +348,7 @@ function retreiveVideoInfos(url,callback){
 
 function genZip(session,callback){
 
-  var zipPath = "exports/"+session.id+".zip";
+  var zipPath = "./exports/"+session.id+".zip";
 
   var zip = new require('node-zip')();
 
@@ -378,7 +381,8 @@ var returnDur = function(dur){
 	else{
 		d.s = dur[0];
 	}
-  var f = parseInt(d.s)+parseInt(d.m*60)+parseInt((d.h*60)*60);
+
+  var f = d.s+(d.m*60)+((d.h*60)*60);
 
 	return f;
 }
