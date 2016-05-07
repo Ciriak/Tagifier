@@ -7,6 +7,7 @@ var request = require('request');
 var id3 = require('node-id3');
 var random = require('random-gen');
 var bodyParser = require('body-parser');
+var JSZip = require('jszip');
 var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
@@ -181,18 +182,19 @@ function processFileDl(session,fileIndex,socket,callback){
 
       file.ytdlInfos = info;
       file.size = retreiveFileSize(file.ytdlInfos);  //retreive file size
-      if(!file.size){
+      if(!file.size && !file.duration){
         var err = "INVALID_FILE_SIZE";
         socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
         callback(err);  //return error
         return;
       }
-
-      if(file.size > 1677721600){ //200 mo
-        var err = "FILE_TOO_BIG";
-        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
-        callback(err);  //return error
-        return;
+      if(file.size){
+        if(file.size > 1677721600){ //200 mo
+          var err = "FILE_TOO_BIG";
+          socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
+          callback(err);  //return error
+          return;
+        }
       }
       //
       // START DOWNLOAD //
@@ -350,16 +352,17 @@ function retreiveVideoInfos(url,callback){
 function genZip(session,callback){
 
   var zipPath = "./exports/"+session.id+".zip";
-
-  var zip = new require('node-zip')();
+  var zip = new JSZip();
 
   for (var i = 0; i < session.files.length; i++) {
     var fileData = ofs.readFileSync(session.files[i].exportPath);
     zip.file(session.files[i].fileName+".mp3", fileData);
   }
-  var data = zip.generate({base64:false,compression:'DEFLATE'});
-  ofs.writeFileSync(zipPath, data, 'binary',function(err,data){
-    callback(null,zipPath);
+
+  zip.generateNodeStream({type:'nodebuffer',streamFiles:true})
+  .pipe(ofs.createWriteStream(zipPath))
+  .on('end', function () {  //tofix : never end ???
+      callback(null,zipPath);
   });
 }
 
