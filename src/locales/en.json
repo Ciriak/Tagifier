@@ -25,7 +25,8 @@
     "applyPatternToAll" : "Apply this pattern to all files",
     "lockProp" : "Lock / Unlock this attribute",
     "retreivingInfos" : "Retreiving file(s) information...",
-    "retreivingInfosSub" : "It may take a while..."
+    "retreivingInfosSub" : "It may take a while...",
+    "addFileButtonLabel" : "Add File"
   },
   "about" : {
     "description" : "Tagifier provide you an easy and fast way to convert and tag Youtube video as mp3 files."

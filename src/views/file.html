@@ -103,8 +103,8 @@
 					{{f.fileName}}<span class="format-label">.mp3</span>
 					<span class="file-progress" style="width:{{f.progress}}%"></span>
 				</div>
-				<div class="btn add-file-btn col-md-12 col-sm-12" ng-click="" ng-show="fileAvailable">
-					<i class="mdi mdi-cloud-upload"></i> Add File
+				<div class="btn add-file-btn col-md-12 col-sm-12" ng-click="showAddFileModal()" ng-show="fileAvailable">
+					<i class="mdi mdi-cloud-upload"></i> {{ 'file.addFileButtonLabel' | translate }}
 				</div>
 			</div>
 	  </div>
@@ -116,7 +116,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+        <h4 class="modal-title" id="myModalLabel">Captchat</h4>
       </div>
       <div class="modal-body">
 				<div id="error-msg-container" class="hide red darken-4 center">Error</div>
@@ -125,6 +125,24 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="submit" ng-hide="progressStatus == 'ready'" ng-disabled="!canStartProcess" ng-class="{'disabled':!canStartProcess}" class="btn btn-primary"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div class="modal" id="add-file-modal" tabindex="-1" role="dialog">
+  <form class="modal-dialog" role="document" ng-submit="retreiveFilesInfos(addFileInputUrl); addFileInputUrl = ''; hideAddFileModal();">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Add a file</h4>
+      </div>
+      <div class="modal-body">
+				<input type="url" value="" class="form-control" placeholder="https://www.youtube.com/watch?v=ZSt9tm3RoUU" ng-model="addFileInputUrl">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary"><i class="mdi mdi-download"></i>{{ 'file.addFileButtonLabel' | translate }}</button>
       </div>
     </div>
   </form>

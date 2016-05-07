@@ -15,31 +15,40 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.notified = false;
 	$scope.filePlayer;
 	$scope.playerStatus = "stop";
-	$scope.requestUrl = decodeURI($location.url().substr(1)).replace(/~2F/g,'/');
 
 	var date = new Date();
 	$scope.filePlayer = document.getElementById("file-player");
 
-	$http({
-	  method: 'GET',
-	  url: '/api/infos/'+$scope.requestUrl
-	}).then(function successCallback(response) {
-		parseFileData(response.data);
-		$scope.canEditTags = true;
-		$scope.canStartProcess = true;
-		$scope.fileAvailable = true;
-	}, function errorCallback(response) {
-		$scope.retreiveInfoError();
-	});
+	$scope.retreiveFilesInfos = function(url){
+		$scope.canEditTags = false;
+		$scope.canStartProcess = false;
+		$scope.fileAvailable = false;
+		$http({
+		  method: 'GET',
+		  url: '/api/infos/'+url
+		}).then(function successCallback(response) {
+			parseFileData(response.data);
+			$scope.canEditTags = true;
+			$scope.canStartProcess = true;
+			$scope.fileAvailable = true;
+		}, function errorCallback(response) {
+			$scope.retreiveInfoError();
+		});
+	};
+
+	var requestUrl = decodeURI($location.url().substr(1)).replace(/~2F/g,'/');
+	$scope.retreiveFilesInfos(requestUrl);
 
 	var parseFileData = function(data){
 
+		var baseIndex = $scope.exportFiles.length;
+
 		if(data.constructor === Object){	// 1 item
-			$scope.setFileVars(0,data);
+			$scope.setFileVars(baseIndex,data);
 		}
 		else{
 			$scope.singleFile = false;
-			for (var i = 0; i < data.length; i++) {
+			for (var i = baseIndex; i < data.length; i++) {
 					$scope.setFileVars(i,data[i]);
 			}
 		}
@@ -347,6 +356,14 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$scope.playerStatus = "pause";
 		}
 
+	}
+
+	$scope.showAddFileModal = function(){
+		$('#add-file-modal').modal('show');
+	}
+
+	$scope.hideAddFileModal = function(){
+		$('#add-file-modal').modal('hide');
 	}
 
 	$scope.tgfDownload = function(url,name){
