@@ -106,7 +106,8 @@ app.post('/checker', function(req,res)
 //
 
 
-app.get('/musics/:file', function(req,res){
+app.get('/musics/:file(*)', function(req,res){
+  console.log('exports/'+req.params.file);
   res.download('exports/'+req.params.file, req.query.name, function(err){
     if (err) {
       console.log(err);

@@ -7,12 +7,14 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.singleFile = true;
 	$scope.files = {};
 	$scope.dlFileUrl;
+	$scope.dlFileName;
 	$scope.fileReady = false;
 	$scope.currentFileIndex = 0;
 	$scope.exportFiles = [];
 	$scope.progress = 0;
 	$scope.captchatActive = false;
 	$scope.notified = false;
+	$scope.canRemoveFile = false;
 	$scope.filePlayer;
 	$scope.playerStatus = "stop";
 
@@ -42,6 +44,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	var parseFileData = function(data){
 
 		var baseIndex = $scope.exportFiles.length;
+		if(baseIndex > 0){
+			$scope.canRemoveFile = true;	// they will be more than 1 file so the user can remove them from thhe list
+		}
 
 		if(data.constructor === Object){	// 1 item
 			$scope.setFileVars(baseIndex,data);
@@ -55,10 +60,10 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	};
 
 	$scope.retreiveInfoError = function(){
-		$scope.canEditTags = false;
-		$scope.canStartProcess = false;
-		//alert($translate.instant("error.unableToRetreiveFileData"));
-		$state.go('^.main');
+		notify($translate.instant("error.unableToRetreiveFileData"));
+		if($scope.exportFiles.length == 1){	// if only one file, return to the main page
+			$state.go('^.main');
+		}
 	};
 
 	$scope.requestFiles = function (){
@@ -72,11 +77,31 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		$scope.socket.emit("fileRequest",{files:$scope.exportFiles});
 	};
 
+	$scope.removeFileFromList = function(fileIndex){
+		$scope.exportFiles.splice(fileIndex, 1);
+		if($scope.exportFiles.length < 2){
+			$scope.canRemoveFile = false;		//only 1 file in the list , cannnot remove files
+		}
+		if(fileIndex > 0){
+			$scope.setCurrentFile(fileIndex-1);
+		}
+		else{
+			$scope.setCurrentFile(0);
+		}
+		if(!$scope.$$phase) {
+			$scope.$apply();
+		}
+	};
+
 	$scope.reloadPage = function(){
 		location.reload();
 	};
 
 	$scope.requestProcess = function(){
+		if(!$scope.canStartProcess){
+			notify($translate.instant("error.plsFixFileErrors"));
+			return;
+		}
 		if($scope.captchatActive){
 			$scope.checkCaptchat();
 		}
@@ -129,7 +154,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$scope.fileReady = false;
 			var index = ev.data;
 			$scope.exportFiles[index].processing = true;
-			$scope.$apply();
+			if(!$scope.$$phase) {
+				$scope.$apply();
+			}
 		}
 
 		if(ev["event"] == "progress"){
@@ -138,7 +165,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			var perc = data.size/$scope.exportFiles[data.index].filesize*100;
 			if(perc == 100){
 				$scope.exportFiles[data.index].converting = true;
-				$scope.$apply();
+				if(!$scope.$$phase) {
+					$scope.$apply();
+				}
 			}
 			$scope.exportFiles[data.index].progress = perc;
 		}
@@ -146,28 +175,34 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$scope.fileReady = false;
 			var data = ev.data;
 			$scope.exportFiles[data.index].error = true;
-			$scope.$apply();
+			if(!$scope.$$phase) {
+				$scope.$apply();
+			}
 		}
 		if(ev["event"] == "file_finished"){
 				$scope.fileReady = false;
 				var i = ev.data.index;
 				$scope.exportFiles[i].progress = 100;
 				$scope.exportFiles[i].converting = true;
-				$scope.$apply();
+				if(!$scope.$$phase) {
+					$scope.$apply();
+				}
 		}
 		if(ev["event"] == "finished"){
 				var url = ev.data.path.replace("./exports/","musics/");
 				$scope.dlFileUrl = url;
+
 				$scope.fileReady = true;
 				if($scope.singleFile){
 					$scope.tgfDownload($scope.dlFileUrl,$scope.exportFiles[0].fileName+".mp3");
+					$scope.dlFileName = $scope.exportFiles[0].fileName+".mp3";
 				}
 				else{
 					var zipFileName = "Album.zip";
 					if($scope.exportFiles[0].album){
-						zipFileName = $scope.exportFiles[0].album+".zip";
+						$scope.dlFileName = $scope.exportFiles[0].album+".zip";
 					}
-					$scope.tgfDownload($scope.dlFileUrl,zipFileName);
+					$scope.tgfDownload($scope.dlFileUrl,$scope.dlFileName);
 				}
 
 				for (var i = 0; i < $scope.exportFiles.length; i++) {
@@ -182,7 +217,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 				$scope.canStartProcess = true;
 		}
 
-		$scope.$apply();
+		if(!$scope.$$phase) {
+			$scope.$apply();
+		}
 	});
 
 	$scope.setFileVars = function(index,data){
@@ -247,7 +284,6 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	    hours: dur.h
 		});
 		if(duration.asMinutes() > 10){
-			$scope.canStartProcess = false;
 			$scope.exportFiles[index].error = true;
 			$scope.canStartProcess = false;
 			notify($translate.instant("error.fileTooLong"));
@@ -286,6 +322,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	}
 
 	$scope.propIsLocked = function(propName,sourceIndex){
+		if(!$scope.exportFiles[sourceIndex]){
+			return false;
+		}
 		if(isInArray(propName,$scope.exportFiles[sourceIndex].lockedAttrs)){
 			return true;
 		}

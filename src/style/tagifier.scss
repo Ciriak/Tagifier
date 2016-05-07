@@ -213,7 +213,25 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 			background-color: $green;
 			transition-duration: 0.5s;
 		}
+		.remove-file-btn{
+			position: absolute;
+			right: 0;
+			top: 0;
+			padding: 2px;
+			background-color: rgba(0,0,0,0.8);
+			border: 1px #212121 solid;
+			border-radius: 3px;
+			opacity: 0;
+			transition-duration:0.3s;
+		}
 	}
+
+	.file-btn:hover{
+		.remove-file-btn{
+			opacity: 1.0;
+		}
+	}
+
 	.add-file-btn{
 		margin-top: 10px;
 		color:#cccccc;
