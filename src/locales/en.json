@@ -27,7 +27,8 @@
     "retreivingInfos" : "Retreiving file(s) information...",
     "retreivingInfosSub" : "It may take a while...",
     "addFileButtonLabel" : "Add File",
-    "removeFile" : "Remove this file from the list"
+    "removeFile" : "Remove this file from the list",
+    "process" : "Start conversion"
   },
   "about" : {
     "description" : "Tagifier provide you an easy and fast way to convert and tag Youtube video as mp3 files."

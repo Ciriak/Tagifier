@@ -20,7 +20,7 @@
 		</div>
 
 		<!-- Dl button -->
-		<button class="btn btn-primary btn-lg col-md-12" ng-disabled="!canStartProcess" ng-hide="fileReady" ng-show="fileAvailable" ng-click="requestProcess()" ng-class="{'processing' : processing,'disabled' : !canStartProcess}"><i class="mdi mdi-cloud-download"></i> {{ 'global.download' | translate }}</button>
+		<button class="btn btn-primary btn-lg col-md-12" ng-disabled="!canStartProcess" ng-hide="fileReady" ng-show="fileAvailable" ng-click="requestProcess()" ng-class="{'processing' : processing,'disabled' : !canStartProcess}"><i class="mdi mdi-download"></i> {{ 'file.process' | translate }}</button>
 
 		<!-- DL ready button -->
 		<a class="btn btn-primary btn-lg col-md-12" ng-show="fileReady" ng-href="{{dlFileUrl}}?name={{dlFileName}}" target="_blank"><i class="mdi mdi-cloud-download"></i> {{ 'global.download' | translate }}</a>
