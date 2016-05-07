@@ -46,6 +46,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		var baseIndex = $scope.exportFiles.length;
 		if(baseIndex > 0){
 			$scope.canRemoveFile = true;	// they will be more than 1 file so the user can remove them from thhe list
+			$scope.singleFile = false;
 		}
 
 		if(data.constructor === Object){	// 1 item
@@ -80,6 +81,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.removeFileFromList = function(fileIndex){
 		$scope.exportFiles.splice(fileIndex, 1);
 		if($scope.exportFiles.length < 2){
+			$scope.singleFile = true;
 			$scope.canRemoveFile = false;		//only 1 file in the list , cannnot remove files
 		}
 		if(fileIndex > 0){

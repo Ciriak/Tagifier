@@ -358,7 +358,7 @@ function genZip(session,callback){
     zip.file(session.files[i].fileName+".mp3", fileData);
   }
   var data = zip.generate({base64:false,compression:'DEFLATE'});
-  ofs.writeFile(zipPath, data, 'binary',function(err,data){
+  ofs.writeFileSync(zipPath, data, 'binary',function(err,data){
     callback(null,zipPath);
   });
 }
