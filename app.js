@@ -6,8 +6,9 @@ var express = require('express');
 var request = require('request');
 var id3 = require('node-id3');
 var random = require('random-gen');
+var async = require('async');
 var bodyParser = require('body-parser');
-var JSZip = require('jszip');
+var AdmZip = require('adm-zip');
 var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
@@ -352,17 +353,27 @@ function retreiveVideoInfos(url,callback){
 function genZip(session,callback){
 
   var zipPath = "./exports/"+session.id+".zip";
-  var zip = new JSZip();
+  var zip = new AdmZip();
+  var ended = 0;
+  var fileFuncList = [];
 
-  for (var i = 0; i < session.files.length; i++) {
-    var fileData = ofs.readFileSync(session.files[i].exportPath);
-    zip.file(session.files[i].fileName+".mp3", fileData);
-  }
+  async.forEachOf(session.files, function (file, index, callback) {
+    ofs.readFile(file.exportPath, function(err,fileData){
+      zip.addFile(file.fileName+".mp3", fileData);
+      return callback(null, file);
+    });
+  }, function (err) {
+      if (err){
+        return callback(err);
+      }
 
-  zip.generateNodeStream({type:'nodebuffer',streamFiles:true})
-  .pipe(ofs.createWriteStream(zipPath))
-  .on('end', function () {  //tofix : never end ???
-      callback(null,zipPath);
+      var zipData = zip.toBuffer();
+      ofs.writeFile(zipPath, zipData,function(err){
+        if (err){
+          return callback(err);
+        }
+        return callback(null,zipPath);
+      });
   });
 }
 
