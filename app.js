@@ -11,6 +11,7 @@ var bodyParser = require('body-parser');
 var JSZip = require("jszip");
 var compression = require('compression');
 var youtubedl = require('youtube-dl');
+var ffmpeg = require('fluent-ffmpeg');
 var fid = require('fast-image-downloader');
 
 
@@ -221,7 +222,7 @@ function processFileDl(session,fileIndex,socket,callback){
 
       var ytdlProcess = youtubedl(file.webpage_url,
         // Optional arguments passed to youtube-dl.
-        ['-x', '--audio-format', 'mp3'],
+        [],
         // Additional options can be given for calling `child_process.execFile()`.
         { cwd: __dirname });
 
