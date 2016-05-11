@@ -27,7 +27,6 @@
   },
   "homepage": "https://github.com/CYRIAQU3/tagifier#readme",
   "dependencies": {
-    "adm-zip": "^0.4.7",
     "async": "^1.5.2",
     "body-parser": "^1.15.0",
     "compression": "^1.6.1",
