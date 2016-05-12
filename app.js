@@ -11,9 +11,8 @@ var bodyParser = require('body-parser');
 var JSZip = require("jszip");
 var compression = require('compression');
 var youtubedl = require('youtube-dl');
-var ffmpeg = require('fluent-ffmpeg');
 var fid = require('fast-image-downloader');
-
+var video2mp3 = require('video2mp3');
 
 // CONVERT VARS
 
@@ -174,7 +173,7 @@ function processFileDl(session,fileIndex,socket,callback){
     var imgPath = "./public/img/temps/"+session.id+"-"+fileIndex+"."+img.fileType.ext;
     fs.write(imgPath, img.body);
     file.image = imgPath;
-    file.exportPath = dir+"/"+fileIndex+".mp3";
+    file.exportPath = dir+"/"+fileIndex+".mp4";
 
     youtubedl.getInfo(file.webpage_url, function(err, info) { //retreive file infos for checking size
       if(err){
@@ -222,11 +221,11 @@ function processFileDl(session,fileIndex,socket,callback){
 
       var ytdlProcess = youtubedl(file.webpage_url,
         // Optional arguments passed to youtube-dl.
-        [],
+        ['--format=18'],
         // Additional options can be given for calling `child_process.execFile()`.
         { cwd: __dirname });
 
-      ytdlProcess.pipe(ofs.createWriteStream('exports/'+session.id+'/'+fileIndex+'.mp3'));
+      ytdlProcess.pipe(ofs.createWriteStream('exports/'+session.id+'/'+fileIndex+'.mp4'));
 
       // Will be called when the download starts.
       ytdlProcess.on('info', function(info) {
@@ -237,22 +236,52 @@ function processFileDl(session,fileIndex,socket,callback){
         socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
       });
 
-      ytdlProcess.on('end', function() {
-
+      ytdlProcess.on('end', function() {  // DL ending
+        processFileConvert(file,function(err,file){ //convert the mp4 to mp3
+          if(err){                        //stop all if error
+            return callback(err);
+          }
+          processFileTag(file,function(err,file){    //tag the given mp3
+            if(err){                        //stop all if error
+              return callback(err);
+            }
+            callback(null,file);   //return the final result
+          });
+        });
         //file downloaded, apply the tags
         socket.emit("yd_event",{event:"file_finished",data:{index:fileIndex}});
 
         clearInterval(progressPing);  //end the filesize ping
-
-        processFileTag(file,function(err,ffile){
-          callback(null,ffile);   //return the final result
-        });
       });
     });
   });
 }
 
-function processFileTag(file,callback){
+function processFileConvert(file,callback){ //convert the given file from mp4 to mp3
+  var mainFormat = '.mp4';
+  var newFormat = '.mp3';
+  // find the index of last time word was used
+  // please note lastIndexOf() is case sensitive
+  var n = file.exportPath.toLowerCase().lastIndexOf(mainFormat.toLowerCase());
+  var pat = new RegExp(mainFormat, 'i');
+  // slice the string in 2, one from the start to the lastIndexOf
+  // and then replace the word in the rest
+  var mp3ExportPath = file.exportPath.slice(0, n) + file.exportPath.slice(n).replace(pat, newFormat);
+
+  video2mp3.convert(file.exportPath, {mp3path: mp3ExportPath}, function (err) {
+    if (err){
+      callback(err);
+    }
+    // set the new exportPath
+    var vep = file.exportPath;
+    file.exportPath = mp3ExportPath;
+    file.videoExportPath = vep;
+    // confirm converting succes and return the obj with the new exportPath
+    callback(null,file);
+  });
+}
+
+function processFileTag(file,callback){ //tags the given file
   // tags + little ad :)
   var tags = {
     encodedBy : "tagifier.net",
