@@ -286,6 +286,12 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		if(pt.length > 1){
 			$scope.exportFiles[index].tagPattern = "%artist% - %title%";
 			$scope.exportFiles[index].fileNamePattern = "%artist% - %title%";
+
+			if(!$scope.singleFile){		//if this is an album, set the track as first word
+				$scope.exportFiles[index].tagPattern = "%album% - %title%";
+				$scope.exportFiles[index].fileNamePattern = "%track% - %title%";
+			}
+
 		}
 		else{
 			$scope.exportFiles[index].tagPattern = "%title%";

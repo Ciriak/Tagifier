@@ -268,7 +268,7 @@ function processFileConvert(file,callback){ //convert the given file from mp4 to
   // and then replace the word in the rest
   var mp3ExportPath = file.exportPath.slice(0, n) + file.exportPath.slice(n).replace(pat, newFormat);
 
-  video2mp3.convert(file.exportPath, {mp3path: mp3ExportPath}, function (err) {
+  video2mp3.convert(file.exportPath, {mp3path: mp3ExportPath, }, function (err) {
     if (err){
       callback(err);
     }
@@ -327,7 +327,7 @@ function requestFileProcess(session,fileIndex,socket){
         console.log("--- PROCESSING ERROR ---");
         console.log("(Session "+session.id+" | File "+fileIndex+")");
         console.log(err);
-        socket.emit("error",err);
+        socket.emit("file_error",err);
         return;
       }
       session.processEnded++;
@@ -343,7 +343,7 @@ function requestFileProcess(session,fileIndex,socket){
         if(session.files.length > 1){
           genZip(session,function(err,path){
             if(err){
-              socket.emit("error",err);
+              socket.emit("file_error",err);
               return;
             }
             socket.emit("yd_event",{event:"finished",data:{path:path}}); // Return a final zip
@@ -385,11 +385,15 @@ function genZip(session,callback){
   var zipPath = "./exports/"+session.id+".zip";
   var zip = new JSZip();
   var ended = 0;
+  var albumName = "Tagifier";
+  if(session.files[0].album){
+    albumName = session.files[0].album;
+  }
   var fileFuncList = [];
 
   async.forEachOf(session.files, function (file, index, callback) {
     ofs.readFile(file.exportPath, function(err,fileData){
-      zip.file(file.fileName+".mp3", fileData);
+      zip.file(albumName+"/"+file.fileName+".mp3", fileData);
       return callback(null, file);
     });
   }, function (err) {
