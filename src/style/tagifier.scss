@@ -132,6 +132,10 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 .file{
 	padding-left: 0;
 	padding-right: 0;
+	
+	.final-dl-button{
+		padding:15px;
+	}
 	.file-tags.loading{
 		opacity: 0.2;
 	}

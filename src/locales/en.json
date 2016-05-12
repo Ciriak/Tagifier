@@ -3,7 +3,8 @@
     "ok": "Ok",
     "about" : "About",
     "facebook" : "Facebook",
-    "download" : "Download"
+    "download" : "Download",
+    "newProcess" : "Convert a new file"
   },
   "index" : {
     "welcomeMessage" : "An easy way to Tag and Download Youtube videos",

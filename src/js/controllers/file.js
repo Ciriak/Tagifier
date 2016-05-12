@@ -1,4 +1,4 @@
-app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,$location,notify)
+app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams,$translate,$location,notify)
 {
 	$scope.canStartProcess = false;
 	$scope.processing = false;
@@ -15,6 +15,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 	$scope.captchatActive = false;
 	$scope.notified = false;
 	$scope.canRemoveFile = false;
+	$scope.canAddFile = false;
 	$scope.filePlayer;
 	$scope.playerStatus = "stop";
 
@@ -25,6 +26,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
 		$scope.fileAvailable = false;
+		$scope.canAddFile = false;
 		$http({
 		  method: 'GET',
 		  url: '/api/infos/'+url
@@ -33,6 +35,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$scope.canEditTags = true;
 			$scope.canStartProcess = true;
 			$scope.fileAvailable = true;
+			$scope.canAddFile = false;
 		}, function errorCallback(response) {
 			$scope.retreiveInfoError();
 		});
@@ -45,8 +48,12 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 
 		var baseIndex = $scope.exportFiles.length;
 		if(baseIndex > 0){
+
 			$scope.canRemoveFile = true;	// they will be more than 1 file so the user can remove them from thhe list
 			$scope.singleFile = false;
+			if(!$scope.$$phase) {
+				$scope.$apply();
+			}
 		}
 
 		if(data.constructor === Object){	// 1 item
@@ -54,6 +61,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		}
 		else{
 			$scope.singleFile = false;
+			$scope.canRemoveFile = true;
 			for (var i = baseIndex; i < data.length; i++) {
 					$scope.setFileVars(i,data[i]);
 			}
@@ -75,11 +83,18 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		$scope.processing = true;
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
+		$scope.canRemoveFile = false;
 		$scope.socket.emit("fileRequest",{files:$scope.exportFiles});
 	};
 
-	$scope.removeFileFromList = function(fileIndex){
-		$scope.exportFiles.splice(fileIndex, 1);
+	$scope.removeFileFromList = function(file){
+		if(!$scope.canRemoveFile){
+			console.log("You are trying to remove a file from the list... but it seem you cant !");
+			return;
+		}
+		var index = $scope.exportFiles.indexOf(file);
+		$scope.exportFiles.splice(index, 1);
+
 		if($scope.exportFiles.length < 2){
 			$scope.singleFile = true;
 			$scope.canRemoveFile = false;		//only 1 file in the list , cannnot remove files
@@ -90,6 +105,7 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 		else{
 			$scope.setCurrentFile(0);
 		}
+
 		if(!$scope.$$phase) {
 			$scope.$apply();
 		}
@@ -139,7 +155,9 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 			$('#captchat-modal').modal('hide');
 			$scope.captchatActive = false;
 			$scope.canEditTags = false;
+			$scope.canAddFile = false;
 			$scope.canStartProcess = false;
+			$scope.canRemoveFile = false;
 			$scope.requestFiles();
 		}, function errorCallback(r) {
 			$('#captchat-modal').modal('show');
@@ -215,8 +233,10 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate,
 				}
 
 				$scope.processing = false;
-				$scope.canEditTags = true;
-				$scope.canStartProcess = true;
+				$scope.canEditTags = false;
+				$scope.canStartProcess = false;
+				$scope.canRemoveFile = false;
+				$scope.canAddFile = false;
 		}
 
 		if(!$scope.$$phase) {
