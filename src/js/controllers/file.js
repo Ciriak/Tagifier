@@ -1,123 +1,144 @@
-app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
+app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams,$translate,$location,notify)
 {
-	$scope.baseStr;
-	$scope.userPattern;
-	$scope.pattern;
 	$scope.canStartProcess = false;
 	$scope.processing = false;
 	$scope.canEditTags = false;
-	$scope.file = {};
+	$scope.fileAvailable = false;
+	$scope.singleFile = true;
+	$scope.files = {};
+	$scope.dlFileUrl;
+	$scope.dlFileName;
+	$scope.fileReady = false;
+	$scope.currentFileIndex = 0;
+	$scope.exportFiles = [];
 	$scope.progress = 0;
-	$scope.progressStatus = 'waiting';
 	$scope.captchatActive = false;
 	$scope.notified = false;
+	$scope.canRemoveFile = false;
+	$scope.canAddFile = false;
+	$scope.filePlayer;
+	$scope.playerStatus = "stop";
 
-	$(function () {		//instantiate tooltip
-	  $('[data-toggle="tooltip"]').tooltip()
-	});
+	var date = new Date();
+	$scope.filePlayer = document.getElementById("file-player");
 
-	$scope.exportFile = {};
-	$http({
-	  method: 'GET',
-	  url: '/api/file/'+$stateParams.fileId
-	}).then(function successCallback(response) {
-		parseFileData(response.data);
-		$scope.canEditTags = true;
-		$scope.canStartProcess = true;
-	}, function errorCallback(response) {
-		$scope.retreiveInfoError();
-	});
-
-	var parseFileData = function(data){
-		$scope.file = data.items[0];
-		if(!$scope.file){
-			$scope.retreiveInfoError();
-			return;
-		}
-		$scope.exportFile.image = getBestThumbnail($scope.file.snippet.thumbnails);
-		$scope.exportFile.year = $scope.file.snippet.publishedAt.substr(0,4);
-		$scope.exportFile.id = $stateParams.fileId;
-
-		//check if the file duration is longer than 10 min
-		var dur = $scope.file.contentDetails.duration;
-		if(YTDurationToSeconds(dur) > 600){
-			$scope.canEditTags = false;
-			$scope.canStartProcess = false;
-			alert($translate.instant("error.fileTooLong"));
-			$state.go("^.main");
-			return;
-		}
-
-		var pt = $scope.file.snippet.localized.title.split(" - ");
-		$scope.userPattern = "%artist% - %title%";
-		// if xx - xx format
-		if(pt.length == 2){
-			$scope.baseStr =  $scope.file.snippet.localized.title;
-		}
-
-		else {
-			$scope.baseStr =  $scope.file.snippet.channelTitle+" - "+$scope.file.snippet.localized.title;
-		}
-
-		$scope.genPattern();
-	}
-
-	$scope.genPattern = function(){
-		$scope.pattern = $scope.userPattern.replace(/%([a-zA-Z0-9])\w+%/g,"(.*)");
-		$scope.vars = $scope.userPattern.match(/%([a-zA-Z0-9])\w+%/g);
-		for (var i = 0; i < $scope.vars.length; i++)
-		{
-			$scope.vars[i] = $scope.vars[i].replace("%","").replace("%",""); //remove %x%
-		};
-		var extrData = $scope.baseStr.match(new RegExp($scope.pattern));
-		if(!extrData)
-		{
-			$scope.canDownload = false;
-			return;
-		}
-
-		for (var i = 0; i < $scope.vars.length; i++)
-		{
-			if(extrData[i+1])
-			{
-				$scope.exportFile[$scope.vars[i]] = extrData[i+1];
-			}
-		};
-
-	}
-
-	$scope.retreiveInfoError = function(){
+	$scope.retreiveFilesInfos = function(url){
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
-		alert($translate.instant("error.unableToRetreiveFileData"));
-		$state.go('^.main');
-	}
+		$scope.fileAvailable = false;
+		$scope.canAddFile = false;
+		$http({
+		  method: 'GET',
+		  url: '/api/infos/'+url
+		}).then(function successCallback(response) {
+			parseFileData(response.data);
+			$scope.canEditTags = true;
+			$scope.canStartProcess = true;
+			$scope.fileAvailable = true;
+			$scope.canAddFile = false;
+		}, function errorCallback(response) {
+			$scope.retreiveInfoError();
+		});
+	};
 
-	$scope.requestFile = function(){
+	var requestUrl = decodeURI($location.url().substr(1)).replace(/~2F/g,'/');
+	$scope.retreiveFilesInfos(requestUrl);
+
+	var parseFileData = function(data){
+
+		var baseIndex = $scope.exportFiles.length;
+		if(baseIndex > 0){
+
+			$scope.canRemoveFile = true;	// they will be more than 1 file so the user can remove them from thhe list
+			$scope.singleFile = false;
+			if(!$scope.$$phase) {
+				$scope.$apply();
+			}
+		}
+
+		if(data.constructor === Object){	// 1 item
+			$scope.setFileVars(baseIndex,data);
+		}
+		else{
+			$scope.singleFile = false;
+			$scope.canRemoveFile = true;
+			for (var i = baseIndex; i < data.length; i++) {
+					$scope.setFileVars(i,data[i]);
+			}
+		}
+	};
+
+	$scope.retreiveInfoError = function(){
+		notify($translate.instant("error.unableToRetreiveFileData"));
+		if($scope.exportFiles.length == 1){	// if only one file, return to the main page
+			$state.go('^.main');
+		}
+	};
+
+	$scope.requestFiles = function (){
+		if($scope.processing){
+			return;
+		}
+		$scope.fileReady = false;
 		$scope.processing = true;
-		$scope.socket.emit("fileRequest",{file:$scope.exportFile});
-	}
+		$scope.canEditTags = false;
+		$scope.canStartProcess = false;
+		$scope.canRemoveFile = false;
+		$scope.socket.emit("fileRequest",{files:$scope.exportFiles});
+	};
+
+	$scope.removeFileFromList = function(file){
+		if(!$scope.canRemoveFile){
+			console.log("You are trying to remove a file from the list... but it seem you cant !");
+			return;
+		}
+		var index = $scope.exportFiles.indexOf(file);
+		$scope.exportFiles.splice(index, 1);
+
+		if($scope.exportFiles.length < 2){
+			$scope.singleFile = true;
+			$scope.canRemoveFile = false;		//only 1 file in the list , cannnot remove files
+		}
+		if(fileIndex > 0){
+			$scope.setCurrentFile(fileIndex-1);
+		}
+		else{
+			$scope.setCurrentFile(0);
+		}
+
+		if(!$scope.$$phase) {
+			$scope.$apply();
+		}
+	};
 
 	$scope.reloadPage = function(){
 		location.reload();
 	};
 
 	$scope.requestProcess = function(){
+		if(!$scope.canStartProcess){
+			notify($translate.instant("error.plsFixFileErrors"));
+			return;
+		}
 		if($scope.captchatActive){
 			$scope.checkCaptchat();
 		}
 		else {
-			console.log($translate.instant("file.pleaseEnterCaptchat"));
 			$scope.generateCaptchat();
 			$('#captchat-modal').modal('show');
 		}
-
-	}
+	};
 
 	$scope.generateCaptchat = function(){
 		$scope.captchatActive = true;
 		ACPuzzle.create('buxt.317r8uls-ge9STPl6ilzpmYgl8G', 'solve-media-container', "");
-	}
+	};
+
+	$scope.setCurrentFile = function(i){
+		$scope.currentFileIndex = i;
+		$scope.filePlayer.pause();	//stop the audio player if playing
+		$scope.playerStatus = "stop";
+	};
 
 	$scope.checkCaptchat = function(){
 		var resp = $("#adcopy_response").val();
@@ -133,53 +154,287 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 		}).then(function successCallback(r) {
 			$('#captchat-modal').modal('hide');
 			$scope.captchatActive = false;
-			$scope.processing = true;
 			$scope.canEditTags = false;
+			$scope.canAddFile = false;
 			$scope.canStartProcess = false;
-			$scope.requestFile();
+			$scope.canRemoveFile = false;
+			$scope.requestFiles();
 		}, function errorCallback(r) {
 			$('#captchat-modal').modal('show');
 			$scope.processing = false;
-			alert($translate.instant("error.invalidCaptchat"));
+			notify($translate.instant("error.invalidCaptchat"));
 			$scope.generateCaptchat();
 		});
-	}
+	};
 
 	$scope.socket.on("yd_event",function(ev){
-		//console.log(ev);
-		if(ev["event"] == "progress"){
-			if(ev.data.videoId == $scope.exportFile.id){
-				$scope.processing = true;
-				$scope.canEditTags = false;
-				$scope.canStartProcess = false;
-				$scope.progress = ev.data.progress.percentage;
-				$scope.progressStatus = "processing";
+		console.log(ev);
+
+		if(ev["event"] == "file_download_started"){
+			$scope.fileReady = false;
+			var index = ev.data;
+			$scope.exportFiles[index].processing = true;
+			if(!$scope.$$phase) {
 				$scope.$apply();
 			}
 		}
-		if(ev["event"] == "error"){
-			$scope.buttonLabel = "Download";
-			$scope.processing = false;
-			$scope.canEditTags = true;
-			$scope.canStartProcess = true;
-			alert($translate.instant("error.internalError"));
+
+		if(ev["event"] == "progress"){
+			$scope.fileReady = false;
+			var data = ev.data;
+			var perc = data.size/$scope.exportFiles[data.index].filesize*100;
+			if(perc == 100){
+				$scope.exportFiles[data.index].converting = true;
+				if(!$scope.$$phase) {
+					$scope.$apply();
+				}
+			}
+			$scope.exportFiles[data.index].progress = perc;
+		}
+		if(ev["event"] == "file_error"){
+			$scope.fileReady = false;
+			var data = ev.data;
+			$scope.exportFiles[data.index].error = true;
+			if(!$scope.$$phase) {
+				$scope.$apply();
+			}
+		}
+		if(ev["event"] == "file_finished"){
+				$scope.fileReady = false;
+				var i = ev.data.index;
+				$scope.exportFiles[i].progress = 100;
+				$scope.exportFiles[i].converting = true;
+				if(!$scope.$$phase) {
+					$scope.$apply();
+				}
 		}
 		if(ev["event"] == "finished"){
-			if(ev.data.id == $scope.exportFile.id){
-				$scope.progressStatus = "ready";
+				var url = ev.data.path.replace("./exports/","musics/");
+				$scope.dlFileUrl = url;
+
+				$scope.fileReady = true;
+				if($scope.singleFile){
+					$scope.tgfDownload($scope.dlFileUrl,$scope.exportFiles[0].fileName+".mp3");
+					$scope.dlFileName = $scope.exportFiles[0].fileName+".mp3";
+				}
+				else{
+					var zipFileName = "Album.zip";
+					if($scope.exportFiles[0].album){
+						$scope.dlFileName = $scope.exportFiles[0].album+".zip";
+					}
+					$scope.tgfDownload($scope.dlFileUrl,$scope.dlFileName);
+				}
+
+				for (var i = 0; i < $scope.exportFiles.length; i++) {
+					$scope.exportFiles[i].progress = 0;
+					$scope.exportFiles[i].converting = false;
+					$scope.exportFiles[i].processing = false;
+					$scope.exportFiles[i].error = false;
+				}
+
 				$scope.processing = false;
-				$scope.canEditTags = true;
-				$scope.canStartProcess = true;
-				$scope.exportFile.url = ev.data.url.replace("./exports/","musics/");
-				$scope.exportFile.fullUrl = $scope.exportFile.url+"?name="+$scope.exportFile.artist+" - "+$scope.exportFile.title;
-				$scope.tgfDownload();
+				$scope.canEditTags = false;
+				$scope.canStartProcess = false;
+				$scope.canRemoveFile = false;
+				$scope.canAddFile = false;
+		}
+
+		if(!$scope.$$phase) {
+			$scope.$apply();
+		}
+	});
+
+	$scope.setFileVars = function(index,data){
+		$scope.files[index] = data;
+		$scope.exportFiles[index] = {
+			lockedAttrs : [],
+			converting : false,
+			processing : false,
+			error : false,
+			progress : 0
+		};
+
+		$scope.exportFiles[index].webpage_url = $scope.files[index].webpage_url;
+		$scope.exportFiles[index].image = $scope.files[index].thumbnail;
+
+		//set the final filesize (bigger file)
+		$scope.exportFiles[index].filesize = 0;
+		// ... only if specified
+		for (var o = 0; o < $scope.files[index].formats.length; o++) {
+			if($scope.files[index].formats[o].filesize){	//continue only if filesize is specified
+				var t = $scope.files[index].formats[o].filesize;
+				if(t > $scope.exportFiles[index].filesize){	//update only if superior
+					$scope.exportFiles[index].filesize = t;
+				}
+			}
+		}
+		if($scope.files[index].formats[$scope.files[index].formats.length-1].filesize){
+			$scope.exportFiles[index].filesize = $scope.files[index].formats[$scope.files[index].formats.length-1].filesize;
+		}
+
+		//set release year if defined, else current year
+		$scope.exportFiles[index].year = date.getFullYear();
+		if(data.upload_date){
+			$scope.exportFiles[index].year = data.upload_date.substr(0,4);
+		}
+		//
+
+		$scope.exportFiles[index].track = index+1;
+
+		//Define the pattern, depending of the file name format
+		var pt = $scope.files[index].fulltitle.split(" - ");
+		if(pt.length > 1){
+			$scope.exportFiles[index].tagPattern = "%artist% - %title%";
+			$scope.exportFiles[index].fileNamePattern = "%artist% - %title%";
+
+			if(!$scope.singleFile){		//if this is an album, set the track as first word
+				$scope.exportFiles[index].tagPattern = "%album% - %title%";
+				$scope.exportFiles[index].fileNamePattern = "%track% - %title%";
+			}
+
+		}
+		else{
+			$scope.exportFiles[index].tagPattern = "%title%";
+			$scope.exportFiles[index].fileNamePattern = "%title%";
+			// in this case, we set the Uploader as the "artist"
+			if(data.uploader){
+				$scope.exportFiles[index].artist = data.uploader;
 			}
 		}
 
-		$scope.$apply();
-	});
 
-	$scope.tgfDownload = function(){
+		$scope.genPattern(index);
+
+		var dur = returnDur($scope.files[index].duration);
+		var duration = moment.duration({
+	    seconds: dur.s,
+	    minutes: dur.m,
+	    hours: dur.h
+		});
+		if(duration.asMinutes() > 10){
+			$scope.exportFiles[index].error = true;
+			$scope.canStartProcess = false;
+			notify($translate.instant("error.fileTooLong"));
+		}
+	};
+
+	$scope.overrideProp = function(propName,sourceIndex,isPattern){
+		for (var file in  $scope.exportFiles) {
+			var targetIndex = parseInt(file);
+			// apply the new defined tag to all files
+			if(sourceIndex != file && !$scope.propIsLocked(propName,targetIndex)){
+				$scope.exportFiles[targetIndex][propName] = $scope.exportFiles[sourceIndex][propName];
+				setAnimation("tag-updated",$(".file-"+targetIndex));
+			}
+			if(sourceIndex != file && $scope.propIsLocked(propName,targetIndex)){	//different animation if the tag is locked for this track
+				setAnimation("tag-locked",$(".file-"+targetIndex));
+			}
+
+			if(isPattern){	//regen the patern if it has been changed
+				$scope.genPattern(targetIndex);
+			}
+
+		}
+		console.log('The tag "'+$scope.exportFiles[sourceIndex][propName]+'" ('+propName+') from the track '+sourceIndex+' has been applyed to all tracks');
+	};
+
+	$scope.togglePropLock = function(propName,sourceIndex){
+		if(isInArray(propName,$scope.exportFiles[sourceIndex].lockedAttrs)){
+			//remove the attr from array
+			var index = $scope.exportFiles[sourceIndex].lockedAttrs.indexOf(propName);
+			$scope.exportFiles[sourceIndex].lockedAttrs.splice(index, 1);
+		}
+		else {
+			$scope.exportFiles[sourceIndex].lockedAttrs.push(propName);
+		}
+	}
+
+	$scope.propIsLocked = function(propName,sourceIndex){
+		if(!$scope.exportFiles[sourceIndex]){
+			return false;
+		}
+		if(isInArray(propName,$scope.exportFiles[sourceIndex].lockedAttrs)){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
+	$scope.genPattern = function(index){
+
+		console.log("Generating pattern for "+$scope.files[index].fulltitle+"...");
+		var fileData = $scope.exportFiles[index];
+		var pattern = fileData.tagPattern.replace(/%([a-zA-Z0-9])\w+%/g, '(.*)');
+		var fileVars = fileData.tagPattern.match(/%([a-zA-Z0-9])\w+%/g);
+
+		for (var i = 0; i < fileVars.length; i++)
+		{
+			fileVars[i] = fileVars[i].replace("%","").replace("%",""); //remove %x%
+		};
+
+		//Find tags inside the fulltitle
+		var extrData = $scope.files[index].fulltitle.match(new RegExp(pattern));
+		if(!extrData)
+		{
+			return;
+		}
+
+		for (var i = 0; i <fileVars.length; i++)
+		{
+			if(extrData[i+1])	//apply tag if prop exist
+			{
+				fileData[fileVars[i]] = extrData[i+1];
+			}
+		};
+
+		$scope.getDynamicHeight = function(elem){
+			var w = $("."+elem).width();
+			return w;
+		}
+
+		//generate the fileName (based on the fileName pattern)
+		if(!fileData.fileNamePattern){	//if no pattern defined set %artist - %title% model
+			fileData.fileName = fileData.artist+" - "+fileData.title;
+			return;
+		}
+
+		var fileVars = fileData.fileNamePattern.match(/%([a-zA-Z0-9])\w+%/g);
+		var altFileVars = [];
+
+		var fnp = fileData.fileNamePattern;	//avoid to replace the in-view tag
+		for (var i = 0; i < fileVars.length; i++)
+		{
+			var tag = fileVars[i].replace("%","").replace("%","");  //remove %x%
+			fnp = fnp.replace(fileVars[i],fileData[tag]);	//%x% -> file.x
+		};
+		fileData.fileName = fnp;
+
+	};
+
+	$scope.togglePlayer = function(){
+
+		if($scope.filePlayer.paused){
+			$scope.filePlayer.play();
+			$scope.playerStatus = "play";
+		}
+		else{
+			$scope.filePlayer.pause();
+			$scope.playerStatus = "pause";
+		}
+
+	}
+
+	$scope.showAddFileModal = function(){
+		$('#add-file-modal').modal('show');
+	}
+
+	$scope.hideAddFileModal = function(){
+		$('#add-file-modal').modal('hide');
+	}
+
+	$scope.tgfDownload = function(url,name){
+		var fullUrl = url+"?name="+name;
 		var notification;
 		var nOptions = {
 			title : "File Ready",
@@ -191,12 +446,12 @@ app.controller('fileCtrl', function($scope,$state,$http,$stateParams,$translate)
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {
-				window.open($scope.exportFile.fullUrl, '_blank');
+				window.open(fullUrl, '_blank');
 				notification.close();
 			};
 		}
 		else{
-			console.log("Your file is ready");
+			window.open(fullUrl, '_blank');
 		}
 	};
 });
@@ -227,4 +482,39 @@ var getBestThumbnail = function(t){
 	else{
 		return "";
 	}
+};
+
+var returnDur = function(dur){
+	var d = {
+		h : 0,
+		m : 0,
+		s : 0
+	};
+	var dur = dur.split(":");
+	if(dur.length == 3){
+		d.h = dur[0];
+		d.m = dur[1];
+		d.s = dur[2];
+	}
+	if(dur.length == 2){
+		d.m = dur[0];
+		d.s = dur[1];
+	}
+	else{
+		d.s = dur[0];
+	}
+
+	return d;
 }
+
+var isInArray = function (value, array) {
+  return array.indexOf(value) > -1;
+}
+
+var setAnimation = function(animation,target){
+	target.addClass(animation);
+
+	setTimeout(function () {
+	    target.removeClass(animation);
+	}, 500);
+};

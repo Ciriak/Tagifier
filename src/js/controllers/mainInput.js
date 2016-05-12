@@ -5,32 +5,15 @@ app.controller('mainInputCtrl', function($scope,$state,$translate)
 	$scope.playlist = false;
 	$scope.currentId;
   	$scope.checkUrl = function() {
-  		var r = youtube_parser($scope.currentUrl);
-	  	if(!r.id && !r.playlist){
-	  		console.log(r);
-	  		$scope.goodUrl = false;
-	  		console.log("bad");
-	  		return;
-	  	}
-	  	if(r.id){
-	  		$scope.goodUrl = true;
-	  		$scope.currentId = r.id;
-	  	}
-	  	if(r.playlist){
-	  		$scope.goodUrl = true;
-	  		$scope.playlist = true;
-	  		$scope.currentId = r.playlist;
-	  	}
+			$scope.goodUrl = true;
+			//todo
 	}
 
 	$scope.miSubmit = function(){
+		var convertUrl = encodeURI($scope.currentUrl);
+		console.log(convertUrl);
 		if($scope.goodUrl){
-			if($scope.playlist){
-				$state.go('playlist',{fileId:$scope.currentId});
-				return;
-			}
-
-			$state.go('file',{fileId:$scope.currentId});
+			$state.go('file',{fileUrl:convertUrl});
 		}
 		else{
 			alert($translate.instant("error.invalidLink"));
@@ -52,11 +35,5 @@ app.controller('mainInputCtrl', function($scope,$state,$translate)
 		}
 		return r;
 
-	}
-
-	var ytPlaylistChecker = function(url){
-		var reg = new RegExp("^(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?.*?(?:v|list)=(.*?)(?:&|$)|^(?:https?:\/\/)?(?:www\.)?youtu\.?be(?:\.com)?(?:(?!=).)*\/(.*)$","i");
-		var match = reg.exec(url);
-		return match[1];
 	}
 });

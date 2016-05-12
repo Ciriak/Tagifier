@@ -4,25 +4,34 @@ var ofs = require('fs');  // old fs
 var port = 80;
 var express = require('express');
 var request = require('request');
-var nodeID3 = require('node-id3');
+var id3 = require('node-id3');
 var random = require('random-gen');
-var bodyParser = require('body-parser')
+var async = require('async');
+var bodyParser = require('body-parser');
+var JSZip = require("jszip");
+var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
+var video2mp3 = require('video2mp3');
 
-var YouTube = require('youtube-node');
-var ypi = require('youtube-playlist-info');
-var youTube = new YouTube();
+// CONVERT VARS
+
+var maxProcess = 3;     //max simul
+var processList = 0;   //list of current processing items
+var waitingList = 0;   // list of items inside the waiting queue
+
+//
 
 var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
   ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
-}
+};
 
 var app = express();
 var server = app.listen(port,function(){
   console.log("Tagifier is listening on port "+port);
 });
+server.timeout = 180000;  //3min
 
 // clean function remove all temp thumbnails and mp3
 
@@ -55,8 +64,8 @@ var config = {};
 
 // retreive config file
 config = fs.readJSON("config.json");
-youTube.setKey(config.youtube_api_key);
 
+app.use(compression());
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
@@ -99,24 +108,21 @@ app.post('/checker', function(req,res)
 //
 
 
-app.get('/musics/:file', function(req,res){
-  res.download('exports/'+req.params.file,req.query.name+".mp3");
-});
-
-app.get('/api/file/:fileId(*{1,11})', function(req,res){
-	retreiveVideoInfos(req.params.fileId,function(infos,err){
-    if(err){
-      res.send(err);
-      return;
+app.get('/musics/:file(*)', function(req,res){
+  console.log('exports/'+req.params.file);
+  res.download('exports/'+req.params.file, req.query.name, function(err){
+    if (err) {
+      console.log(err);
     }
-    res.send(infos);
   });
 });
 
-app.get('/api/playlist/:fileId', function(req,res){
-  retreivePlaylistInfos(req.params.fileId,function(infos,err){
+app.get('/api/infos/:fileId(*)', function(req,res){
+  var fileUrl = req.params.fileId+getToStr(req.query);
+  console.log(fileUrl);
+	retreiveVideoInfos(fileUrl,function(infos,err){
     if(err){
-      res.send(err);
+      res.status(405).send(err);
       return;
     }
     res.send(infos);
@@ -126,122 +132,317 @@ app.get('/api/playlist/:fileId', function(req,res){
 io.on('connection', function (socket){
 
   socket.on('fileRequest', function (data) {
-    var session = random.alphaNum(16);
-    var file = data.file;
+    var session = {
+      id : random.alphaNum(16),
+      processEnded : 0,
+      files : data.files
+    }
+    session.path = "exports/"+session.id;
 
-    fid(file.image, fidOpt.TIMEOUT, fidOpt.ALLOWED_TYPES, "", function(err, img){
-      if (err) {
-        console.log(err.error);
-      } else {
+    //create the temp session path
+    if (!ofs.existsSync(session.path)){
+      ofs.mkdirSync(session.path);
+    }
 
-        var dir = "./public/img/temps"; // create the temp folder if not exist (thumbnail)
-        if (!fs.exists(dir)){
-            fs.mkdir(dir);
-        }
+    var processEnded = 0;
 
-        dir = "./exports"; // create the export folder if not exist (mp3)
-        if (!fs.exists(dir)){
-            fs.mkdir(dir);
-        }
-
-        var imgPath = "./public/img/temps/"+session+"."+img.fileType.ext;
-        fs.write(imgPath, img.body);
-        file.image = imgPath;
-
-        var poptions = {
-          url: "https://youtu.be/"+data.file.id,
-          exportPath : dir+"/"+session+".mp3"
-        };
-
-        youtubedl.getInfo(poptions.url, function(err, info) {
-          if (err) throw err;
-          file.info = info;
-
-          //
-          // check if the download can be done
-          //
-          retreiveVideoInfos(data.file.id,function(infos,err){
-            if(err){
-              return;
-            }
-            var file = infos.items[0];
-            var ytDur = YTDurationToSeconds(file.contentDetails.duration);
-            var maxDur = 10*60;
-
-            if(ytDur > maxDur){
-              var validE = "VIDEO_TOO_LONG";
-            }
-
-            if(validE){
-              socket.emit("yd_event",{event:"error",data:err});
-              return;
-            }
-
-                // START DOWNLOAD
-
-            var v = youtubedl.exec(poptions.url, ['-x', '--audio-format', 'mp3','--output','exports/'+session+'.%(ext)s"'], {}, function(err, output) {
-            if (err){
-              socket.emit("yd_event",{event:"error",data:err});
-              return;
-            }
-
-            // little ad :)
-            file.encodedBy = "tagifier.net";
-            file.remixArtist = "tagifier.net";
-            file.comment = "tagifier.net";
-
-            var t = nodeID3.write(file, poptions.exportPath);   //Pass tags and filepath
-            if(!t){
-              socket.emit("yd_event",{event:"error",data:"tag"});
-              return;
-            }
-              if (fs.exists(imgPath)) {
-                fs.remove(imgPath);
-              }
-              file.url = poptions.exportPath;
-              socket.emit("yd_event",{event:"finished",data:file});
-
-              setTimeout(function(){
-                if (fs.exists(poptions.exportPath)) {
-                  fs.remove(poptions.exportPath);
-                }
-              },600*1000); //remove the file after 10 min (600 sec)*/
-
-            });
-
-          });
-
-        });
-      }
-    });
+    for (var fileIndex = 0; fileIndex < session.files.length; fileIndex++) {
+      requestFileProcess(session,fileIndex,socket);
+    }
   });
 });
 
-function retreiveVideoInfos(id,callback){
-  youTube.getById(id, function(error, result) {
-    if (error) {
-      callback("",error);
+function processFileDl(session,fileIndex,socket,callback){
+  var file = session.files[fileIndex];
+  fid(file.image, fidOpt.TIMEOUT, fidOpt.ALLOWED_TYPES, "", function(err, img){ //download the file image
+    if (err) {
+      callback(err);  //return error
+      return;
+    }
+
+    var dir = "./public/img/temps"; // create the temp folder if not exist (thumbnail)
+    if (!fs.exists(dir)){
+        fs.mkdir(dir);
+    }
+
+    dir = "./exports/"+session.id; // create the export folder if not exist (mp3)
+    if (!fs.exists(dir)){
+        fs.mkdir(dir);
+    }
+
+    var imgPath = "./public/img/temps/"+session.id+"-"+fileIndex+"."+img.fileType.ext;
+    fs.write(imgPath, img.body);
+    file.image = imgPath;
+    file.exportPath = dir+"/"+fileIndex+".mp4";
+
+    youtubedl.getInfo(file.webpage_url, function(err, info) { //retreive file infos for checking size
+      if(err){
+        callback(err);  //return error
+        return;
+      }
+
+      file.ytdlInfos = info;
+      file.size = retreiveFileSize(file.ytdlInfos);  //retreive file size
+      if(!file.size && !file.duration){
+        var err = "INVALID_FILE_SIZE";
+        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
+        callback(err);  //return error
+        return;
+      }
+      if(file.size){
+        if(file.size > 1677721600){ //200 mo
+          var err = "FILE_TOO_BIG";
+          socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
+          callback(err);  //return error
+          return;
+        }
+      }
+      //
+      // START DOWNLOAD //
+      //
+
+      // send the file size every 500 ms
+      file.lastProgress = 0;
+      var progressPing = setInterval(function(){
+        var stats = ofs.statSync(file.exportPath);
+        var fileSizeInBytes = stats["size"];
+        var sinfo = {
+          session : session.id,
+          index : fileIndex,
+          size : fileSizeInBytes
+        }
+        if(sinfo.size > file.lastProgress){  //send progress only if progress
+          file.lastProgress = sinfo.size;
+
+          socket.emit("yd_event",{event:"progress",data:sinfo});
+        }
+
+      },1000);
+
+      var ytdlProcess = youtubedl(file.webpage_url,
+        // Optional arguments passed to youtube-dl.
+        ['--format=18'],
+        // Additional options can be given for calling `child_process.execFile()`.
+        { cwd: __dirname });
+
+      ytdlProcess.pipe(ofs.createWriteStream('exports/'+session.id+'/'+fileIndex+'.mp4'));
+
+      // Will be called when the download starts.
+      ytdlProcess.on('info', function(info) {
+        socket.emit("yd_event",{event:"file_download_started",data:fileIndex}); //send a status for this file
+      });
+
+      ytdlProcess.on('error', function error(err) {
+        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
+      });
+
+      ytdlProcess.on('end', function() {  // DL ending
+        processFileConvert(file,function(err,file){ //convert the mp4 to mp3
+          if(err){                        //stop all if error
+            return callback(err);
+          }
+          processFileTag(file,function(err,file){    //tag the given mp3
+            if(err){                        //stop all if error
+              return callback(err);
+            }
+            callback(null,file);   //return the final result
+          });
+        });
+        //file downloaded, apply the tags
+        socket.emit("yd_event",{event:"file_finished",data:{index:fileIndex}});
+
+        clearInterval(progressPing);  //end the filesize ping
+      });
+    });
+  });
+}
+
+function processFileConvert(file,callback){ //convert the given file from mp4 to mp3
+  var mainFormat = '.mp4';
+  var newFormat = '.mp3';
+  // find the index of last time word was used
+  // please note lastIndexOf() is case sensitive
+  var n = file.exportPath.toLowerCase().lastIndexOf(mainFormat.toLowerCase());
+  var pat = new RegExp(mainFormat, 'i');
+  // slice the string in 2, one from the start to the lastIndexOf
+  // and then replace the word in the rest
+  var mp3ExportPath = file.exportPath.slice(0, n) + file.exportPath.slice(n).replace(pat, newFormat);
+
+  video2mp3.convert(file.exportPath, {mp3path: mp3ExportPath, }, function (err) {
+    if (err){
+      callback(err);
+    }
+    // set the new exportPath
+    var vep = file.exportPath;
+    file.exportPath = mp3ExportPath;
+    file.videoExportPath = vep;
+    // confirm converting succes and return the obj with the new exportPath
+    callback(null,file);
+  });
+}
+
+function processFileTag(file,callback){ //tags the given file
+  // tags + little ad :)
+  var tags = {
+    encodedBy : "tagifier.net",
+    remixArtist : "tagifier.net",
+    comment : "tagifier.net",
+    title : file.title,
+    artist : file.artist,
+    composer : file.artist,
+    image : file.image,
+    album : file.album,
+    year : file.year
+  }
+
+  var tagsWrite = id3.write(tags, file.exportPath);   //Pass tags and filepath
+  if(!tagsWrite){
+    callback(tagsWrite);  //return error
+    return;
+  }
+
+  if (fs.exists(file.image)) {   //remove the temp thumbnail
+    fs.remove(file.image);
+  }
+
+  callback(null,file);  //success, return the file for socket sending
+}
+
+ //used to insert a file inside a waiting queue and process it when possible
+function requestFileProcess(session,fileIndex,socket){
+  waitingList++;  //increment waiting list count
+  var fileQueue = setInterval(function(){   //check every 5 sec if the process can start
+
+    if(processList >= maxProcess){
+      return; //no place available... retry in 5s
+    }
+
+    //remove from waiting list and place to process list
+    waitingList--;
+    processList++;
+    clearInterval(fileQueue); //stop the loop
+    processFileDl(session,fileIndex,socket,function(err,data){
+      processList--;  // process ended (give a place to the waiting list)
+      if(err){
+        console.log("--- PROCESSING ERROR ---");
+        console.log("(Session "+session.id+" | File "+fileIndex+")");
+        console.log(err);
+        socket.emit("file_error",err);
+        return;
+      }
+      session.processEnded++;
+
+      if(session.processEnded == session.files.length){ //if all files are converted
+
+
+        //remove the session folder after 10 min (600 sec)*/
+        setTimeout(function(){
+          rmDir(session.path,true);
+        },600*1000);
+
+        if(session.files.length > 1){
+          genZip(session,function(err,path){
+            if(err){
+              socket.emit("file_error",err);
+              return;
+            }
+            socket.emit("yd_event",{event:"finished",data:{path:path}}); // Return a final zip
+          });
+        }
+        else{
+          socket.emit("yd_event",{event:"finished",data:{path:data.exportPath}}); // return the file
+        }
+      }
+    });
+  },5000);
+}
+
+function retreiveFileSize(info){
+  var f = 0;
+  for (var i = 0; i < info.formats.length; i++) {
+    if(info.formats[i].filesize){
+      if(info.formats[i].filesize > f){
+        f = info.formats[i].filesize;
+      }
+    }
+  }
+  return f;
+}
+
+function retreiveVideoInfos(url,callback){
+  youtubedl.getInfo(url, "", function(err, info) {
+    if (err) {
+      callback("",err);
     }
     else {
-      callback(result);
+      callback(info);
     }
   });
 }
 
-function retreivePlaylistInfos(id,callback){
-  ypi.playlistInfo(config.youtube_api_key, id, function(playlistItems) {
-    callback(playlistItems);
+function genZip(session,callback){
+
+  var zipPath = "./exports/"+session.id+".zip";
+  var zip = new JSZip();
+  var ended = 0;
+  var albumName = "Tagifier";
+  if(session.files[0].album){
+    albumName = session.files[0].album;
+  }
+  var fileFuncList = [];
+
+  async.forEachOf(session.files, function (file, index, callback) {
+    ofs.readFile(file.exportPath, function(err,fileData){
+      zip.file(albumName+"/"+file.fileName+".mp3", fileData);
+      return callback(null, file);
+    });
+  }, function (err) {
+      if (err){
+        return callback(err);
+      }
+
+      zip.generateNodeStream({streamFiles:true})
+      .pipe(ofs.createWriteStream(zipPath))
+      .on('finish', function () {
+          return callback(null,zipPath);
+      });
   });
 }
 
-function YTDurationToSeconds(duration) {
-  var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
+var returnDur = function(dur){
+	var d = {
+		h : 0,
+		m : 0,
+		s : 0
+	};
+	var dur = dur.split(":");
+	if(dur.length == 3){
+		d.h = dur[0];
+		d.m = dur[1];
+		d.s = dur[2];
+	}
+	if(dur.length == 2){
+		d.m = dur[0];
+		d.s = dur[1];
+	}
+	else{
+		d.s = dur[0];
+	}
 
-  var hours = (parseInt(match[1]) || 0);
-  var minutes = (parseInt(match[2]) || 0);
-  var seconds = (parseInt(match[3]) || 0);
+  var f = d.s+(d.m*60)+((d.h*60)*60);
 
-  return hours * 3600 + minutes * 60 + seconds;
+	return f;
+}
+
+// convert an $_get object to a string list
+function getToStr(get){
+  var separator = "?";
+  var ret = "";
+  for(var key in get) {
+      ret+=""+separator+""+key+"="+get[key];
+      separator = "&";
+  }
+  return ret;
 }
 
 app.use('/', express.static(__dirname + '/public/'));

@@ -7,10 +7,21 @@ var jsonminify = require('gulp-jsonminify');
 var del = require('del');
 var imageop = require('gulp-image-optimization');
 var ngmin = require('gulp-ngmin');
+var nodemon = require('gulp-nodemon');
+var plumber = require('gulp-plumber');  //prevent watch crash
 var gulpsync = require('gulp-sync')(gulp);
+
+gulp.task('server', function () {
+  nodemon({
+    script: 'app.js'
+  , ext: 'js html css scss'
+  , env: { 'NODE_ENV': 'development' }
+  })
+});
 
 gulp.task('sass', function () {
   return gulp.src('./src/style/**/*.scss')
+    .pipe(plumber())
     .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
     .pipe(gulp.dest('./public/css'));
 });
@@ -21,6 +32,7 @@ gulp.task('clean:public', function() {
 
 gulp.task('scripts', function() {
   return gulp.src('./src/js/**/*.js')
+    .pipe(plumber())
     .pipe(ngmin())
   	.pipe(uglify({mangle: false}))
     .pipe(concat('tagifier.js'))
@@ -28,7 +40,7 @@ gulp.task('scripts', function() {
 });
 
 gulp.task('images', function(cb) {
-    gulp.src(['src/**/*.png','src/**/*.jpg','src/**/*.gif','src/**/*.jpeg']).pipe(imageop({
+    gulp.src(['src/**/*.png','src/**/*.jpg','src/**/*.gif','src/**/*.jpeg','src/**/*.svg']).pipe(imageop({
         optimizationLevel: 5,
         progressive: true,
         interlaced: true
@@ -42,6 +54,7 @@ gulp.task('bower', function() {
 
 gulp.task('html', function() {
   return gulp.src('src/**/*.html')
+    .pipe(plumber())
     .pipe(htmlmin({collapseWhitespace: true}))
     .pipe(gulp.dest('./public/'))
 });
@@ -69,5 +82,7 @@ gulp.task('default', gulpsync.sync([
         'bower',
         'images',
         'locales'
-    ]
+    ],
+    ['watch'],
+    ['server']
 ]));

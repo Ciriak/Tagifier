@@ -3,16 +3,14 @@ var app = angular.module('tagifier', [
 'ui.bootstrap',
 'youtube-embed',
 'ngSanitize',
-'pascalprecht.translate'
+'pascalprecht.translate',
+'cgNotify'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {
   //
   // For any unmatched url, redirect to /
   $urlRouterProvider.otherwise("/");
-  $urlRouterProvider.when('/{sheetId:int}', '/{sheetId:int}/chat');
-  $urlRouterProvider.when('/{sheetId:int}/settings', '/{sheetId:int}/settings/info');
-  $urlRouterProvider.when('/{sheetId:int}/users', '/{sheetId:int}/users/list');
   //
   // Now set up the states
   $stateProvider
@@ -26,15 +24,9 @@ app.config(function($stateProvider, $urlRouterProvider) {
       templateUrl: "views/about.html"
     })
     .state('file', {
-      url: "/{fileId}",
+      url: "/{fileUrl:.*?}",
       templateUrl: "views/file.html",
       controller: "fileCtrl",
-      reload:true
-    })
-    .state('playlist', {
-      url: "/playlist/{fileId}",
-      templateUrl: "views/playlist.html",
-      controller: "playlistCtrl",
       reload:true
     });
 });
@@ -48,6 +40,12 @@ app.config(['$translateProvider', function($translateProvider) {
   $translateProvider.preferredLanguage('en');
 }]);
 
+app.filter("trustUrl", ['$sce', function ($sce) { //used by media player
+    return function (recordingUrl) {
+        return $sce.trustAsResourceUrl(recordingUrl);
+    };
+}]);
+
 app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window','$location', function($scope, $http,$rootScope,$translate,$window,$location)
 {
   $scope.docReady = false;
@@ -56,9 +54,6 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
     $window.ga('create', 'UA-48635201-13', 'auto');  //initialize GA
     $scope.docReady = true;
     $scope.$apply();
-
-    // load the fb plugin after a small delay (prevent screen freezing)
-    setTimeout(function(){FB.XFBML.parse(),500});
   });
 
   $scope.socket = io.connect();
