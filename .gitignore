@@ -3,7 +3,6 @@
 
 ### Bower ###
 bower_components
-dep
 .bower-cache
 .bower-registry
 .bower-tmp
