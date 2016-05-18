@@ -4,6 +4,7 @@ var uglify = require('gulp-uglify');
 var sass = require('gulp-sass');
 var htmlmin = require('gulp-htmlmin');
 var jsonminify = require('gulp-jsonminify');
+var install = require("gulp-install");
 var del = require('del');
 var imageop = require('gulp-image-optimization');
 var ngmin = require('gulp-ngmin');
@@ -28,6 +29,11 @@ gulp.task('sass', function () {
 
 gulp.task('clean:public', function() {
   return del('./public/**/*');
+});
+
+gulp.task('installdep', function() {
+  gulp.src(['.src/bower.json'])
+    .pipe(install());
 });
 
 gulp.task('scripts', function() {
@@ -74,6 +80,7 @@ gulp.task('watch', function () {
 gulp.task('default', gulpsync.sync([
     // sync
     'clean:public',
+    ['installdep'],
     [
         // async
         'sass',
