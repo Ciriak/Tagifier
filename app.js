@@ -37,21 +37,27 @@ server.timeout = 180000;  //3min
 
 // dir cleaner function
 var rmDir = function(dirPath, removeSelf) {
-      if (removeSelf === undefined)
-        removeSelf = true;
-      try { var files = ofs.readdirSync(dirPath); }
-      catch(e) { return; }
-      if (files.length > 0)
-        for (var i = 0; i < files.length; i++) {
-          var filePath = dirPath + '/' + files[i];
-          if (ofs.statSync(filePath).isFile())
-            fs.remove(filePath);
-          else
-            rmDir(filePath);
-        }
-      if (removeSelf)
-        ofs.rmdirSync(dirPath);
-    };
+  if (removeSelf === undefined)
+    removeSelf = true;
+  try { var files = ofs.readdirSync(dirPath); }
+  catch(e) { return; }
+  if (files.length > 0)
+    for (var i = 0; i < files.length; i++) {
+      var filePath = dirPath + '/' + files[i];
+      if (ofs.statSync(filePath).isFile())
+        fs.remove(filePath);
+      else
+        rmDir(filePath);
+    }
+  if (removeSelf)
+    ofs.rmdirSync(dirPath);
+};
+
+// create the "exports" folder
+var p = "public/exports";
+if (!ofs.existsSync(p)){
+    ofs.mkdirSync(p);
+}
 
 
 rmDir('./public/img/temps',false);
@@ -137,7 +143,7 @@ io.on('connection', function (socket){
       processEnded : 0,
       files : data.files
     }
-    session.path = "exports/"+session.id;
+    session.path = "public/exports/"+session.id;
 
     //create the temp session path
     if (!ofs.existsSync(session.path)){
