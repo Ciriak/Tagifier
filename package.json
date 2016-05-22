@@ -31,7 +31,6 @@
     "body-parser": "^1.15.0",
     "compression": "^1.6.1",
     "del": "^2.2.0",
-    "express": "^4.13.4",
     "fast-image-downloader": "0.0.4",
     "fluent-ffmpeg": "^2.1.0",
     "fs-sync": "^1.0.2",
