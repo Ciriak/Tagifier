@@ -27,18 +27,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.canStartProcess = false;
 		$scope.fileAvailable = false;
 		$scope.canAddFile = false;
-		$http({
-		  method: 'GET',
-		  url: '/api/infos/'+url
-		}).then(function successCallback(response) {
-			parseFileData(response.data);
-			$scope.canEditTags = true;
-			$scope.canStartProcess = true;
-			$scope.fileAvailable = true;
-			$scope.canAddFile = false;
-		}, function errorCallback(response) {
-			$scope.retreiveInfoError();
-		});
+		$scope.socket.emit("fileInfo",{url : url});
 	};
 
 	var requestUrl = decodeURI($location.url().substr(1)).replace(/~2F/g,'/');
@@ -120,13 +109,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			notify($translate.instant("error.plsFixFileErrors"));
 			return;
 		}
-		if($scope.captchatActive){
-			$scope.checkCaptchat();
-		}
-		else {
-			$scope.generateCaptchat();
-			$('#captchat-modal').modal('show');
-		}
+		$scope.requestFiles();
 	};
 
 	$scope.generateCaptchat = function(){
@@ -140,35 +123,20 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.playerStatus = "stop";
 	};
 
-	$scope.checkCaptchat = function(){
-		var resp = $("#adcopy_response").val();
-		var chal = $("#adcopy_challenge").val();
-
-		$http({
-		  method: 'POST',
-		  url: '/checker',
-		  data : {
-		  	chal : chal,
-		  	resp : resp
-		  }
-		}).then(function successCallback(r) {
-			$('#captchat-modal').modal('hide');
-			$scope.captchatActive = false;
-			$scope.canEditTags = false;
-			$scope.canAddFile = false;
-			$scope.canStartProcess = false;
-			$scope.canRemoveFile = false;
-			$scope.requestFiles();
-		}, function errorCallback(r) {
-			$('#captchat-modal').modal('show');
-			$scope.processing = false;
-			notify($translate.instant("error.invalidCaptchat"));
-			$scope.generateCaptchat();
-		});
-	};
-
 	$scope.socket.on("yd_event",function(ev){
 		console.log(ev);
+
+		if(ev["event"] == "file_info"){
+			parseFileData(ev.data);
+			$scope.canEditTags = true;
+			$scope.canStartProcess = true;
+			$scope.fileAvailable = true;
+			$scope.canAddFile = false;
+		}
+
+		if(ev['event'] == "file_info_error"){
+			$scope.retreiveInfoError();
+		}
 
 		if(ev["event"] == "file_download_started"){
 			$scope.fileReady = false;
@@ -442,7 +410,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		    icon: "img/tgf/icon_circle.png"
 		}
 
-		if (Notification.permission === "granted" && !$scope.notified && !isMobile.any) {
+		if (Notification.permission === "granted" && !$scope.notified) {
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {

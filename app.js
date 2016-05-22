@@ -1,8 +1,10 @@
-const electron = require('electron')
+const electron = require('electron');
 // Module to control application life.
-const app = electron.app
+const app = electron.app;
 // Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow
+const BrowserWindow = electron.BrowserWindow;
+
+var server = require('http').createServer();
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -111,76 +113,13 @@ rmDir('./public/img/temps',false);
 rmDir('./exports',false);
 console.log("Temp files cleaned");
 
-var io = require('socket.io').listen(app);
+var io = require('socket.io')(server);
+server.listen(8080);
 
 var config = {};
 
 // retreive config file
 config = fs.readJSON("config.json");
-
-//app.use(compression());
-//app.use( bodyParser.json() );       // to support JSON-encoded bodies
-/*app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-}));
-
-app.use('/', express.static(__dirname + '/public/'));
-
-//
-// Used for Captchat confirmation
-//
-
-app.post('/checker', function(req,res)
-{
-  var r;
-  var turl = "http://verify.solvemedia.com/papi/verify";
-  var form =  {
-      challenge: req.body.chal,
-      response : req.body.resp,
-      privatekey : config.solvemedia_key,
-      remoteip : req.connection.remoteAddress
-    };
-  request.post({
-    url:turl,
-    form: form
-  },
-  function(err,httpResponse,body){
-    if(body.substring(0,4) == "true") // if good captchat response by solvemedia
-    {
-      res.sendStatus(200);
-      return;
-    }
-    res.sendStatus(403);
-  });
-});
-
-//
-//
-//
-
-//
-
-
-app.get('/musics/:file(*)', function(req,res){
-  console.log('exports/'+req.params.file);
-  res.download('exports/'+req.params.file, req.query.name, function(err){
-    if (err) {
-      console.log(err);
-    }
-  });
-});
-
-app.get('/api/infos/:fileId(*)', function(req,res){
-  var fileUrl = req.params.fileId+getToStr(req.query);
-  console.log(fileUrl);
-	retreiveVideoInfos(fileUrl,function(infos,err){
-    if(err){
-      res.status(405).send(err);
-      return;
-    }
-    res.send(infos);
-  });
-});*/
 
 io.on('connection', function (socket){
 
@@ -202,6 +141,18 @@ io.on('connection', function (socket){
     for (var fileIndex = 0; fileIndex < session.files.length; fileIndex++) {
       requestFileProcess(session,fileIndex,socket);
     }
+  });
+
+  // retreive the info for a specific file
+  socket.on('fileInfo', function (data) {
+    var fileUrl = decodeURIComponent(data.url);
+  	retreiveFileInfos(fileUrl,function(err,infos){
+      if(err){
+        socket.emit("yd_event",{event:"file_info_error",data:{error:err}});
+        return;
+      }
+      socket.emit("yd_event",{event:"file_info",data:infos});
+    });
   });
 });
 
@@ -227,85 +178,62 @@ function processFileDl(session,fileIndex,socket,callback){
     fs.write(imgPath, img.body);
     file.image = imgPath;
     file.exportPath = dir+"/"+fileIndex+".mp4";
+    //
+    // START DOWNLOAD //
+    //
 
-    youtubedl.getInfo(file.webpage_url, function(err, info) { //retreive file infos for checking size
-      if(err){
-        callback(err);  //return error
-        return;
+    // send the file size every 500 ms
+    file.lastProgress = 0;
+    var progressPing = setInterval(function(){
+      var stats = ofs.statSync(file.exportPath);
+      var fileSizeInBytes = stats["size"];
+      var sinfo = {
+        session : session.id,
+        index : fileIndex,
+        size : fileSizeInBytes
+      }
+      if(sinfo.size > file.lastProgress){  //send progress only if progress
+        file.lastProgress = sinfo.size;
+
+        socket.emit("yd_event",{event:"progress",data:sinfo});
       }
 
-      file.ytdlInfos = info;
-      file.size = retreiveFileSize(file.ytdlInfos);  //retreive file size
-      if(!file.size && !file.duration){
-        var err = "INVALID_FILE_SIZE";
-        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
-        callback(err);  //return error
-        return;
-      }
-      if(file.size){
-        if(file.size > 1677721600){ //200 mo
-          var err = "FILE_TOO_BIG";
-          socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
-          callback(err);  //return error
-          return;
+    },1000);
+
+    var ytdlProcess = youtubedl(file.webpage_url,
+      // Optional arguments passed to youtube-dl.
+      ['-x'],
+      // Additional options can be given for calling `child_process.execFile()`.
+      { cwd: __dirname });
+
+    ytdlProcess.pipe(ofs.createWriteStream('./exports/'+session.id+'/'+fileIndex+'.mp4'));
+
+    // Will be called when the download starts.
+    ytdlProcess.on('info', function (info) {
+      socket.emit('yd_event', {event: 'file_download_started', data: fileIndex}); // send a status for this file
+    });
+
+    ytdlProcess.on('error', function error(err) {
+      console.log(err);
+      socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
+    });
+
+    ytdlProcess.on('end', function() {  // DL ending
+      processFileConvert(file,function(err,file){ //convert the mp4 to mp3
+        if(err){                        //stop all if error
+          return callback(err);
         }
-      }
-      //
-      // START DOWNLOAD //
-      //
-
-      // send the file size every 500 ms
-      file.lastProgress = 0;
-      var progressPing = setInterval(function(){
-        var stats = ofs.statSync(file.exportPath);
-        var fileSizeInBytes = stats["size"];
-        var sinfo = {
-          session : session.id,
-          index : fileIndex,
-          size : fileSizeInBytes
-        }
-        if(sinfo.size > file.lastProgress){  //send progress only if progress
-          file.lastProgress = sinfo.size;
-
-          socket.emit("yd_event",{event:"progress",data:sinfo});
-        }
-
-      },1000);
-
-      var ytdlProcess = youtubedl(file.webpage_url,
-        // Optional arguments passed to youtube-dl.
-        ['--format=18'],
-        // Additional options can be given for calling `child_process.execFile()`.
-        { cwd: __dirname });
-
-      ytdlProcess.pipe(ofs.createWriteStream('exports/'+session.id+'/'+fileIndex+'.mp4'));
-
-      // Will be called when the download starts.
-      ytdlProcess.on('info', function(info) {
-        socket.emit("yd_event",{event:"file_download_started",data:fileIndex}); //send a status for this file
-      });
-
-      ytdlProcess.on('error', function error(err) {
-        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
-      });
-
-      ytdlProcess.on('end', function() {  // DL ending
-        processFileConvert(file,function(err,file){ //convert the mp4 to mp3
+        processFileTag(file,function(err,file){    //tag the given mp3
           if(err){                        //stop all if error
             return callback(err);
           }
-          processFileTag(file,function(err,file){    //tag the given mp3
-            if(err){                        //stop all if error
-              return callback(err);
-            }
-            callback(null,file);   //return the final result
-          });
+          callback(null,file);   //return the final result
         });
-        //file downloaded, apply the tags
-        socket.emit("yd_event",{event:"file_finished",data:{index:fileIndex}});
-
-        clearInterval(progressPing);  //end the filesize ping
       });
+      //file downloaded, apply the tags
+      socket.emit("yd_event",{event:"file_finished",data:{index:fileIndex}});
+
+      clearInterval(progressPing);  //end the filesize ping
     });
   });
 }
@@ -397,6 +325,7 @@ function requestFileProcess(session,fileIndex,socket){
           genZip(session,function(err,path){
             if(err){
               socket.emit("file_error",err);
+              console.log("Zip error");
               return;
             }
             socket.emit("yd_event",{event:"finished",data:{path:path}}); // Return a final zip
@@ -422,13 +351,13 @@ function retreiveFileSize(info){
   return f;
 }
 
-function retreiveVideoInfos(url,callback){
+function retreiveFileInfos(url,callback){
   youtubedl.getInfo(url, "", function(err, info) {
     if (err) {
-      callback("",err);
+      callback(err,"");
     }
     else {
-      callback(info);
+      callback("",info);
     }
   });
 }

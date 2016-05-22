@@ -34,7 +34,7 @@ app.controller('youtubeCtrl', function($scope,$state,$http,$stateParams,$transla
 			Materialize.toast($translate.instant("file.pleaseEnterCaptchat"), 4000);
 			$scope.generateCaptchat();
 		}
-		
+
 	}
 
 	$scope.generateCaptchat = function(){
@@ -107,7 +107,7 @@ app.controller('youtubeCtrl', function($scope,$state,$http,$stateParams,$transla
 		    icon: "img/tgf/icon_circle.png"
 		}
 
-		if (Notification.permission === "granted" && !$scope.notified && !isMobile.any) {
+		if (Notification.permission === "granted" && !$scope.notified) {
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {

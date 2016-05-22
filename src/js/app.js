@@ -34,7 +34,7 @@ app.config(function($stateProvider, $urlRouterProvider) {
 app.config(['$translateProvider', function($translateProvider) {
   $translateProvider.useSanitizeValueStrategy('sanitize');
   $translateProvider.useStaticFilesLoader({
-    prefix: '../locales/',
+    prefix: 'locales/',
     suffix: '.json'
 });
   $translateProvider.preferredLanguage('en');
@@ -56,7 +56,7 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
     $scope.$apply();
   });
 
-  $scope.socket = io.connect();
+  $scope.socket = io.connect('http://localhost:8080');
   $scope.socket.on('connect', function()
   {
     console.log("Socket connected !");
@@ -82,13 +82,6 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
   });
 
 	// request permission for notifications (used when the file is ready)
-  	if (Notification.permission !== 'denied' || Notification.permission === "default") {
-    	if(!isMobile.any)
-  		{
-        console.log("notMobile");
-  			Notification.requestPermission();
-  		}
-  	}
   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
     //remove all the notifs when a page change
     $('.toast').remove();
