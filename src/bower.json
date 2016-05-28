@@ -39,6 +39,8 @@
     "angular-bootstrap": "^1.3.2",
     "angular-notify": "^2.5.0",
     "moment": "^2.13.0",
-    "socket.io-client": "^1.4.6"
+    "socket.io-client": "^1.4.6",
+    "ngElectron": "https://github.com/develephant/ngElectron",
+    "ng-electron": "https://github.com/develephant/ngElectron.git#^0.4.0"
   }
 }
