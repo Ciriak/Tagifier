@@ -90,6 +90,5 @@ gulp.task('default', gulpsync.sync([
         'images',
         'locales'
     ],
-    ['watch'],
-    ['server']
+    ['watch']
 ]));
