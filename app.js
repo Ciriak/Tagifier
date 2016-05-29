@@ -4,6 +4,8 @@ const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
+const ipcMain = electron.ipcMain;
+
 var server = require('http').createServer();
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -12,7 +14,12 @@ let mainWindow
 
 function createWindow () {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600})
+  mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 600,
+    minWidth: 1024,
+    icon: __dirname + '/public/img/tgf/icon_circle.png'
+  });
 
   // and load the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/public/index.html`);
@@ -57,6 +64,7 @@ app.on('activate', function () {
 
 var fs = require('fs-sync');
 var ofs = require('fs');  // old fs
+var util = require('util');
 var port = 80;
 var request = require('request');
 var id3 = require('node-id3');
@@ -68,10 +76,11 @@ var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
 var video2mp3 = require('video2mp3');
+var sanitize = require("sanitize-filename");
 
 // CONVERT VARS
 
-var maxProcess = 3;     //max simul
+var maxProcess = 5;     //max simul
 var processList = 0;   //list of current processing items
 var waitingList = 0;   // list of items inside the waiting queue
 
@@ -103,7 +112,7 @@ var rmDir = function(dirPath, removeSelf) {
 };
 
 // create the "exports" folder
-var p = "public/exports";
+var p = "./exports";
 if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
@@ -127,13 +136,14 @@ io.on('connection', function (socket){
     var session = {
       id : random.alphaNum(16),
       processEnded : 0,
-      files : data.files
+      files : data.files,
+      path : data.path
     }
-    session.path = "public/exports/"+session.id;
+    var tempPath = "./exports/"+session.id;
 
     //create the temp session path
-    if (!ofs.existsSync(session.path)){
-      ofs.mkdirSync(session.path);
+    if (!ofs.existsSync(tempPath)){
+      ofs.mkdirSync(tempPath);
     }
 
     var processEnded = 0;
@@ -308,35 +318,23 @@ function requestFileProcess(session,fileIndex,socket){
         console.log("--- PROCESSING ERROR ---");
         console.log("(Session "+session.id+" | File "+fileIndex+")");
         console.log(err);
-        socket.emit("file_error",err);
-        return;
+        socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
+        session.processEnded++;
       }
-      session.processEnded++;
-
-      if(session.processEnded == session.files.length){ //if all files are converted
-
-
-        //remove the session folder after 10 min (600 sec)*/
-        setTimeout(function(){
-          rmDir(session.path,true);
-        },600*1000);
-
-        if(session.files.length > 1){
-          genZip(session,function(err,path){
-            if(err){
-              socket.emit("file_error",err);
-              console.log("Zip error");
-              return;
-            }
-            socket.emit("yd_event",{event:"finished",data:{path:path}}); // Return a final zip
-          });
-        }
-        else{
-          socket.emit("yd_event",{event:"finished",data:{path:data.exportPath}}); // return the file
-        }
+      if(!err){
+        //move the downloaded file to it final folder
+        moveFile(session,fileIndex,function(err,filePath){
+          if(err){
+            socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
+          }
+          session.processEnded++;
+          if(session.processEnded == session.files.length){ //if all files are converted
+            socket.emit("yd_event",{event:"finished",data:{path:session.path}});
+          }
+        });
       }
     });
-  },5000);
+  },500);
 }
 
 function retreiveFileSize(info){
@@ -362,33 +360,22 @@ function retreiveFileInfos(url,callback){
   });
 }
 
-function genZip(session,callback){
-
-  var zipPath = "./exports/"+session.id+".zip";
-  var zip = new JSZip();
-  var ended = 0;
-  var albumName = "Tagifier";
-  if(session.files[0].album){
-    albumName = session.files[0].album;
+function moveFile(session,fileIndex,callback){
+  var file = session.files[fileIndex];
+  //create the exportDir if not exist yet
+  if (!ofs.existsSync(session.path)){
+      ofs.mkdirSync(session.path);
   }
-  var fileFuncList = [];
 
-  async.forEachOf(session.files, function (file, index, callback) {
-    ofs.readFile(file.exportPath, function(err,fileData){
-      zip.file(albumName+"/"+file.fileName+".mp3", fileData);
-      return callback(null, file);
-    });
-  }, function (err) {
-      if (err){
-        return callback(err);
-      }
+  //prevent invalid char inside filename
+  var nFileName = sanitize(file.fileName);
 
-      zip.generateNodeStream({streamFiles:true})
-      .pipe(ofs.createWriteStream(zipPath))
-      .on('finish', function () {
-          return callback(null,zipPath);
-      });
+  //copy the file , this method prevent a nodejs error with rename
+  copyFile(file.exportPath,session.path+"/"+nFileName+".mp3",function(){
+    ofs.unlink(file.exportPath);
+    callback(null, session.path+"/"+nFileName+".mp3");
   });
+
 }
 
 var returnDur = function(dur){
@@ -425,6 +412,30 @@ function getToStr(get){
       separator = "&";
   }
   return ret;
+}
+
+function copyFile(source, target, cb) {
+  var cbCalled = false;
+
+  var rd = ofs.createReadStream(source);
+  rd.on("error", function(err) {
+    done(err);
+  });
+  var wr = ofs.createWriteStream(target);
+  wr.on("error", function(err) {
+    done(err);
+  });
+  wr.on("close", function(ex) {
+    done();
+  });
+  rd.pipe(wr);
+
+  function done(err) {
+    if (!cbCalled) {
+      cb(err);
+      cbCalled = true;
+    }
+  }
 }
 
 //app.use('/', express.static(__dirname + '/public/'));

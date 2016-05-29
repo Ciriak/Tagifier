@@ -4,7 +4,8 @@ var app = angular.module('tagifier', [
 'youtube-embed',
 'ngSanitize',
 'pascalprecht.translate',
-'cgNotify'
+'cgNotify',
+'angular-electron'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {

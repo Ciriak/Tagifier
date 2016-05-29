@@ -1,4 +1,4 @@
-app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams,$translate,$location,notify)
+app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams,$translate,$location,notify,dialog,ipcRenderer,shell)
 {
 	$scope.canStartProcess = false;
 	$scope.processing = false;
@@ -6,7 +6,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	$scope.fileAvailable = false;
 	$scope.singleFile = true;
 	$scope.files = {};
-	$scope.dlFileUrl;
 	$scope.dlFileName;
 	$scope.fileReady = false;
 	$scope.currentFileIndex = 0;
@@ -18,6 +17,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	$scope.canAddFile = false;
 	$scope.filePlayer;
 	$scope.playerStatus = "stop";
+	$scope.exportDir;
 
 	var date = new Date();
 	$scope.filePlayer = document.getElementById("file-player");
@@ -64,7 +64,11 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 	};
 
-	$scope.requestFiles = function (){
+	$scope.requestFiles = function (exportDir){
+		if(!exportDir){
+			return;
+		}
+
 		if($scope.processing){
 			return;
 		}
@@ -73,7 +77,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
 		$scope.canRemoveFile = false;
-		$scope.socket.emit("fileRequest",{files:$scope.exportFiles});
+		$scope.socket.emit("fileRequest",{files:$scope.exportFiles,path:exportDir});
 	};
 
 	$scope.removeFileFromList = function(file){
@@ -109,7 +113,9 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			notify($translate.instant("error.plsFixFileErrors"));
 			return;
 		}
-		$scope.requestFiles();
+		var exportDir = dialog.showOpenDialog({properties: ['openFile', 'openDirectory']});
+		$scope.exportDir = exportDir[0];
+		$scope.requestFiles($scope.exportDir);
 	};
 
 	$scope.generateCaptchat = function(){
@@ -177,21 +183,9 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 				}
 		}
 		if(ev["event"] == "finished"){
-				var url = ev.data.path.replace("./exports/","musics/");
-				$scope.dlFileUrl = url;
 
 				$scope.fileReady = true;
-				if($scope.singleFile){
-					$scope.tgfDownload($scope.dlFileUrl,$scope.exportFiles[0].fileName+".mp3");
-					$scope.dlFileName = $scope.exportFiles[0].fileName+".mp3";
-				}
-				else{
-					var zipFileName = "Album.zip";
-					if($scope.exportFiles[0].album){
-						$scope.dlFileName = $scope.exportFiles[0].album+".zip";
-					}
-					$scope.tgfDownload($scope.dlFileUrl,$scope.dlFileName);
-				}
+				$scope.notifyExportDir($scope.exportDir);
 
 				for (var i = 0; i < $scope.exportFiles.length; i++) {
 					$scope.exportFiles[i].progress = 0;
@@ -401,12 +395,15 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$('#add-file-modal').modal('hide');
 	}
 
-	$scope.tgfDownload = function(url,name){
-		var fullUrl = url+"?name="+name;
+	$scope.openExportDir = function(path){
+		shell.openItem(path);
+	}
+
+	$scope.notifyExportDir = function(path){
 		var notification;
 		var nOptions = {
 			title : "File Ready",
-		    body: "Your file is ready to download, click on this notification to download it !",
+		    body: "Your file(s) are ready, click here to open them",
 		    icon: "img/tgf/icon_circle.png"
 		}
 
@@ -414,12 +411,9 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {
-				window.open(fullUrl, '_blank');
+				$scope.openExportDir($scope.exportDir);
 				notification.close();
 			};
-		}
-		else{
-			window.open(fullUrl, '_blank');
 		}
 	};
 });
