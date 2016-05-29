@@ -47,8 +47,51 @@ app.filter("trustUrl", ['$sce', function ($sce) { //used by media player
     };
 }]);
 
-app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window','$location', function($scope, $http,$rootScope,$translate,$window,$location)
+app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window','$location','$state', function($scope, $http,$rootScope,$translate,$window,$location,$state)
 {
+  $rootScope.remote = require('electron').remote;
+
+    var Menu = $rootScope.remote.Menu;
+    var MenuItem = $rootScope.remote.MenuItem;
+
+    var template = [
+      {
+        label: 'File',
+        submenu: [
+          {
+            label: 'New task',
+            click : function() { $state.go('main'); }
+          }
+        ]
+      },
+      {
+        label: 'About',
+        role: 'about',
+        submenu: [
+          {
+            label: 'Tagifier (Beta)'
+          },
+          {
+            type: 'separator'
+          },
+          {
+            label: 'Github page',
+            click : function() { $rootScope.remote.shell.openExternal('https://github.com/Cyriaqu3/tagifier'); }
+          },
+          {
+            label: 'Report an issue',
+            click : function() { $rootScope.remote.shell.openExternal('https://github.com/Cyriaqu3/tagifier/issues/new'); }
+          },
+          {
+            label: 'Facebook Page',
+            click : function(){ $rootScope.remote.shell.openExternal('https://www.facebook.com/Tagifier-1172453299437404/'); }
+          }
+        ]
+      }
+    ];
+    var menu = Menu.buildFromTemplate(template);
+    Menu.setApplicationMenu(menu);
+
   $scope.docReady = false;
   $(window).load(function(){
 

@@ -14,7 +14,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	$scope.captchatActive = false;
 	$scope.notified = false;
 	$scope.canRemoveFile = false;
-	$scope.canAddFile = false;
+	$scope.canAddFile = true;
 	$scope.filePlayer;
 	$scope.playerStatus = "stop";
 	$scope.exportDir;
@@ -137,7 +137,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.canEditTags = true;
 			$scope.canStartProcess = true;
 			$scope.fileAvailable = true;
-			$scope.canAddFile = false;
+			$scope.canAddFile = true;
 		}
 
 		if(ev['event'] == "file_info_error"){
