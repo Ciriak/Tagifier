@@ -1,19 +1,17 @@
+//
+// THIS APP REQUIRE FFMPEG AND liblamemp3  CODEC !!!
+//
+
 const electron = require('electron');
 // Module to control application life.
 const app = electron.app;
-
 const Menu = electron.Menu;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
-
 const ipcMain = electron.ipcMain;
-
-var server = require('http').createServer();
-
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
-
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -22,27 +20,24 @@ function createWindow () {
     minWidth: 1024,
     icon: __dirname + '/public/img/tgf/icon_circle.png'
   });
-
   // and load the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/public/index.html`);
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
-
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null
-  })
+  });
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow)
-
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
   // On OS X it is common for applications and their menu bar
@@ -60,10 +55,6 @@ app.on('activate', function () {
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
-
-
 var fs = require('fs-sync');
 var ofs = require('fs');  // old fs
 var util = require('util');
@@ -71,14 +62,16 @@ var port = 80;
 var request = require('request');
 var id3 = require('node-id3');
 var random = require('random-gen');
+var os = require('os');
 var async = require('async');
 var bodyParser = require('body-parser');
-var JSZip = require("jszip");
-var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
 var video2mp3 = require('video2mp3');
 var sanitize = require("sanitize-filename");
+var ffmpeg = require('fluent-ffmpeg');
+
+var server = require('http').createServer();
 
 // CONVERT VARS
 
@@ -92,6 +85,14 @@ var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
   ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
 };
+
+//set the ffmpeg binary location (path)
+if(os.platform() === 'win32'){
+     var ffmpegPath = './bin/ffmpeg/ffmpeg.exe'
+ }else{
+     var ffmpegPath = './bin/ffmpeg/ffmpeg'
+ }
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 // clean function remove all temp thumbnails and mp3
 
@@ -124,13 +125,13 @@ rmDir('./public/img/temps',false);
 rmDir('./exports',false);
 console.log("Temp files cleaned");
 
-var io = require('socket.io')(server);
-server.listen(8080);
-
 var config = {};
 
 // retreive config file
 config = fs.readJSON("config.json");
+
+var io = require('socket.io')(server);
+server.listen(8080);
 
 io.on('connection', function (socket){
 
@@ -263,7 +264,7 @@ function processFileConvert(file,callback){ //convert the given file from mp4 to
 
   video2mp3.convert(file.exportPath, {mp3path: mp3ExportPath, }, function (err) {
     if (err){
-      callback(err);
+      return callback(err);
     }
     // set the new exportPath
     var vep = file.exportPath;
@@ -322,6 +323,10 @@ function requestFileProcess(session,fileIndex,socket){
         console.log(err);
         socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
         session.processEnded++;
+        if(session.processEnded == session.files.length){ //if all files are converted
+          socket.emit("yd_event",{event:"process_error",data:{err:err}});
+        }
+        return;
       }
       if(!err){
         //move the downloaded file to it final folder
@@ -373,9 +378,14 @@ function moveFile(session,fileIndex,callback){
   var nFileName = sanitize(file.fileName);
 
   //copy the file , this method prevent a nodejs error with rename
-  copyFile(file.exportPath,session.path+"/"+nFileName+".mp3",function(){
-    ofs.unlink(file.exportPath);
-    callback(null, session.path+"/"+nFileName+".mp3");
+  copyFile(file.exportPath,session.path+"/"+nFileName+".mp3",function(err){
+    if(err){
+      return callback(err);
+    }
+    if(ofs.existsSync(file.exportPath)){
+      ofs.unlink(file.exportPath);
+      callback(null, session.path+"/"+nFileName+".mp3");
+    }
   });
 
 }

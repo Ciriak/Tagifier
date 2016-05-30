@@ -173,6 +173,22 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 				$scope.$apply();
 			}
 		}
+		if(ev["event"] == "process_error"){
+			$scope.fileReady = true;
+
+			for (var i = 0; i < $scope.exportFiles.length; i++) {
+				$scope.exportFiles[i].progress = 0;
+				$scope.exportFiles[i].converting = false;
+				$scope.exportFiles[i].processing = false;
+				$scope.exportFiles[i].error = true;
+			}
+
+			$scope.processing = false;
+			$scope.canEditTags = true;
+			$scope.canStartProcess = true;
+			$scope.canRemoveFile = true;
+			$scope.canAddFile = true;
+		}
 		if(ev["event"] == "file_finished"){
 				$scope.fileReady = false;
 				var i = ev.data.index;

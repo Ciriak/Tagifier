@@ -4,7 +4,7 @@
   "description": "Download Youtube video as tagged mp3 files",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "npm install -g electron"
   },
   "auto-updater": {
     "repo": "/CYRIAQU3/tagifier",
@@ -29,12 +29,10 @@
   "dependencies": {
     "async": "^1.5.2",
     "body-parser": "^1.15.0",
-    "compression": "^1.6.1",
     "del": "^2.2.0",
     "fast-image-downloader": "0.0.4",
     "fluent-ffmpeg": "^2.1.0",
     "fs-sync": "^1.0.2",
-    "jszip": "^3.0.0",
     "node-id3": "0.0.4",
     "random-gen": "^0.1.0",
     "remote": "^0.2.6",
@@ -61,8 +59,5 @@
     "gulp-sync": "^0.1.4",
     "gulp-uglify": "^1.5.3",
     "gulp-usemin": "^0.3.23"
-  },
-  "scripts": {
-    "postinstall": "npm install -g electron"
   }
 }
