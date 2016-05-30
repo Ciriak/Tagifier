@@ -1,8 +1,73 @@
-var http = require('http');
+const electron = require('electron');
+// Module to control application life.
+const app = electron.app;
+
+const Menu = electron.Menu;
+// Module to create native browser window.
+const BrowserWindow = electron.BrowserWindow;
+
+const ipcMain = electron.ipcMain;
+
+var server = require('http').createServer();
+
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let mainWindow
+
+function createWindow () {
+  // Create the browser window.
+  mainWindow = new BrowserWindow({
+    width: 1024,
+    height: 600,
+    minWidth: 1024,
+    icon: __dirname + '/public/img/tgf/icon_circle.png'
+  });
+
+  // and load the index.html of the app.
+  mainWindow.loadURL(`file://${__dirname}/public/index.html`);
+
+  // Open the DevTools.
+  mainWindow.webContents.openDevTools()
+
+  // Emitted when the window is closed.
+  mainWindow.on('closed', function () {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    mainWindow = null
+  })
+}
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.on('ready', createWindow)
+
+// Quit when all windows are closed.
+app.on('window-all-closed', function () {
+  // On OS X it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
+
+app.on('activate', function () {
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (mainWindow === null) {
+    createWindow()
+  }
+})
+
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and require them here.
+
+
 var fs = require('fs-sync');
 var ofs = require('fs');  // old fs
+var util = require('util');
 var port = 80;
-var express = require('express');
 var request = require('request');
 var id3 = require('node-id3');
 var random = require('random-gen');
@@ -13,10 +78,11 @@ var compression = require('compression');
 var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
 var video2mp3 = require('video2mp3');
+var sanitize = require("sanitize-filename");
 
 // CONVERT VARS
 
-var maxProcess = 3;     //max simul
+var maxProcess = 5;     //max simul
 var processList = 0;   //list of current processing items
 var waitingList = 0;   // list of items inside the waiting queue
 
@@ -26,12 +92,6 @@ var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
   ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
 };
-
-var app = express();
-var server = app.listen(port,function(){
-  console.log("Tagifier is listening on port "+port);
-});
-server.timeout = 180000;  //3min
 
 // clean function remove all temp thumbnails and mp3
 
@@ -54,7 +114,7 @@ var rmDir = function(dirPath, removeSelf) {
 };
 
 // create the "exports" folder
-var p = "public/exports";
+var p = "./exports";
 if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
@@ -64,76 +124,13 @@ rmDir('./public/img/temps',false);
 rmDir('./exports',false);
 console.log("Temp files cleaned");
 
-var io = require('socket.io').listen(server);
+var io = require('socket.io')(server);
+server.listen(8080);
 
 var config = {};
 
 // retreive config file
 config = fs.readJSON("config.json");
-
-app.use(compression());
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-}));
-
-app.use('/', express.static(__dirname + '/public/'));
-
-//
-// Used for Captchat confirmation
-//
-
-app.post('/checker', function(req,res)
-{
-  var r;
-  var turl = "http://verify.solvemedia.com/papi/verify";
-  var form =  {
-      challenge: req.body.chal,
-      response : req.body.resp,
-      privatekey : config.solvemedia_key,
-      remoteip : req.connection.remoteAddress
-    };
-  request.post({
-    url:turl,
-    form: form
-  },
-  function(err,httpResponse,body){
-    if(body.substring(0,4) == "true") // if good captchat response by solvemedia
-    {
-      res.sendStatus(200);
-      return;
-    }
-    res.sendStatus(403);
-  });
-});
-
-//
-//
-//
-
-//
-
-
-app.get('/musics/:file(*)', function(req,res){
-  console.log('exports/'+req.params.file);
-  res.download('exports/'+req.params.file, req.query.name, function(err){
-    if (err) {
-      console.log(err);
-    }
-  });
-});
-
-app.get('/api/infos/:fileId(*)', function(req,res){
-  var fileUrl = req.params.fileId+getToStr(req.query);
-  console.log(fileUrl);
-	retreiveVideoInfos(fileUrl,function(infos,err){
-    if(err){
-      res.status(405).send(err);
-      return;
-    }
-    res.send(infos);
-  });
-});
 
 io.on('connection', function (socket){
 
@@ -141,13 +138,14 @@ io.on('connection', function (socket){
     var session = {
       id : random.alphaNum(16),
       processEnded : 0,
-      files : data.files
+      files : data.files,
+      path : data.path
     }
-    session.path = "public/exports/"+session.id;
+    var tempPath = "./exports/"+session.id;
 
     //create the temp session path
-    if (!ofs.existsSync(session.path)){
-      ofs.mkdirSync(session.path);
+    if (!ofs.existsSync(tempPath)){
+      ofs.mkdirSync(tempPath);
     }
 
     var processEnded = 0;
@@ -155,6 +153,18 @@ io.on('connection', function (socket){
     for (var fileIndex = 0; fileIndex < session.files.length; fileIndex++) {
       requestFileProcess(session,fileIndex,socket);
     }
+  });
+
+  // retreive the info for a specific file
+  socket.on('fileInfo', function (data) {
+    var fileUrl = decodeURIComponent(data.url);
+  	retreiveFileInfos(fileUrl,function(err,infos){
+      if(err){
+        socket.emit("yd_event",{event:"file_info_error",data:{error:err}});
+        return;
+      }
+      socket.emit("yd_event",{event:"file_info",data:infos});
+    });
   });
 });
 
@@ -180,85 +190,62 @@ function processFileDl(session,fileIndex,socket,callback){
     fs.write(imgPath, img.body);
     file.image = imgPath;
     file.exportPath = dir+"/"+fileIndex+".mp4";
+    //
+    // START DOWNLOAD //
+    //
 
-    youtubedl.getInfo(file.webpage_url, function(err, info) { //retreive file infos for checking size
-      if(err){
-        callback(err);  //return error
-        return;
+    // send the file size every 500 ms
+    file.lastProgress = 0;
+    var progressPing = setInterval(function(){
+      var stats = ofs.statSync(file.exportPath);
+      var fileSizeInBytes = stats["size"];
+      var sinfo = {
+        session : session.id,
+        index : fileIndex,
+        size : fileSizeInBytes
+      }
+      if(sinfo.size > file.lastProgress){  //send progress only if progress
+        file.lastProgress = sinfo.size;
+
+        socket.emit("yd_event",{event:"progress",data:sinfo});
       }
 
-      file.ytdlInfos = info;
-      file.size = retreiveFileSize(file.ytdlInfos);  //retreive file size
-      if(!file.size && !file.duration){
-        var err = "INVALID_FILE_SIZE";
-        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
-        callback(err);  //return error
-        return;
-      }
-      if(file.size){
-        if(file.size > 1677721600){ //200 mo
-          var err = "FILE_TOO_BIG";
-          socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
-          callback(err);  //return error
-          return;
+    },1000);
+
+    var ytdlProcess = youtubedl(file.webpage_url,
+      // Optional arguments passed to youtube-dl.
+      ['-x'],
+      // Additional options can be given for calling `child_process.execFile()`.
+      { cwd: __dirname });
+
+    ytdlProcess.pipe(ofs.createWriteStream('./exports/'+session.id+'/'+fileIndex+'.mp4'));
+
+    // Will be called when the download starts.
+    ytdlProcess.on('info', function (info) {
+      socket.emit('yd_event', {event: 'file_download_started', data: fileIndex}); // send a status for this file
+    });
+
+    ytdlProcess.on('error', function error(err) {
+      console.log(err);
+      socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
+    });
+
+    ytdlProcess.on('end', function() {  // DL ending
+      processFileConvert(file,function(err,file){ //convert the mp4 to mp3
+        if(err){                        //stop all if error
+          return callback(err);
         }
-      }
-      //
-      // START DOWNLOAD //
-      //
-
-      // send the file size every 500 ms
-      file.lastProgress = 0;
-      var progressPing = setInterval(function(){
-        var stats = ofs.statSync(file.exportPath);
-        var fileSizeInBytes = stats["size"];
-        var sinfo = {
-          session : session.id,
-          index : fileIndex,
-          size : fileSizeInBytes
-        }
-        if(sinfo.size > file.lastProgress){  //send progress only if progress
-          file.lastProgress = sinfo.size;
-
-          socket.emit("yd_event",{event:"progress",data:sinfo});
-        }
-
-      },1000);
-
-      var ytdlProcess = youtubedl(file.webpage_url,
-        // Optional arguments passed to youtube-dl.
-        ['--format=18'],
-        // Additional options can be given for calling `child_process.execFile()`.
-        { cwd: __dirname });
-
-      ytdlProcess.pipe(ofs.createWriteStream('exports/'+session.id+'/'+fileIndex+'.mp4'));
-
-      // Will be called when the download starts.
-      ytdlProcess.on('info', function(info) {
-        socket.emit("yd_event",{event:"file_download_started",data:fileIndex}); //send a status for this file
-      });
-
-      ytdlProcess.on('error', function error(err) {
-        socket.emit("yd_event",{event:"file_error",data:{index:fileIndex,error:err}});
-      });
-
-      ytdlProcess.on('end', function() {  // DL ending
-        processFileConvert(file,function(err,file){ //convert the mp4 to mp3
+        processFileTag(file,function(err,file){    //tag the given mp3
           if(err){                        //stop all if error
             return callback(err);
           }
-          processFileTag(file,function(err,file){    //tag the given mp3
-            if(err){                        //stop all if error
-              return callback(err);
-            }
-            callback(null,file);   //return the final result
-          });
+          callback(null,file);   //return the final result
         });
-        //file downloaded, apply the tags
-        socket.emit("yd_event",{event:"file_finished",data:{index:fileIndex}});
-
-        clearInterval(progressPing);  //end the filesize ping
       });
+      //file downloaded, apply the tags
+      socket.emit("yd_event",{event:"file_finished",data:{index:fileIndex}});
+
+      clearInterval(progressPing);  //end the filesize ping
     });
   });
 }
@@ -333,34 +320,23 @@ function requestFileProcess(session,fileIndex,socket){
         console.log("--- PROCESSING ERROR ---");
         console.log("(Session "+session.id+" | File "+fileIndex+")");
         console.log(err);
-        socket.emit("file_error",err);
-        return;
+        socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
+        session.processEnded++;
       }
-      session.processEnded++;
-
-      if(session.processEnded == session.files.length){ //if all files are converted
-
-
-        //remove the session folder after 10 min (600 sec)*/
-        setTimeout(function(){
-          rmDir(session.path,true);
-        },600*1000);
-
-        if(session.files.length > 1){
-          genZip(session,function(err,path){
-            if(err){
-              socket.emit("file_error",err);
-              return;
-            }
-            socket.emit("yd_event",{event:"finished",data:{path:path}}); // Return a final zip
-          });
-        }
-        else{
-          socket.emit("yd_event",{event:"finished",data:{path:data.exportPath}}); // return the file
-        }
+      if(!err){
+        //move the downloaded file to it final folder
+        moveFile(session,fileIndex,function(err,filePath){
+          if(err){
+            socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
+          }
+          session.processEnded++;
+          if(session.processEnded == session.files.length){ //if all files are converted
+            socket.emit("yd_event",{event:"finished",data:{path:session.path}});
+          }
+        });
       }
     });
-  },5000);
+  },500);
 }
 
 function retreiveFileSize(info){
@@ -375,44 +351,33 @@ function retreiveFileSize(info){
   return f;
 }
 
-function retreiveVideoInfos(url,callback){
+function retreiveFileInfos(url,callback){
   youtubedl.getInfo(url, "", function(err, info) {
     if (err) {
-      callback("",err);
+      callback(err,"");
     }
     else {
-      callback(info);
+      callback("",info);
     }
   });
 }
 
-function genZip(session,callback){
-
-  var zipPath = "./exports/"+session.id+".zip";
-  var zip = new JSZip();
-  var ended = 0;
-  var albumName = "Tagifier";
-  if(session.files[0].album){
-    albumName = session.files[0].album;
+function moveFile(session,fileIndex,callback){
+  var file = session.files[fileIndex];
+  //create the exportDir if not exist yet
+  if (!ofs.existsSync(session.path)){
+      ofs.mkdirSync(session.path);
   }
-  var fileFuncList = [];
 
-  async.forEachOf(session.files, function (file, index, callback) {
-    ofs.readFile(file.exportPath, function(err,fileData){
-      zip.file(albumName+"/"+file.fileName+".mp3", fileData);
-      return callback(null, file);
-    });
-  }, function (err) {
-      if (err){
-        return callback(err);
-      }
+  //prevent invalid char inside filename
+  var nFileName = sanitize(file.fileName);
 
-      zip.generateNodeStream({streamFiles:true})
-      .pipe(ofs.createWriteStream(zipPath))
-      .on('finish', function () {
-          return callback(null,zipPath);
-      });
+  //copy the file , this method prevent a nodejs error with rename
+  copyFile(file.exportPath,session.path+"/"+nFileName+".mp3",function(){
+    ofs.unlink(file.exportPath);
+    callback(null, session.path+"/"+nFileName+".mp3");
   });
+
 }
 
 var returnDur = function(dur){
@@ -451,4 +416,28 @@ function getToStr(get){
   return ret;
 }
 
-app.use('/', express.static(__dirname + '/public/'));
+function copyFile(source, target, cb) {
+  var cbCalled = false;
+
+  var rd = ofs.createReadStream(source);
+  rd.on("error", function(err) {
+    done(err);
+  });
+  var wr = ofs.createWriteStream(target);
+  wr.on("error", function(err) {
+    done(err);
+  });
+  wr.on("close", function(ex) {
+    done();
+  });
+  rd.pipe(wr);
+
+  function done(err) {
+    if (!cbCalled) {
+      cb(err);
+      cbCalled = true;
+    }
+  }
+}
+
+//app.use('/', express.static(__dirname + '/public/'));

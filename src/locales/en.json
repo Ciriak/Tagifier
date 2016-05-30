@@ -7,7 +7,7 @@
     "newProcess" : "Convert a new file"
   },
   "index" : {
-    "welcomeMessage" : "An easy way to Tag and Download Youtube videos",
+    "welcomeMessage" : "The ultimate Mp3 tool",
     "welcomeButtonLabel" : "Tag this file",
     "invalidLinkMessage" : "This link seem to be invalid !"
   },
@@ -32,7 +32,7 @@
     "process" : "Start conversion"
   },
   "about" : {
-    "description" : "Tagifier provide you an easy and fast way to convert and tag Youtube video as mp3 files."
+    "description" : "The ultimate Mp3 tool"
   },
   "error" : {
     "invalidCaptchat" : "The captchat seem to be invalid !",

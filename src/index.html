@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tagifier | Convert Youtube video to Mp3 tagged file</title>
+    <title>Tagifier</title>
     <link rel="icon" type="image/png" href="img/tgf/favicon.png" />
     <link rel="stylesheet" href="dep/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="dep/mdi/css/materialdesignicons.min.css" />
@@ -22,22 +22,18 @@
   		<img src="img/tgf/icon.png" class="animated pulse infinite">
   	</div>
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="#">
-            <img alt="Brand" src="img/tgf/header-logo-beta.png" style="height:100%;">
-          </a>
-        </div>
-      </div>
-    </nav>
+	  <div ui-view></div>
 
-	 <div ui-view></div>
+    <footer ng-include="'views/footer.html'"></footer>
 
-    <script src="dep/jquery/dist/jquery.min.js"></script>
+    <!-- require scripts -->
+    <script src="dep/jquery/dist/jquery.min.js" onload="window.$ = window.jQuery = module.exports;"></script>
     <script src="dep/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="dep/angular/angular.min.js"></script>
-    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script src="dep/socket.io-client/socket.io.js"></script>
+    <!-- used to cummunicate with angular & electron -->
+    <script src="dep/angular-electron/angular-electron.min.js"></script>
+    <!-- -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="dep/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
     <script src="dep/angular-youtube-mb/dist/angular-youtube-embed.min.js"></script>
@@ -49,16 +45,15 @@
     <script src="dep/angular-translate/angular-translate.min.js"></script>
     <script src="dep/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js"></script>
     <script src="http://api.solvemedia.com/papi/challenge.ajax"></script>
-    <script src="dep/isMobile/isMobile.min.js"></script>
     <script>
     //ga
-	    (function (i, s, o, g, r, a, m) {
-	        i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-	            (i[r].q = i[r].q || []).push(arguments)
-	        }, i[r].l = 1 * new Date(); a = s.createElement(o),
-	        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-	    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-	</script>
+      (function (i, s, o, g, r, a, m) {
+          i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+              (i[r].q = i[r].q || []).push(arguments)
+          }, i[r].l = 1 * new Date(); a = s.createElement(o),
+          m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+      })(window, document, 'script', 'http://www.google-analytics.com/analytics.js', 'ga');
+  </script>
   <script src="js/tagifier.js"></script>
   </body>
 </html>

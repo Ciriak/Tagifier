@@ -3,9 +3,27 @@ $blue: #528BFF;
 $darkgrey : #181A1F;
 
 body{
-	margin-top:50px;
 	background-color: #282C34;
 	color:#9DA5AC;
+}
+
+footer{
+	position: fixed;
+	z-index: 999;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	background-color: #21252B;
+	ul{
+		list-style-type: none;
+		margin:0;
+		padding:0;
+		li{
+			padding: 10px;
+			display: inline-block;
+			font-size: 10px;
+		}
+	}
 }
 
 ::-webkit-scrollbar {
@@ -132,7 +150,7 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 .file{
 	padding-left: 0;
 	padding-right: 0;
-	
+
 	.final-dl-button{
 		padding:15px;
 	}
