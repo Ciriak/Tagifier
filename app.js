@@ -3,29 +3,22 @@
 //
 
 const electron = require('electron');
-// Module to control application life.
 const app = electron.app;
 const Menu = electron.Menu;
-// Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
-const ipcMain = electron.ipcMain;
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
+const ipc = electron.ipcMain;
 let mainWindow
 function createWindow () {
-  // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 1024,
     height: 600,
     minWidth: 1024,
     icon: __dirname + '/public/img/tgf/icon_circle.png'
   });
-  // and load the index.html of the app.
   mainWindow.loadURL(`file://${__dirname}/public/index.html`);
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
-  // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
@@ -33,15 +26,8 @@ function createWindow () {
     mainWindow = null
   });
 }
-
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
-// Quit when all windows are closed.
+app.on('ready', createWindow);
 app.on('window-all-closed', function () {
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -51,9 +37,9 @@ app.on('activate', function () {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
-    createWindow()
+    createWindow();
   }
-})
+});
 
 var fs = require('fs-sync');
 var ofs = require('fs');  // old fs
@@ -63,22 +49,16 @@ var request = require('request');
 var id3 = require('node-id3');
 var random = require('random-gen');
 var os = require('os');
+var _ = require('lodash');
 var async = require('async');
 var bodyParser = require('body-parser');
-var youtubedl = require('youtube-dl');
 var fid = require('fast-image-downloader');
 var video2mp3 = require('video2mp3');
 var sanitize = require("sanitize-filename");
 var ffmpeg = require('fluent-ffmpeg');
 
-var server = require('http').createServer();
-
-// CONVERT VARS
-
-var maxProcess = 5;     //max simul
-var processList = 0;   //list of current processing items
-var waitingList = 0;   // list of items inside the waiting queue
-
+//File class
+var file = require("./tagifier_modules/file.js");
 //
 
 var fidOpt = {
@@ -93,83 +73,66 @@ if(os.platform() === 'win32'){
      var ffmpegPath = './bin/ffmpeg/ffmpeg'
  }
 ffmpeg.setFfmpegPath(ffmpegPath);
-
-// clean function remove all temp thumbnails and mp3
-
-// dir cleaner function
-var rmDir = function(dirPath, removeSelf) {
-  if (removeSelf === undefined)
-    removeSelf = true;
-  try { var files = ofs.readdirSync(dirPath); }
-  catch(e) { return; }
-  if (files.length > 0)
-    for (var i = 0; i < files.length; i++) {
-      var filePath = dirPath + '/' + files[i];
-      if (ofs.statSync(filePath).isFile())
-        fs.remove(filePath);
-      else
-        rmDir(filePath);
-    }
-  if (removeSelf)
-    ofs.rmdirSync(dirPath);
-};
-
 // create the "exports" folder
 var p = "./exports";
 if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
 
-
-rmDir('./public/img/temps',false);
-rmDir('./exports',false);
-console.log("Temp files cleaned");
-
-var config = {};
-
 // retreive config file
-config = fs.readJSON("config.json");
+var config = fs.readJSON("config.json");
 
-var io = require('socket.io')(server);
-server.listen(8080);
 
-io.on('connection', function (socket){
 
-  socket.on('fileRequest', function (data) {
-    var session = {
-      id : random.alphaNum(16),
-      processEnded : 0,
-      files : data.files,
-      path : data.path
-    }
-    var tempPath = "./exports/"+session.id;
+//
+//   FILE ADDED
+//
 
-    //create the temp session path
-    if (!ofs.existsSync(tempPath)){
-      ofs.mkdirSync(tempPath);
+ipc.on('addFile', function (data) {
+  console.log("New file added : "+data.uri);
+  var f = new file(data.uri,data.external);
+  f.retreiveMetaData(function(err,md){
+    if(err){
+      ipc.emit("file_event",{event:"file_infos_error",data:err});
+      return
     }
 
-    var processEnded = 0;
+    //hydrate with the metadada
+    for(var d in md) {
+      f[d] = md[d];
+    };
 
-    for (var fileIndex = 0; fileIndex < session.files.length; fileIndex++) {
-      requestFileProcess(session,fileIndex,socket);
-    }
-  });
 
-  // retreive the info for a specific file
-  socket.on('fileInfo', function (data) {
-    var fileUrl = decodeURIComponent(data.url);
-  	retreiveFileInfos(fileUrl,function(err,infos){
-      if(err){
-        socket.emit("yd_event",{event:"file_info_error",data:{error:err}});
-        return;
-      }
-      socket.emit("yd_event",{event:"file_info",data:infos});
-    });
+    ipc.emit("file_event",{event:"file_infos",data:f});
   });
 });
 
-function processFileDl(session,fileIndex,socket,callback){
+
+//
+//  When the client start the process
+//
+
+ipc.on('processRequest', function (data) {
+  console.log("Starting the process...");
+
+  var session = {
+    id : random.alphaNum(4),
+    files : data.files
+  }
+  session.tempPath = "./exports/"+session.id;
+
+  //create the temp session path
+  if (!ofs.existsSync(session.tempPath)){
+    ofs.mkdirSync(session.tempPath);
+  }
+
+  for (var fileIndex = 0; fileIndex < session.files.length; fileIndex++) {
+    //add each file to the waiting queue
+    AddFileToProcessQueue(session,fileIndex);
+  }
+});
+
+function processFileDl(session,fileIndex,callback){
   var file = session.files[fileIndex];
   fid(file.image, fidOpt.TIMEOUT, fidOpt.ALLOWED_TYPES, "", function(err, img){ //download the file image
     if (err) {
@@ -208,46 +171,12 @@ function processFileDl(session,fileIndex,socket,callback){
       if(sinfo.size > file.lastProgress){  //send progress only if progress
         file.lastProgress = sinfo.size;
 
-        socket.emit("yd_event",{event:"progress",data:sinfo});
+        ipc.emit("yd_event",{event:"progress",data:sinfo});
       }
 
     },1000);
 
-    var ytdlProcess = youtubedl(file.webpage_url,
-      // Optional arguments passed to youtube-dl.
-      ['-x'],
-      // Additional options can be given for calling `child_process.execFile()`.
-      { cwd: __dirname });
 
-    ytdlProcess.pipe(ofs.createWriteStream('./exports/'+session.id+'/'+fileIndex+'.mp4'));
-
-    // Will be called when the download starts.
-    ytdlProcess.on('info', function (info) {
-      socket.emit('yd_event', {event: 'file_download_started', data: fileIndex}); // send a status for this file
-    });
-
-    ytdlProcess.on('error', function error(err) {
-      console.log(err);
-      socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
-    });
-
-    ytdlProcess.on('end', function() {  // DL ending
-      processFileConvert(file,function(err,file){ //convert the mp4 to mp3
-        if(err){                        //stop all if error
-          return callback(err);
-        }
-        processFileTag(file,function(err,file){    //tag the given mp3
-          if(err){                        //stop all if error
-            return callback(err);
-          }
-          callback(null,file);   //return the final result
-        });
-      });
-      //file downloaded, apply the tags
-      socket.emit("yd_event",{event:"file_finished",data:{index:fileIndex}});
-
-      clearInterval(progressPing);  //end the filesize ping
-    });
   });
 }
 
@@ -302,29 +231,37 @@ function processFileTag(file,callback){ //tags the given file
   callback(null,file);  //success, return the file for socket sending
 }
 
- //used to insert a file inside a waiting queue and process it when possible
-function requestFileProcess(session,fileIndex,socket){
+//Insert a file inside a waiting queue and process it when possible
+var waitingList = 0;
+var processList = 0;
+
+function AddFileToProcessQueue(session,fileIndex){
   waitingList++;  //increment waiting list count
   var fileQueue = setInterval(function(){   //check every 5 sec if the process can start
 
-    if(processList >= maxProcess){
-      return; //no place available... retry in 5s
+    if(processList >= config.max_process){
+      return;
     }
 
     //remove from waiting list and place to process list
     waitingList--;
     processList++;
     clearInterval(fileQueue); //stop the loop
-    processFileDl(session,fileIndex,socket,function(err,data){
+
+    var f = new file();
+    f.hydrate(session.files[fileIndex]);
+    f.process(session,fileIndex);
+    return;
+    processFileDl(session,fileIndex,function(err,data){
       processList--;  // process ended (give a place to the waiting list)
       if(err){
         console.log("--- PROCESSING ERROR ---");
         console.log("(Session "+session.id+" | File "+fileIndex+")");
         console.log(err);
-        socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
+        ipc.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
         session.processEnded++;
         if(session.processEnded == session.files.length){ //if all files are converted
-          socket.emit("yd_event",{event:"process_error",data:{err:err}});
+          ipc.emit("yd_event",{event:"process_error",data:{err:err}});
         }
         return;
       }
@@ -332,39 +269,16 @@ function requestFileProcess(session,fileIndex,socket){
         //move the downloaded file to it final folder
         moveFile(session,fileIndex,function(err,filePath){
           if(err){
-            socket.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
+            ipc.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
           }
           session.processEnded++;
           if(session.processEnded == session.files.length){ //if all files are converted
-            socket.emit("yd_event",{event:"finished",data:{path:session.path}});
+            ipc.emit("yd_event",{event:"finished",data:{path:session.path}});
           }
         });
       }
     });
-  },500);
-}
-
-function retreiveFileSize(info){
-  var f = 0;
-  for (var i = 0; i < info.formats.length; i++) {
-    if(info.formats[i].filesize){
-      if(info.formats[i].filesize > f){
-        f = info.formats[i].filesize;
-      }
-    }
-  }
-  return f;
-}
-
-function retreiveFileInfos(url,callback){
-  youtubedl.getInfo(url, "", function(err, info) {
-    if (err) {
-      callback(err,"");
-    }
-    else {
-      callback("",info);
-    }
-  });
+  },1000);
 }
 
 function moveFile(session,fileIndex,callback){
@@ -388,31 +302,6 @@ function moveFile(session,fileIndex,callback){
     }
   });
 
-}
-
-var returnDur = function(dur){
-	var d = {
-		h : 0,
-		m : 0,
-		s : 0
-	};
-	var dur = dur.split(":");
-	if(dur.length == 3){
-		d.h = dur[0];
-		d.m = dur[1];
-		d.s = dur[2];
-	}
-	if(dur.length == 2){
-		d.m = dur[0];
-		d.s = dur[1];
-	}
-	else{
-		d.s = dur[0];
-	}
-
-  var f = d.s+(d.m*60)+((d.h*60)*60);
-
-	return f;
 }
 
 // convert an $_get object to a string list
@@ -450,4 +339,26 @@ function copyFile(source, target, cb) {
   }
 }
 
-//app.use('/', express.static(__dirname + '/public/'));
+// dir cleaner function
+var rmDir = function(dirPath, removeSelf) {
+  if (removeSelf === undefined)
+    removeSelf = true;
+  try { var files = ofs.readdirSync(dirPath); }
+  catch(e) { return; }
+  if (files.length > 0)
+    for (var i = 0; i < files.length; i++) {
+      var filePath = dirPath + '/' + files[i];
+      if (ofs.statSync(filePath).isFile())
+        fs.remove(filePath);
+      else
+        rmDir(filePath);
+    }
+  if (removeSelf)
+    ofs.rmdirSync(dirPath);
+};
+
+
+
+rmDir('./public/img/temps',false);
+rmDir('./exports',false);
+console.log("Temp files cleaned");

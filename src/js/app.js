@@ -100,8 +100,9 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
     $scope.$apply();
   });
 
-  $scope.socket = io.connect('http://localhost:8080');
-  $scope.socket.on('connect', function()
+  $scope.ipc = $rootScope.remote.ipcMain;
+  console.log($rootScope.remote);
+  $scope.ipc.on('connect', function()
   {
     console.log("Socket connected !");
   });

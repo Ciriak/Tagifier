@@ -33,6 +33,8 @@
     "fast-image-downloader": "0.0.4",
     "fluent-ffmpeg": "^2.1.0",
     "fs-sync": "^1.0.2",
+    "jsmediatags": "^3.2.1",
+    "lodash": "^4.13.1",
     "node-id3": "0.0.4",
     "random-gen": "^0.1.0",
     "remote": "^0.2.6",

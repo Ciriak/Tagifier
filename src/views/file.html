@@ -1,11 +1,13 @@
-<form class="container-fluid file" ng-submit="requestProcess()">
-	<div class="file-loading" ng-hide="fileAvailable">
+<div class="container-fluid file">
+
+	<div class="file-loading" ng-show="retreivingInfos">
 		<img src="img/spinner.svg" />
 		<h2>{{ 'file.retreivingInfos' | translate }}</h2>
 		<h3>{{ 'file.retreivingInfosSub' | translate }}</h3>
 	</div>
+
 	<div class="panel col-md-3 info">
-		<audio src="{{files[currentFileIndex].url | trustUrl}}" audioplayer controls style="display:none;" id="file-player"></audio>
+		<audio src="{{exportFiles[currentFileIndex].uri | trustUrl}}" audioplayer controls class="hidden" id="file-player"></audio>
 
 		<div class="col-md-12 file-cover" style="background-image:url('{{exportFiles[currentFileIndex].image}}'); height:{{getDynamicHeight('file-cover')}}px" ng-show="fileAvailable">
 			<div class="control">
@@ -104,31 +106,12 @@
 					<i class="remove-file-btn mdi mdi-close" ng-show="canRemoveFile" ng-click="removeFileFromList(f)"></i>
 					<span class="file-progress" style="width:{{f.progress}}%"></span>
 				</div>
-				<div class="btn add-file-btn col-md-12 col-sm-12" ng-click="showAddFileModal()" ng-show="canAddFile">
+				<div class="btn add-file-btn col-md-12 col-sm-12" ng-click="showAddFileModal()">
 					<i class="mdi mdi-cloud-upload"></i> {{ 'file.addFileButtonLabel' | translate }}
 				</div>
 			</div>
 	  </div>
 	</div>
-</form>
-
-<div class="modal" id="captchat-modal" tabindex="-1" role="dialog">
-  <form class="modal-dialog" role="document" ng-submit="requestProcess()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Captchat</h4>
-      </div>
-      <div class="modal-body">
-				<div id="error-msg-container" class="hide red darken-4 center">Error</div>
-        <div id="solve-media-container" ng-show="captchatActive"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" ng-hide="progressStatus == 'ready'" ng-disabled="!canStartProcess" ng-class="{'disabled':!canStartProcess}" class="btn btn-primary"><i class="mdi mdi-download"></i> {{ 'global.download' | translate }}</button>
-      </div>
-    </div>
-  </form>
 </div>
 
 <div class="modal" id="add-file-modal" tabindex="-1" role="dialog">
@@ -139,11 +122,10 @@
         <h4 class="modal-title">Add a file</h4>
       </div>
       <div class="modal-body">
-				<input type="url" value="" class="form-control" placeholder="https://www.youtube.com/watch?v=ZSt9tm3RoUU" ng-model="addFileInputUrl">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary"><i class="mdi mdi-download"></i>{{ 'file.addFileButtonLabel' | translate }}</button>
+				<div class="btn btn-primary btn-lg"><i class="mdi mdi-folder"></i> {{ 'file.addFileButtonLabel' | translate }}</div>
+				<p>
+					Or past an URL
+				</p>
       </div>
     </div>
   </form>

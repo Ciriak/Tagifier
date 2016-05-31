@@ -3,41 +3,29 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	$scope.canStartProcess = false;
 	$scope.processing = false;
 	$scope.canEditTags = false;
-	$scope.fileAvailable = false;
 	$scope.singleFile = true;
 	$scope.files = {};
-	$scope.dlFileName;
 	$scope.fileReady = false;
 	$scope.currentFileIndex = 0;
 	$scope.exportFiles = [];
 	$scope.progress = 0;
-	$scope.captchatActive = false;
-	$scope.notified = false;
-	$scope.canRemoveFile = false;
-	$scope.canAddFile = true;
 	$scope.filePlayer;
+	$scope.canRemoveFile = false;
 	$scope.playerStatus = "stop";
 	$scope.exportDir;
-
 	var date = new Date();
-	$scope.filePlayer = document.getElementById("file-player");
 
-	$scope.retreiveFilesInfos = function(url){
+	$scope.addFile = function(uri,external){
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
 		$scope.fileAvailable = false;
 		$scope.canAddFile = false;
-		$scope.socket.emit("fileInfo",{url : url});
+		$scope.ipc.emit("addFile",{uri : uri, external : external});
 	};
 
-	var requestUrl = decodeURI($location.url().substr(1)).replace(/~2F/g,'/');
-	$scope.retreiveFilesInfos(requestUrl);
-
 	var parseFileData = function(data){
-
-		var baseIndex = $scope.exportFiles.length;
-		if(baseIndex > 0){
-
+		var index = $scope.exportFiles.length;
+		if(index > 0){
 			$scope.canRemoveFile = true;	// they will be more than 1 file so the user can remove them from thhe list
 			$scope.singleFile = false;
 			if(!$scope.$$phase) {
@@ -45,16 +33,61 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			}
 		}
 
-		if(data.constructor === Object){	// 1 item
-			$scope.setFileVars(baseIndex,data);
+		$scope.exportFiles[index] = {
+			lockedAttrs : [],
+			converting : false,
+			processing : false,
+			error : false,
+			progress : 0
+		};
+
+		for(var attr in data){
+			$scope.exportFiles[index][attr] = data[attr];
+		}
+
+
+
+		if(!$scope.exportFiles[index].thumbnail){
+			$scope.exportFiles[index].thumbnail = "./img/default_cover.png";
+		}
+
+		//set release year if defined, else current year
+		$scope.exportFiles[index].year = date.getFullYear();
+		if(data.upload_date){
+			$scope.exportFiles[index].year = data.upload_date.substr(0,4);
+		}
+		//
+
+		$scope.exportFiles[index].track = index+1;
+
+		//Define the pattern, depending of the file name format
+		var pt = "";
+		if($scope.exportFiles[index].filename){
+			pt = $scope.exportFiles[index].filename.split(" - ");
+		}
+
+		if(pt.length > 1){
+			$scope.exportFiles[index].tagPattern = "%artist% - %title%";
+			$scope.exportFiles[index].fileNamePattern = "%artist% - %title%";
+
+			if(!$scope.singleFile){		//if this is an album, set the track as first word
+				$scope.exportFiles[index].tagPattern = "%album% - %title%";
+				$scope.exportFiles[index].fileNamePattern = "%track% - %title%";
+			}
+
 		}
 		else{
-			$scope.singleFile = false;
-			$scope.canRemoveFile = true;
-			for (var i = baseIndex; i < data.length; i++) {
-					$scope.setFileVars(i,data[i]);
+			$scope.exportFiles[index].tagPattern = "%title%";
+			$scope.exportFiles[index].fileNamePattern = "%title%";
+			// in this case, we set the Uploader as the "artist"
+			if(data.uploader){
+				$scope.exportFiles[index].artist = data.uploader;
 			}
 		}
+
+
+		$scope.genPattern(index);
+
 	};
 
 	$scope.retreiveInfoError = function(){
@@ -77,7 +110,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
 		$scope.canRemoveFile = false;
-		$scope.socket.emit("fileRequest",{files:$scope.exportFiles,path:exportDir});
+		$scope.ipc.emit("processRequest",{files:$scope.exportFiles,path:exportDir});
 	};
 
 	$scope.removeFileFromList = function(file){
@@ -113,14 +146,11 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			notify($translate.instant("error.plsFixFileErrors"));
 			return;
 		}
-		var exportDir = dialog.showOpenDialog({properties: ['openFile', 'openDirectory']});
-		$scope.exportDir = exportDir[0];
-		$scope.requestFiles($scope.exportDir);
-	};
-
-	$scope.generateCaptchat = function(){
-		$scope.captchatActive = true;
-		ACPuzzle.create('buxt.317r8uls-ge9STPl6ilzpmYgl8G', 'solve-media-container', "");
+		var exportDir = dialog.showOpenDialog({properties: ['openDirectory','createDirectory']});
+		if(exportDir){
+			$scope.exportDir = exportDir[0];
+			$scope.requestFiles($scope.exportDir);
+		}
 	};
 
 	$scope.setCurrentFile = function(i){
@@ -129,10 +159,11 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.playerStatus = "stop";
 	};
 
-	$scope.socket.on("yd_event",function(ev){
-		console.log(ev);
+	$scope.ipc.on("file_event",function(ev){
+		console.log("Event - "+ev["event"]);
+		console.log(ev.data);
 
-		if(ev["event"] == "file_info"){
+		if(ev["event"] == "file_infos"){
 			parseFileData(ev.data);
 			$scope.canEditTags = true;
 			$scope.canStartProcess = true;
@@ -140,8 +171,8 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.canAddFile = true;
 		}
 
-		if(ev['event'] == "file_info_error"){
-			$scope.retreiveInfoError();
+		if(ev['event'] == "file_infos_error"){
+			$scope.retreiveInfoError(ev.data);
 		}
 
 		if(ev["event"] == "file_download_started"){
@@ -222,80 +253,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 	});
 
-	$scope.setFileVars = function(index,data){
-		$scope.files[index] = data;
-		$scope.exportFiles[index] = {
-			lockedAttrs : [],
-			converting : false,
-			processing : false,
-			error : false,
-			progress : 0
-		};
-
-		$scope.exportFiles[index].webpage_url = $scope.files[index].webpage_url;
-		$scope.exportFiles[index].image = $scope.files[index].thumbnail;
-
-		//set the final filesize (bigger file)
-		$scope.exportFiles[index].filesize = 0;
-		// ... only if specified
-		for (var o = 0; o < $scope.files[index].formats.length; o++) {
-			if($scope.files[index].formats[o].filesize){	//continue only if filesize is specified
-				var t = $scope.files[index].formats[o].filesize;
-				if(t > $scope.exportFiles[index].filesize){	//update only if superior
-					$scope.exportFiles[index].filesize = t;
-				}
-			}
-		}
-		if($scope.files[index].formats[$scope.files[index].formats.length-1].filesize){
-			$scope.exportFiles[index].filesize = $scope.files[index].formats[$scope.files[index].formats.length-1].filesize;
-		}
-
-		//set release year if defined, else current year
-		$scope.exportFiles[index].year = date.getFullYear();
-		if(data.upload_date){
-			$scope.exportFiles[index].year = data.upload_date.substr(0,4);
-		}
-		//
-
-		$scope.exportFiles[index].track = index+1;
-
-		//Define the pattern, depending of the file name format
-		var pt = $scope.files[index].fulltitle.split(" - ");
-		if(pt.length > 1){
-			$scope.exportFiles[index].tagPattern = "%artist% - %title%";
-			$scope.exportFiles[index].fileNamePattern = "%artist% - %title%";
-
-			if(!$scope.singleFile){		//if this is an album, set the track as first word
-				$scope.exportFiles[index].tagPattern = "%album% - %title%";
-				$scope.exportFiles[index].fileNamePattern = "%track% - %title%";
-			}
-
-		}
-		else{
-			$scope.exportFiles[index].tagPattern = "%title%";
-			$scope.exportFiles[index].fileNamePattern = "%title%";
-			// in this case, we set the Uploader as the "artist"
-			if(data.uploader){
-				$scope.exportFiles[index].artist = data.uploader;
-			}
-		}
-
-
-		$scope.genPattern(index);
-
-		var dur = returnDur($scope.files[index].duration);
-		var duration = moment.duration({
-	    seconds: dur.s,
-	    minutes: dur.m,
-	    hours: dur.h
-		});
-		if(duration.asMinutes() > 10){
-			$scope.exportFiles[index].error = true;
-			$scope.canStartProcess = false;
-			notify($translate.instant("error.fileTooLong"));
-		}
-	};
-
 	$scope.overrideProp = function(propName,sourceIndex,isPattern){
 		for (var file in  $scope.exportFiles) {
 			var targetIndex = parseInt(file);
@@ -341,7 +298,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 
 	$scope.genPattern = function(index){
 
-		console.log("Generating pattern for "+$scope.files[index].fulltitle+"...");
+		console.log("Generating pattern for "+$scope.exportFiles[index].filename+"...");
 		var fileData = $scope.exportFiles[index];
 		var pattern = fileData.tagPattern.replace(/%([a-zA-Z0-9])\w+%/g, '(.*)');
 		var fileVars = fileData.tagPattern.match(/%([a-zA-Z0-9])\w+%/g);
@@ -351,8 +308,10 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			fileVars[i] = fileVars[i].replace("%","").replace("%",""); //remove %x%
 		};
 
-		//Find tags inside the fulltitle
-		var extrData = $scope.files[index].fulltitle.match(new RegExp(pattern));
+		//Find tags inside the filename
+		if($scope.exportFiles[index].filename){
+			var extrData = $scope.exportFiles[index].filename.match(new RegExp(pattern));
+		}
 		if(!extrData)
 		{
 			return;
@@ -391,7 +350,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	};
 
 	$scope.togglePlayer = function(){
-
+		$scope.filePlayer = document.getElementById("file-player");
 		if($scope.filePlayer.paused){
 			$scope.filePlayer.play();
 			$scope.playerStatus = "play";
@@ -404,7 +363,14 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	}
 
 	$scope.showAddFileModal = function(){
-		$('#add-file-modal').modal('show');
+		//$('#add-file-modal').modal('show');
+		var fileUri = dialog.showOpenDialog({properties: ['openFile','multiSelections']});
+		if(fileUri){
+			console.log(fileUri);
+			for (var i = 0; i < fileUri.length; i++) {
+				$scope.addFile(fileUri[i],false);
+			}
+		}
 	}
 
 	$scope.hideAddFileModal = function(){
@@ -461,29 +427,6 @@ var getBestThumbnail = function(t){
 		return "";
 	}
 };
-
-var returnDur = function(dur){
-	var d = {
-		h : 0,
-		m : 0,
-		s : 0
-	};
-	var dur = dur.split(":");
-	if(dur.length == 3){
-		d.h = dur[0];
-		d.m = dur[1];
-		d.s = dur[2];
-	}
-	if(dur.length == 2){
-		d.m = dur[0];
-		d.s = dur[1];
-	}
-	else{
-		d.s = dur[0];
-	}
-
-	return d;
-}
 
 var isInArray = function (value, array) {
   return array.indexOf(value) > -1;
