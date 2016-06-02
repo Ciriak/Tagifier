@@ -29,6 +29,10 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 		else{
 			console.log("File already added");
+			$scope.canEditTags = true;
+			$scope.canStartProcess = true;
+			$scope.fileAvailable = true;
+			$scope.canAddFile = true;
 		}
 	};
 
@@ -103,19 +107,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 	};
 
-	$scope.requestFiles = function (){
-
-		if($scope.processing){
-			return;
-		}
-		$scope.fileReady = false;
-		$scope.processing = true;
-		$scope.canEditTags = false;
-		$scope.canStartProcess = false;
-		$scope.canRemoveFile = false;
-		$scope.ipc.emit("processRequest",{files:$scope.exportFiles});
-	};
-
 	$scope.removeFileFromList = function(file){
 		if(!$scope.canRemoveFile){
 			console.log("You are trying to remove a file from the list... but it seem you cant !");
@@ -145,11 +136,15 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	};
 
 	$scope.requestProcess = function(){
-		if(!$scope.canStartProcess){
-			notify($translate.instant("error.plsFixFileErrors"));
+		if($scope.processing){
 			return;
 		}
-		$scope.requestFiles();
+		$scope.fileReady = false;
+		$scope.processing = true;
+		$scope.canEditTags = false;
+		$scope.canStartProcess = false;
+		$scope.canRemoveFile = false;
+		$scope.ipc.emit("processRequest",{files:$scope.exportFiles});
 	};
 
 	$scope.setCurrentFile = function(i){

@@ -88,9 +88,9 @@ var config = fs.readJSON("config.json");
 //   FILE ADDED
 //
 
-ipc.on('addFile', function (data) {
-  console.log("New file added : "+data.uri);
-  var f = new file(data.uri,data.external);
+ipc.on('addFile', function (fileData) {
+  console.log("New file added : "+fileData.uri);
+  var f = new file(fileData);
   f.retreiveMetaData(function(err,md){
     if(err){
       ipc.emit("file_event",{event:"file_infos_error",data:err});
@@ -121,13 +121,8 @@ ipc.on('processRequest', function (data) {
   }
 
   for (var i = 0; i < data.files.length; i++) {
-    var nf = new file(data.files[i].uri, data.files[i].external);
-    nf.hydrate(data.files[i]);
-    session.files.push(nf);
+    session.files.push(new file(data.files[i]));
   }
-
-  console.log("session");
-  console.log(session);
 
   session.tempPath = "./exports/"+session.id;
 
@@ -159,8 +154,7 @@ function AddFileToProcessQueue(session,fileIndex){
     waitingList--;
     processList++;
     clearInterval(fileQueue); //stop the loop
-
-    session.files[fileIndex].process(session,fileIndex,function(err){
+    session.files[fileIndex].process(function(err){
       if(err){
         console.log("ERROR while processing File "+fileIndex);
         console.log('"'+err+'"');
@@ -170,12 +164,14 @@ function AddFileToProcessQueue(session,fileIndex){
       }
       else{
         //return the file finished signal to the client
+        console.log("File "+fileIndex+" finished");
         ipc.emit('file_event', {event: 'file_finished', index:fileIndex});
       }
       processList--;
 
       //if everything is finished
       if(waitingList === 0){
+        console.log("Process finished");
         ipc.emit('file_event', {event: 'finished',err : errorDuringProcess});
       }
 

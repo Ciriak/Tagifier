@@ -7,20 +7,21 @@ var path = require('path');
 var fs = require('fs');
 var random = require('random-gen');
 
-function file(uri,external) {
+function file(fileData) {
+
+  var k =  Object.keys(fileData);
+
+  for(var i=0, len = k.length; i<len; i++){
+      this[k[i]] = fileData[k[i]];
+      console.log(k[i]+" = "+fileData[k[i]]);
+  }
+
   this.id = random.alphaNum(8);
-  this.uri = uri;           //path to the file (absolute or relative)
-  this.external = external; //is the file a local one ?
-  this.metadata = {};       //metadata added by Youtube DL OR node_id3
   this.filename = "tagifier.mp3";
   if(!this.exportPath){
     this.exportPath = path.dirname(this.uri);
   }
-  this.hydrate = function(data){
-      Object.keys(data).forEach(function(key){
-          this[key] = data[key];
-      });
-  };
+
 };
 
 
@@ -62,7 +63,7 @@ file.prototype.retreiveMetaData = function retreiveMetaData(callback) {
   }
 };
 
-file.prototype.process = function process(session,index,callback){
+file.prototype.process = function (callback){
   //dl with YoutubeDL if external
   if(this.external === true){
     console.log("Downloading the file...");
@@ -71,15 +72,21 @@ file.prototype.process = function process(session,index,callback){
     });
   }
   else{
-    console.log("Tagging the file");
+    console.log("Tagging the file...");
     this.tag(function(err){
-      console.log("Tagged");
-      callback(err);
+      if(err){
+        console.log("Failed to tag the file");
+        console.log(err);
+        callback(err);
+        return;
+      }
+      console.log("File tagged successfully");
+      callback(null);
     });
   }
 }
 
-file.prototype.download = function download(callback){
+file.prototype.download = function(callback){
   var ytdlProcess = youtubedl(file.uri,
     // Optional arguments passed to youtube-dl.
     ['-x'],
@@ -117,7 +124,8 @@ file.prototype.download = function download(callback){
   });
 }
 
-file.prototype.tag = function tag(callback){
+file.prototype.tag = function (callback){
+  console.log(this);
   var tags = {
     encodedBy : "tagifier.net",
     remixArtist : "tagifier.net",
