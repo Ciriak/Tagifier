@@ -9,7 +9,7 @@
 	<div class="panel col-md-3 info">
 		<audio src="{{exportFiles[currentFileIndex].uri | trustUrl}}" audioplayer controls class="hidden" id="file-player"></audio>
 
-		<div class="col-md-12 file-cover" style="background-image:url('{{exportFiles[currentFileIndex].image}}'); height:{{getDynamicHeight('file-cover')}}px" ng-show="fileAvailable">
+		<div class="col-md-12 file-cover" style="background-image:url('{{exportFiles[currentFileIndex].pictureUri}}'); height:{{getDynamicHeight('file-cover')}}px" ng-show="fileAvailable">
 			<div class="control">
 				<i class="mdi mdi-play" ng-click="togglePlayer()" ng-hide="playerStatus == 'play'"></i>
 				<i class="mdi mdi-pause" ng-click="togglePlayer()" ng-show="playerStatus == 'play'"></i>
@@ -35,7 +35,7 @@
 				<tr>
 					 <td class="input-group" uib-tooltip="{{ 'file.inputChain' | translate }}">
 						 <span class="input-group-addon"><i class="mdi mdi-file-document"></i></span>
-							<input type="text" class="form-control" disabled="disabled" ng-value="files[currentFileIndex].fulltitle">
+							<input type="text" class="form-control" disabled="disabled" ng-value="exportFiles[currentFileIndex].fulltitle">
 					 </td>
 				</tr>
 				<tr>
@@ -94,15 +94,24 @@
 							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('year',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
 					 </td>
 				</tr>
+				<tr>
+					 <td class="input-group" >
+						 	<span class="input-group-addon btn btn-default" ng-click="openDir(exportFiles[currentFileIndex].uri,true)"><i class="mdi mdi-folder"></i></span>
+							<input type="text" class="form-control" ng-model="exportFiles[currentFileIndex].exportPath" uib-tooltip="{{ 'file.exportPath' | translate }}" disabled="disabled">
+							<span class="input-group-addon btn btn-primary" ng-click="setExportPath(currentFileIndex)" uib-tooltip="{{ 'file.setExportPath' | translate }}"><i class="mdi mdi-folder-move"></i></span>
+							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('exportPath',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
+							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('exportPath',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
+					 </td>
+				</tr>
 		 </table>
 
 	</div>
 	<div class="panel col-md-3 files-list">
 	  <div class="panel-body">
 			<div class="row">
-			  <div ng-repeat="f in exportFiles track by $index" class="btn col-md-12 col-sm-12 file-btn file-{{$index}}" ng-click="setCurrentFile(f.track-1);" ng-class="{'current': $index == currentFileIndex,'converting' : f.converting,'processing':f.processing,'error':f.error}">
-					<img ng-src="{{f.image}}" style="height:24px; float:left;" />
-					{{f.fileName}}<span class="format-label">.mp3</span>
+			  <div ng-repeat="f in exportFiles track by $index" class="btn col-md-12 col-sm-12 file-btn file-{{$index}}" ng-click="setCurrentFile($index);" ng-class="{'current': $index == currentFileIndex,'converting' : f.converting,'processing':f.processing,'error':f.error}">
+					<img ng-src="{{f.pictureUri}}" style="height:24px; float:left;" />
+					{{f.fulltitle}}<span class="format-label">.mp3</span>
 					<i class="remove-file-btn mdi mdi-close" ng-show="canRemoveFile" ng-click="removeFileFromList(f)"></i>
 					<span class="file-progress" style="width:{{f.progress}}%"></span>
 				</div>

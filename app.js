@@ -113,12 +113,22 @@ ipc.on('addFile', function (data) {
 //
 
 ipc.on('processRequest', function (data) {
-  console.log("Starting the process...");
+  console.log("Process request by from the client");
 
   var session = {
     id : random.alphaNum(4),
-    files : data.files
+    files : []
   }
+
+  for (var i = 0; i < data.files.length; i++) {
+    var nf = new file(data.files[i].uri, data.files[i].external);
+    nf.hydrate(data.files[i]);
+    session.files.push(nf);
+  }
+
+  console.log("session");
+  console.log(session);
+
   session.tempPath = "./exports/"+session.id;
 
   //create the temp session path
@@ -132,108 +142,10 @@ ipc.on('processRequest', function (data) {
   }
 });
 
-function processFileDl(session,fileIndex,callback){
-  var file = session.files[fileIndex];
-  fid(file.image, fidOpt.TIMEOUT, fidOpt.ALLOWED_TYPES, "", function(err, img){ //download the file image
-    if (err) {
-      callback(err);  //return error
-      return;
-    }
-
-    var dir = "./public/img/temps"; // create the temp folder if not exist (thumbnail)
-    if (!fs.exists(dir)){
-        fs.mkdir(dir);
-    }
-
-    dir = "./exports/"+session.id; // create the export folder if not exist (mp3)
-    if (!fs.exists(dir)){
-        fs.mkdir(dir);
-    }
-
-    var imgPath = "./public/img/temps/"+session.id+"-"+fileIndex+"."+img.fileType.ext;
-    fs.write(imgPath, img.body);
-    file.image = imgPath;
-    file.exportPath = dir+"/"+fileIndex+".mp4";
-    //
-    // START DOWNLOAD //
-    //
-
-    // send the file size every 500 ms
-    file.lastProgress = 0;
-    var progressPing = setInterval(function(){
-      var stats = ofs.statSync(file.exportPath);
-      var fileSizeInBytes = stats["size"];
-      var sinfo = {
-        session : session.id,
-        index : fileIndex,
-        size : fileSizeInBytes
-      }
-      if(sinfo.size > file.lastProgress){  //send progress only if progress
-        file.lastProgress = sinfo.size;
-
-        ipc.emit("yd_event",{event:"progress",data:sinfo});
-      }
-
-    },1000);
-
-
-  });
-}
-
-function processFileConvert(file,callback){ //convert the given file from mp4 to mp3
-  var mainFormat = '.mp4';
-  var newFormat = '.mp3';
-  // find the index of last time word was used
-  // please note lastIndexOf() is case sensitive
-  var n = file.exportPath.toLowerCase().lastIndexOf(mainFormat.toLowerCase());
-  var pat = new RegExp(mainFormat, 'i');
-  // slice the string in 2, one from the start to the lastIndexOf
-  // and then replace the word in the rest
-  var mp3ExportPath = file.exportPath.slice(0, n) + file.exportPath.slice(n).replace(pat, newFormat);
-
-  video2mp3.convert(file.exportPath, {mp3path: mp3ExportPath, }, function (err) {
-    if (err){
-      return callback(err);
-    }
-    // set the new exportPath
-    var vep = file.exportPath;
-    file.exportPath = mp3ExportPath;
-    file.videoExportPath = vep;
-    // confirm converting succes and return the obj with the new exportPath
-    callback(null,file);
-  });
-}
-
-function processFileTag(file,callback){ //tags the given file
-  // tags + little ad :)
-  var tags = {
-    encodedBy : "tagifier.net",
-    remixArtist : "tagifier.net",
-    comment : "tagifier.net",
-    title : file.title,
-    artist : file.artist,
-    composer : file.artist,
-    image : file.image,
-    album : file.album,
-    year : file.year
-  }
-
-  var tagsWrite = id3.write(tags, file.exportPath);   //Pass tags and filepath
-  if(!tagsWrite){
-    callback(tagsWrite);  //return error
-    return;
-  }
-
-  if (fs.exists(file.image)) {   //remove the temp thumbnail
-    fs.remove(file.image);
-  }
-
-  callback(null,file);  //success, return the file for socket sending
-}
-
 //Insert a file inside a waiting queue and process it when possible
 var waitingList = 0;
 var processList = 0;
+var errorDuringProcess = false;
 
 function AddFileToProcessQueue(session,fileIndex){
   waitingList++;  //increment waiting list count
@@ -248,36 +160,28 @@ function AddFileToProcessQueue(session,fileIndex){
     processList++;
     clearInterval(fileQueue); //stop the loop
 
-    var f = new file();
-    f.hydrate(session.files[fileIndex]);
-    f.process(session,fileIndex);
-    return;
-    processFileDl(session,fileIndex,function(err,data){
-      processList--;  // process ended (give a place to the waiting list)
+    session.files[fileIndex].process(session,fileIndex,function(err){
       if(err){
-        console.log("--- PROCESSING ERROR ---");
-        console.log("(Session "+session.id+" | File "+fileIndex+")");
-        console.log(err);
-        ipc.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
-        session.processEnded++;
-        if(session.processEnded == session.files.length){ //if all files are converted
-          ipc.emit("yd_event",{event:"process_error",data:{err:err}});
-        }
-        return;
+        console.log("ERROR while processing File "+fileIndex);
+        console.log('"'+err+'"');
+        //return the error to the client
+        ipc.emit('file_event', {event: 'file_error', err: err, index:fileIndex});
+        errorDuringProcess = true;
       }
-      if(!err){
-        //move the downloaded file to it final folder
-        moveFile(session,fileIndex,function(err,filePath){
-          if(err){
-            ipc.emit('yd_event', {event: 'file_error', data: {index: fileIndex, error: err}});
-          }
-          session.processEnded++;
-          if(session.processEnded == session.files.length){ //if all files are converted
-            ipc.emit("yd_event",{event:"finished",data:{path:session.path}});
-          }
-        });
+      else{
+        //return the file finished signal to the client
+        ipc.emit('file_event', {event: 'file_finished', index:fileIndex});
       }
+      processList--;
+
+      //if everything is finished
+      if(waitingList === 0){
+        ipc.emit('file_event', {event: 'finished',err : errorDuringProcess});
+      }
+
+      return;
     });
+    return;
   },1000);
 }
 

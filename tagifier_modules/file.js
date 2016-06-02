@@ -5,12 +5,17 @@ var id3 = require('node-id3');
 var jsmediatags = require("jsmediatags");
 var path = require('path');
 var fs = require('fs');
+var random = require('random-gen');
 
 function file(uri,external) {
+  this.id = random.alphaNum(8);
   this.uri = uri;           //path to the file (absolute or relative)
   this.external = external; //is the file a local one ?
   this.metadata = {};       //metadata added by Youtube DL OR node_id3
   this.filename = "tagifier.mp3";
+  if(!this.exportPath){
+    this.exportPath = path.dirname(this.uri);
+  }
   this.hydrate = function(data){
       Object.keys(data).forEach(function(key){
           this[key] = data[key];
@@ -31,13 +36,23 @@ file.prototype.retreiveMetaData = function retreiveMetaData(callback) {
   }
   else{
     this.filename = path.basename(this.uri);
+    var tempId = this.id;
     jsmediatags.read(this.uri, {
       onSuccess: function(data) {
         //if img exist, write it
         if(data.tags.APIC){
-
+          saveCover(data.tags.APIC.data.data,"img/temps",tempId+".jpg",function(err,path){
+              if(err){
+                return callback(err,null);
+              }
+              data.tags.originalePictureUri = path;
+              data.tags.pictureUri = path;
+              callback(null,data.tags);
+          });
         }
-        callback(null,data.tags);
+        else{
+          callback(null,data.tags);
+        }
       },
       onError: function(error) {
         console.log(error);
@@ -47,7 +62,7 @@ file.prototype.retreiveMetaData = function retreiveMetaData(callback) {
   }
 };
 
-file.prototype.process = function process(session,index){
+file.prototype.process = function process(session,index,callback){
   //dl with YoutubeDL if external
   if(this.external === true){
     console.log("Downloading the file...");
@@ -56,7 +71,11 @@ file.prototype.process = function process(session,index){
     });
   }
   else{
-    console.log("Copy the file");
+    console.log("Tagging the file");
+    this.tag(function(err){
+      console.log("Tagged");
+      callback(err);
+    });
   }
 }
 
@@ -96,6 +115,42 @@ file.prototype.download = function download(callback){
 
     clearInterval(progressPing);  //end the filesize ping
   });
+}
+
+file.prototype.tag = function tag(callback){
+  var tags = {
+    encodedBy : "tagifier.net",
+    remixArtist : "tagifier.net",
+    comment : "tagifier.net",
+    title : this.title,
+    artist : this.artist,
+    composer : this.artist,
+    album : this.album,
+    year : this.year
+  }
+
+  var tagsWrite = id3.write(tags, this.uri);   //Pass tags and filepath
+  if(!tagsWrite){
+    callback(tagsWrite);  //return error
+    return;
+  }
+
+  callback(null);  //success, return the file for socket sending
+}
+
+function saveCover(data,path,fileName,callback){
+  var fullPath = "./public/"+path;
+  if (!fs.existsSync(fullPath)){
+    fs.mkdirSync(path);
+  }
+  var imgData = new Buffer(data, 'binary').toString('base64');
+  fs.writeFile(fullPath+"/"+fileName, imgData, 'base64', function (err,data) {
+    if (err) {
+      callback(err,null);
+    }
+    callback(null,path+"/"+fileName);
+  });
+
 }
 
 module.exports = file;

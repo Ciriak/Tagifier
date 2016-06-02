@@ -20,7 +20,16 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.canStartProcess = false;
 		$scope.fileAvailable = false;
 		$scope.canAddFile = false;
-		$scope.ipc.emit("addFile",{uri : uri, external : external});
+
+		//check if the file is already in the list
+
+		var c = _.findIndex($scope.exportFiles, { 'uri': uri});
+		if(c == -1){
+			$scope.ipc.emit("addFile",{uri : uri, external : external});
+		}
+		else{
+			console.log("File already added");
+		}
 	};
 
 	var parseFileData = function(data){
@@ -45,10 +54,10 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.exportFiles[index][attr] = data[attr];
 		}
 
+		$scope.exportFiles[index].fulltitle = $scope.exportFiles[index].filename.replace(".mp3","");
 
-
-		if(!$scope.exportFiles[index].thumbnail){
-			$scope.exportFiles[index].thumbnail = "./img/default_cover.png";
+		if(!$scope.exportFiles[index].pictureUri){
+			$scope.exportFiles[index].pictureUri = "./img/default_cover.png";
 		}
 
 		//set release year if defined, else current year
@@ -62,8 +71,8 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 
 		//Define the pattern, depending of the file name format
 		var pt = "";
-		if($scope.exportFiles[index].filename){
-			pt = $scope.exportFiles[index].filename.split(" - ");
+		if($scope.exportFiles[index].fulltitle){
+			pt = $scope.exportFiles[index].fulltitle.split(" - ");
 		}
 
 		if(pt.length > 1){
@@ -85,9 +94,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			}
 		}
 
-
-		$scope.genPattern(index);
-
 	};
 
 	$scope.retreiveInfoError = function(){
@@ -97,10 +103,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 	};
 
-	$scope.requestFiles = function (exportDir){
-		if(!exportDir){
-			return;
-		}
+	$scope.requestFiles = function (){
 
 		if($scope.processing){
 			return;
@@ -110,7 +113,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
 		$scope.canRemoveFile = false;
-		$scope.ipc.emit("processRequest",{files:$scope.exportFiles,path:exportDir});
+		$scope.ipc.emit("processRequest",{files:$scope.exportFiles});
 	};
 
 	$scope.removeFileFromList = function(file){
@@ -146,11 +149,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			notify($translate.instant("error.plsFixFileErrors"));
 			return;
 		}
-		var exportDir = dialog.showOpenDialog({properties: ['openDirectory','createDirectory']});
-		if(exportDir){
-			$scope.exportDir = exportDir[0];
-			$scope.requestFiles($scope.exportDir);
-		}
+		$scope.requestFiles();
 	};
 
 	$scope.setCurrentFile = function(i){
@@ -198,8 +197,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 		if(ev["event"] == "file_error"){
 			$scope.fileReady = false;
-			var data = ev.data;
-			$scope.exportFiles[data.index].error = true;
+			$scope.exportFiles[ev.index].error = ev.err;
 			if(!$scope.$$phase) {
 				$scope.$apply();
 			}
@@ -222,7 +220,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 		if(ev["event"] == "file_finished"){
 				$scope.fileReady = false;
-				var i = ev.data.index;
+				var i = ev.index;
 				$scope.exportFiles[i].progress = 100;
 				$scope.exportFiles[i].converting = true;
 				if(!$scope.$$phase) {
@@ -232,13 +230,13 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		if(ev["event"] == "finished"){
 
 				$scope.fileReady = true;
-				$scope.notifyExportDir($scope.exportDir);
+
+				$scope.notifyProcessEnded(ev.err);
 
 				for (var i = 0; i < $scope.exportFiles.length; i++) {
 					$scope.exportFiles[i].progress = 0;
 					$scope.exportFiles[i].converting = false;
 					$scope.exportFiles[i].processing = false;
-					$scope.exportFiles[i].error = false;
 				}
 
 				$scope.processing = false;
@@ -362,9 +360,18 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 
 	}
 
+	$scope.setExportPath = function(fileIndex){
+		var exportPath = dialog.showOpenDialog({properties: ['openDirectory','createDirectory']});
+		if(exportPath){
+			$scope.exportFiles[fileIndex].exportPath = exportPath[0];
+		}
+	}
+
 	$scope.showAddFileModal = function(){
 		//$('#add-file-modal').modal('show');
-		var fileUri = dialog.showOpenDialog({properties: ['openFile','multiSelections']});
+		var fileUri = dialog.showOpenDialog({properties: ['openFile','multiSelections'],filters: [
+	    {name: 'Mp3', extensions: ['mp3']}
+	  ]});
 		if(fileUri){
 			console.log(fileUri);
 			for (var i = 0; i < fileUri.length; i++) {
@@ -377,15 +384,25 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$('#add-file-modal').modal('hide');
 	}
 
-	$scope.openExportDir = function(path){
-		shell.openItem(path);
+	$scope.openDir = function(path,pathExplore){
+		if(pathExplore){
+			shell.showItemInFolder(path);
+		}
+		else{
+			shell.openItem(path);
+		}
 	}
 
-	$scope.notifyExportDir = function(path){
+	$scope.notifyProcessEnded = function(errorAppend){
 		var notification;
+		var body = "Your file(s) are ready";
+		if(errorAppend){
+			body = "Some errors occurred during the process";
+		}
+
 		var nOptions = {
-			title : "File Ready",
-		    body: "Your file(s) are ready, click here to open them",
+			title : "Proces finished",
+		    body: body,
 		    icon: "img/tgf/icon_circle.png"
 		}
 
@@ -393,7 +410,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.notified = true;
 			var notification = new Notification(nOptions.title,nOptions);
 			notification.onclick = function() {
-				$scope.openExportDir($scope.exportDir);
 				notification.close();
 			};
 		}
