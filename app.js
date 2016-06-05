@@ -53,12 +53,13 @@ var _ = require('lodash');
 var async = require('async');
 var bodyParser = require('body-parser');
 var fid = require('fast-image-downloader');
+var path = require('path');
 var video2mp3 = require('video2mp3');
 var sanitize = require("sanitize-filename");
 var ffmpeg = require('fluent-ffmpeg');
 
 //File class
-var file = require("./tagifier_modules/file.js");
+var File = require("./tagifier_modules/file.js");
 //
 
 var fidOpt = {
@@ -90,8 +91,19 @@ var config = fs.readJSON("config.json");
 
 ipc.on('addFile', function (fileData) {
   console.log("New file added : "+fileData.uri);
-  var f = new file(fileData);
-  f.retreiveMetaData(function(err,md){
+  var file = new File();
+
+  //hydrating the File object
+  var k =  Object.keys(fileData);
+
+  for(var i=0, len = k.length; i<len; i++){
+      file[k[i]] = fileData[k[i]];
+      console.log(k[i]+" = "+fileData[k[i]]);
+  }
+
+  console.log(file);
+
+  fileRetreiveMetaData(file, function(err,md){
     if(err){
       ipc.emit("file_event",{event:"file_infos_error",data:err});
       return
@@ -99,11 +111,15 @@ ipc.on('addFile', function (fileData) {
 
     //hydrate with the metadada
     for(var d in md) {
-      f[d] = md[d];
+      file[d] = md[d];
     };
 
+    if(!file.exportPath && file.uri){
+      file.exportPath = path.dirname(file.uri);
+    }
 
-    ipc.emit("file_event",{event:"file_infos",data:f});
+
+    ipc.emit("file_event",{event:"file_infos",data:file});
   });
 });
 
@@ -121,7 +137,17 @@ ipc.on('processRequest', function (data) {
   }
 
   for (var i = 0; i < data.files.length; i++) {
-    session.files.push(new file(data.files[i]));
+    var file = new File();
+    //hydrate with the metadada
+    for(var d in data.files[i]) {
+      file[d] = data.files[i][d];
+    };
+
+    if(!file.exportPath && file.uri){
+      file.exportPath = path.dirname(file.uri);
+    }
+
+    session.files.push(file);
   }
 
   session.tempPath = "./exports/"+session.id;
@@ -154,7 +180,8 @@ function AddFileToProcessQueue(session,fileIndex){
     waitingList--;
     processList++;
     clearInterval(fileQueue); //stop the loop
-    session.files[fileIndex].process(function(err){
+
+    fileProcess(session.files[fileIndex],function(err){
       if(err){
         console.log("ERROR while processing File "+fileIndex);
         console.log('"'+err+'"');
@@ -189,15 +216,15 @@ function moveFile(session,fileIndex,callback){
   }
 
   //prevent invalid char inside filename
-  var nFileName = sanitize(file.fileName);
+  var nFileName = sanitize(File.fileName);
 
   //copy the file , this method prevent a nodejs error with rename
-  copyFile(file.exportPath,session.path+"/"+nFileName+".mp3",function(err){
+  copyFile(File.exportPath,session.path+"/"+nFileName+".mp3",function(err){
     if(err){
       return callback(err);
     }
-    if(ofs.existsSync(file.exportPath)){
-      ofs.unlink(file.exportPath);
+    if(ofs.existsSync(File.exportPath)){
+      ofs.unlink(File.exportPath);
       callback(null, session.path+"/"+nFileName+".mp3");
     }
   });

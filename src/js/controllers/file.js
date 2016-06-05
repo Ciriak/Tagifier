@@ -155,7 +155,8 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 
 	$scope.ipc.on("file_event",function(ev){
 		console.log("Event - "+ev["event"]);
-		console.log(ev.data);
+		console.log(ev);
+
 
 		if(ev["event"] == "file_infos"){
 			parseFileData(ev.data);

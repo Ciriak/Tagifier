@@ -7,28 +7,26 @@ var path = require('path');
 var fs = require('fs');
 var random = require('random-gen');
 
-function file(fileData) {
+function File() {
 
-  var k =  Object.keys(fileData);
 
-  for(var i=0, len = k.length; i<len; i++){
-      this[k[i]] = fileData[k[i]];
-      console.log(k[i]+" = "+fileData[k[i]]);
-  }
 
   this.id = random.alphaNum(8);
   this.filename = "tagifier.mp3";
-  if(!this.exportPath){
-    this.exportPath = path.dirname(this.uri);
-  }
+  this.title = "";
+  this.artist = "";
+  this.year = new Date().getFullYear();
+  this.composer = "";
+  this.album = "";
+
 
 };
 
 
 // retreive informations for the file and return them
-file.prototype.retreiveMetaData = function retreiveMetaData(callback) {
-  if(this.external){
-    youtubedl.getInfo(this.uri, "", function(err, metadatas) {
+fileRetreiveMetaData = function(file,callback) {
+  if(file.external){
+    youtubedl.getInfo(file.uri, "", function(err, metadatas) {
       if (err) {
         return callback(err,"");
       }
@@ -36,9 +34,9 @@ file.prototype.retreiveMetaData = function retreiveMetaData(callback) {
     });
   }
   else{
-    this.filename = path.basename(this.uri);
-    var tempId = this.id;
-    jsmediatags.read(this.uri, {
+    file.filename = path.basename(file.uri);
+    var tempId = file.id;
+    jsmediatags.read(file.uri, {
       onSuccess: function(data) {
         //if img exist, write it
         if(data.tags.APIC){
@@ -63,17 +61,17 @@ file.prototype.retreiveMetaData = function retreiveMetaData(callback) {
   }
 };
 
-file.prototype.process = function (callback){
+fileProcess = function (file,callback){
   //dl with YoutubeDL if external
-  if(this.external === true){
+  if(file.external === true){
     console.log("Downloading the file...");
-    this.download(function(err){
+    fileDownload(file, function(err){
       console.log("Downloaded");
     });
   }
   else{
     console.log("Tagging the file...");
-    this.tag(function(err){
+    fileTag(file, callback,function(err){
       if(err){
         console.log("Failed to tag the file");
         console.log(err);
@@ -86,8 +84,46 @@ file.prototype.process = function (callback){
   }
 }
 
-file.prototype.download = function(callback){
-  var ytdlProcess = youtubedl(file.uri,
+fileTag = function (file,callback){
+  var tags = {
+    encodedBy : "tagifier.net",
+    remixArtist : "tagifier.net",
+    comment : "tagifier.net",
+    title : String(file.title),
+    artist : String(file.artist),
+    composer : String(file.artist),
+    album : String(file.album),
+    year : String(file.year)
+  }
+
+  console.log(tags);
+
+  var tagsWrite = id3.write(tags, file.uri);   //Pass tags and filepath
+  if(!tagsWrite){
+    callback(tagsWrite);  //return error
+  }
+
+  callback(null);  //success, return the file for socket sending
+}
+
+function saveCover(data,path,fileName,callback){
+  var fullPath = "./public/"+path;
+  if (!fs.existsSync(fullPath)){
+    fs.mkdirSync(path);
+  }
+  var imgData = new Buffer(data, 'binary').toString('base64');
+  fs.writeFile(fullPath+"/"+fileName, imgData, 'base64', function (err,data) {
+    if (err) {
+      callback(err,null);
+    }
+    callback(null,path+"/"+fileName);
+  });
+
+}
+
+/*
+fileDownload = function(file,callback){
+  var ytdlProcess = youtubedl(File.uri,
     // Optional arguments passed to youtube-dl.
     ['-x'],
     // Additional options can be given for calling `child_process.execFile()`.
@@ -123,42 +159,6 @@ file.prototype.download = function(callback){
     clearInterval(progressPing);  //end the filesize ping
   });
 }
+*/
 
-file.prototype.tag = function (callback){
-  console.log(this);
-  var tags = {
-    encodedBy : "tagifier.net",
-    remixArtist : "tagifier.net",
-    comment : "tagifier.net",
-    title : this.title,
-    artist : this.artist,
-    composer : this.artist,
-    album : this.album,
-    year : this.year
-  }
-
-  var tagsWrite = id3.write(tags, this.uri);   //Pass tags and filepath
-  if(!tagsWrite){
-    callback(tagsWrite);  //return error
-    return;
-  }
-
-  callback(null);  //success, return the file for socket sending
-}
-
-function saveCover(data,path,fileName,callback){
-  var fullPath = "./public/"+path;
-  if (!fs.existsSync(fullPath)){
-    fs.mkdirSync(path);
-  }
-  var imgData = new Buffer(data, 'binary').toString('base64');
-  fs.writeFile(fullPath+"/"+fileName, imgData, 'base64', function (err,data) {
-    if (err) {
-      callback(err,null);
-    }
-    callback(null,path+"/"+fileName);
-  });
-
-}
-
-module.exports = file;
+module.exports = File;
