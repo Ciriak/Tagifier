@@ -85,6 +85,9 @@ fileProcess = function (file,callback){
 }
 
 fileTag = function (file,callback){
+
+  var imgPath = file.pictureUri.replace("./","./public/");
+
   var tags = {
     encodedBy : "tagifier.net",
     remixArtist : "tagifier.net",
@@ -93,7 +96,8 @@ fileTag = function (file,callback){
     artist : String(file.artist),
     composer : String(file.artist),
     album : String(file.album),
-    year : String(file.year)
+    year : String(file.year),
+    image : imgPath
   }
 
   console.log(tags);
@@ -108,8 +112,8 @@ fileTag = function (file,callback){
 
 function saveCover(data,path,fileName,callback){
   var fullPath = "./public/"+path;
-  if (!fs.existsSync(fullPath)){
-    fs.mkdirSync(path);
+  if (!fs.existsSync("./public/img/temps")){
+    fs.mkdirSync("./public/img/temps");
   }
   var imgData = new Buffer(data, 'binary').toString('base64');
   fs.writeFile(fullPath+"/"+fileName, imgData, 'base64', function (err,data) {

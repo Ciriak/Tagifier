@@ -14,11 +14,12 @@
   "file" : {
     "fileName" : "File Name",
     "pattern" : "Pattern",
-    "cover" : "Cover image (url)",
+    "cover" : "Cover image (path)",
     "title" : "Title",
     "artist" : "Artist",
     "album" : "Album",
     "year" : "Year",
+    "exportPath" : "Export directory",
     "inputChain" : "Input Chain",
     "fileNamePattern" : "File Name Pattern",
     "pleaseEnterCaptchat" : "Please complete the captchat",
@@ -29,7 +30,7 @@
     "retreivingInfosSub" : "It may take a while...",
     "addFileButtonLabel" : "Add File",
     "removeFile" : "Remove this file from the list",
-    "process" : "Start conversion"
+    "process" : "Save"
   },
   "about" : {
     "description" : "The ultimate Mp3 tool"

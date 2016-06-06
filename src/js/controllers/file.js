@@ -5,7 +5,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	$scope.canEditTags = false;
 	$scope.singleFile = true;
 	$scope.files = {};
-	$scope.fileReady = false;
+	$scope.ady = false;
 	$scope.currentFileIndex = 0;
 	$scope.exportFiles = [];
 	$scope.progress = 0;
@@ -139,7 +139,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		if($scope.processing){
 			return;
 		}
-		$scope.fileReady = false;
+
 		$scope.processing = true;
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
@@ -171,7 +171,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 
 		if(ev["event"] == "file_download_started"){
-			$scope.fileReady = false;
+
 			var index = ev.data;
 			$scope.exportFiles[index].processing = true;
 			if(!$scope.$$phase) {
@@ -180,7 +180,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 
 		if(ev["event"] == "progress"){
-			$scope.fileReady = false;
+
 			var data = ev.data;
 			var perc = data.size/$scope.exportFiles[data.index].filesize*100;
 			if(perc == 100){
@@ -192,14 +192,14 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.exportFiles[data.index].progress = perc;
 		}
 		if(ev["event"] == "file_error"){
-			$scope.fileReady = false;
+
 			$scope.exportFiles[ev.index].error = ev.err;
 			if(!$scope.$$phase) {
 				$scope.$apply();
 			}
 		}
 		if(ev["event"] == "process_error"){
-			$scope.fileReady = true;
+
 
 			for (var i = 0; i < $scope.exportFiles.length; i++) {
 				$scope.exportFiles[i].progress = 0;
@@ -225,8 +225,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 		if(ev["event"] == "finished"){
 
-				$scope.fileReady = true;
-
 				$scope.notifyProcessEnded(ev.err);
 
 				for (var i = 0; i < $scope.exportFiles.length; i++) {
@@ -236,10 +234,10 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 				}
 
 				$scope.processing = false;
-				$scope.canEditTags = false;
-				$scope.canStartProcess = false;
-				$scope.canRemoveFile = false;
-				$scope.canAddFile = false;
+				$scope.canEditTags = true;
+				$scope.canStartProcess = true;
+				$scope.canRemoveFile = true;
+				$scope.canAddFile = true;
 		}
 
 		if(!$scope.$$phase) {
@@ -360,6 +358,14 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		var exportPath = dialog.showOpenDialog({properties: ['openDirectory','createDirectory']});
 		if(exportPath){
 			$scope.exportFiles[fileIndex].exportPath = exportPath[0];
+		}
+	}
+
+	$scope.setCoverImage = function(fileIndex){
+		var coverPath = dialog.showOpenDialog({properties: ['openFile'],filters: [
+    {name: 'Images', extensions: ['jpg', 'png', 'gif']}]});
+		if(coverPath){
+			$scope.exportFiles[fileIndex].pictureUri = coverPath[0];
 		}
 	}
 

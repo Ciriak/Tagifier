@@ -163,7 +163,7 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 		position: relative;
 		background-size: cover;
 		background-position: center;
-		height: 100px;
+		height: 200px;
 		.control{
 			position: absolute;
 			z-index: 5;
@@ -245,6 +245,14 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 			border-radius: 3px;
 			opacity: 0;
 			transition-duration:0.3s;
+		}
+
+		.file-cover{
+			float: left;
+			width: 24px;
+			height:24px;
+			margin:0;
+			margin-right: 5px;
 		}
 	}
 
