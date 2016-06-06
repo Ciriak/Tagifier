@@ -12,6 +12,7 @@ dep
 config.json
 exports
 temps
+public
 
 
 ### Node ###
