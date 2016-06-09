@@ -93,6 +93,6 @@ gulp.task('prepare-dev-env', gulpsync.sync([
 ]));
 
 gulp.task('default', gulpsync.sync([
-    ['prepare-src-env'],
+    ['prepare-dev-env'],
     ['watch']
 ]));
