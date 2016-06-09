@@ -9,7 +9,7 @@
   "keywords": [
     "tagifier",
     "mp3",
-    "youtube",
+    "metadata",
     "tag"
   ],
   "homepage": "https://github.com/CYRIAQU3/tagifier",
@@ -42,5 +42,8 @@
     "socket.io-client": "^1.4.6",
     "angular-electron": "^0.2.1",
     "lodash": "^4.13.1"
+  },
+  "resolutions": {
+    "angular": "1.5.6"
   }
 }

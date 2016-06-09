@@ -9,6 +9,7 @@ var del = require('del');
 var imageop = require('gulp-image-optimization');
 var ngmin = require('gulp-ngmin');
 var nodemon = require('gulp-nodemon');
+var bower = require('gulp-bower');
 var plumber = require('gulp-plumber');  //prevent watch crash
 var gulpsync = require('gulp-sync')(gulp);
 
@@ -31,9 +32,8 @@ gulp.task('clean:public', function() {
   return del('./public/**/*');
 });
 
-gulp.task('installdep', function() {
-  gulp.src(['.src/bower.json'])
-    .pipe(install());
+gulp.task('install-dependencies', function() {
+  return bower({ cwd: './src' });
 });
 
 gulp.task('scripts', function() {
@@ -53,7 +53,7 @@ gulp.task('images', function(cb) {
     })).pipe(gulp.dest('./public')).on('end', cb).on('error', cb);
 });
 
-gulp.task('bower', function() {
+gulp.task('copy-dependencies', function() {
   gulp.src('./src/bower_components/**/*')
   .pipe(gulp.dest('./public/dep/'));
 });
@@ -77,18 +77,22 @@ gulp.task('watch', function () {
   gulp.watch('./src/**/*.js', ['scripts']);
 });
 
-gulp.task('default', gulpsync.sync([
+gulp.task('prepare-dev-env', gulpsync.sync([
     // sync
     'clean:public',
-    ['installdep'],
+    ['install-dependencies'],
     [
         // async
         'sass',
         'scripts',
         'html',
-        'bower',
+        'copy-dependencies',
         'images',
         'locales'
-    ],
+    ]
+]));
+
+gulp.task('default', gulpsync.sync([
+    ['prepare-src-env'],
     ['watch']
 ]));

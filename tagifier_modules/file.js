@@ -1,6 +1,5 @@
 const electron = require('electron');
 const ipc = electron.ipcMain;
-var youtubedl = require('youtube-dl');
 var id3 = require('node-id3');
 var jsmediatags = require("jsmediatags");
 var path = require('path');
@@ -26,12 +25,7 @@ function File() {
 // retreive informations for the file and return them
 fileRetreiveMetaData = function(file,callback) {
   if(file.external){
-    youtubedl.getInfo(file.uri, "", function(err, metadatas) {
-      if (err) {
-        return callback(err,"");
-      }
-      callback(null,metadatas);
-    });
+    console.log("External");
   }
   else{
     file.filename = path.basename(file.uri);
