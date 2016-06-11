@@ -65,10 +65,13 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 
 		//set release year if defined, else current year
-		$scope.exportFiles[index].year = date.getFullYear();
-		if(data.upload_date){
-			$scope.exportFiles[index].year = data.upload_date.substr(0,4);
+		if(!$scope.exportFiles[index].year){
+			$scope.exportFiles[index].year = date.getFullYear();
+			if(data.upload_date){
+				$scope.exportFiles[index].year = data.upload_date.substr(0,4);
+			}
 		}
+
 		//
 
 		$scope.exportFiles[index].track = index+1;

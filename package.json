@@ -33,7 +33,7 @@
     "fast-image-downloader": "0.0.4",
     "fluent-ffmpeg": "^2.1.0",
     "fs-sync": "^1.0.2",
-    "jsmediatags": "^3.2.1",
+    "id3-parser": "^1.0.2",
     "lodash": "^4.13.1",
     "node-id3": "0.0.4",
     "package-script": "0.0.8",

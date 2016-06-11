@@ -1,7 +1,7 @@
 const electron = require('electron');
 const ipc = electron.ipcMain;
 var id3 = require('node-id3');
-var jsmediatags = require("jsmediatags");
+var id3Parser = require("id3-parser");
 var path = require('path');
 var fs = require('fs');
 var random = require('random-gen');
@@ -14,7 +14,6 @@ function File() {
   this.filename = "tagifier.mp3";
   this.title = "";
   this.artist = "";
-  this.year = new Date().getFullYear();
   this.composer = "";
   this.album = "";
 
@@ -29,27 +28,22 @@ fileRetreiveMetaData = function(file,callback) {
   }
   else{
     file.filename = path.basename(file.uri);
+    var fileBuffer = fs.readFileSync(file.uri);
     var tempId = file.id;
-    jsmediatags.read(file.uri, {
-      onSuccess: function(data) {
-        //if img exist, write it
-        if(data.tags.APIC){
-          saveCover(data.tags.APIC.data.data,"img/temps",tempId+".jpg",function(err,path){
-              if(err){
-                return callback(err,null);
-              }
-              data.tags.originalePictureUri = path;
-              data.tags.pictureUri = path;
-              callback(null,data.tags);
-          });
-        }
-        else{
-          callback(null,data.tags);
-        }
-      },
-      onError: function(error) {
-        console.log(error);
-        callback(error,null);
+    id3Parser.parse(fileBuffer).then(function(tags) {
+      //if img exist, write it
+      if(tags.image){
+        saveCover(tags.image.data,"img/temps",tempId+".jpg",function(err,path){
+            if(err){
+              return callback(err,null);
+            }
+            tags.originalePictureUri = path;
+            tags.pictureUri = path;
+            callback(null,tags);
+        });
+      }
+      else{
+        callback(null,tags);
       }
     });
   }
