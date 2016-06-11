@@ -1,10 +1,15 @@
 const electron = require('electron');
 const ipc = electron.ipcMain;
-var id3 = require('node-id3');
+var ID3Writer = require('browser-id3-writer');
 var id3Parser = require("id3-parser");
 var path = require('path');
 var fs = require('fs');
 var random = require('random-gen');
+
+var EyeD3 = require('eyed3')
+    , eyed3 = new EyeD3({
+      eyed3_executable: 'eyeD3'
+    });
 
 function File() {
 
@@ -74,26 +79,31 @@ fileProcess = function (file,callback){
 
 fileTag = function (file,callback){
 
-  var imgPath = file.pictureUri.replace("./","./public/");
+  var imgPath = "";
+  var coverBuffer = "";
+  console.log(imgPath);
+  //retreive the cover image data and copy them to the temp folder
 
-  var tags = {
-    encodedBy : "tagifier.net",
-    remixArtist : "tagifier.net",
-    comment : "tagifier.net",
-    title : String(file.title),
-    artist : String(file.artist),
-    composer : String(file.artist),
-    album : String(file.album),
-    year : String(file.year),
-    image : imgPath
+  if(file.pictureUri){
+    var ext = path.extname(file.pictureUri);
+    imgPath = "./public/img/temps/"+file.id+ext;
+    var coverBuffer = fs.readFileSync(file.pictureUri);
+    fs.writeFileSync(imgPath, coverBuffer);
   }
 
-  console.log(tags);
+  var songBuffer = fs.readFileSync(file.uri);
 
-  var tagsWrite = id3.write(tags, file.uri);   //Pass tags and filepath
-  if(!tagsWrite){
-    callback(tagsWrite);  //return error
-  }
+  var writer = new ID3Writer(songBuffer);
+  writer.setFrame('TIT2', String(file.title))
+      .setFrame('TPE1', [String(file.artist)])
+      .setFrame('TPE2', String(file.artist))
+      .setFrame('TALB', String(file.album))
+      .setFrame('TYER', String(file.year))
+      .setFrame('APIC', coverBuffer);
+  writer.addTag();
+
+  var taggedSongBuffer = new Buffer(writer.arrayBuffer);
+  fs.writeFileSync(file.uri, taggedSongBuffer);
 
   callback(null);  //success, return the file for socket sending
 }
