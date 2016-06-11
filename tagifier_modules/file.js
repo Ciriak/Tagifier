@@ -87,6 +87,9 @@ fileTag = function (file,callback){
   if(file.pictureUri){
     var ext = path.extname(file.pictureUri);
     imgPath = "./public/img/temps/"+file.id+ext;
+    if(fs.accessSync(imgPath)){
+      
+    }
     var coverBuffer = fs.readFileSync(file.pictureUri);
     fs.writeFileSync(imgPath, coverBuffer);
   }

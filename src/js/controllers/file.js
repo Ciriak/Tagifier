@@ -115,8 +115,11 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			console.log("You are trying to remove a file from the list... but it seem you cant !");
 			return;
 		}
-		var index = $scope.exportFiles.indexOf(file);
-		$scope.exportFiles.splice(index, 1);
+		var fileIndex = _.indexOf($scope.exportFiles,file);
+		if(fileIndex <= -1){
+			return;
+		}
+		$scope.exportFiles.splice(fileIndex, 1);
 
 		if($scope.exportFiles.length < 2){
 			$scope.singleFile = true;
@@ -152,7 +155,9 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 
 	$scope.setCurrentFile = function(i){
 		$scope.currentFileIndex = i;
-		$scope.filePlayer.pause();	//stop the audio player if playing
+		if($scope.filePlayer){
+			$scope.filePlayer.pause();	//stop the audio player if playing
+		}
 		$scope.playerStatus = "stop";
 	};
 
