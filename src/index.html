@@ -16,15 +16,15 @@
     <meta property="og:description"        content="Convert Youtube video to Mp3 tagged file" />
     <meta property="og:image"              content="http://www.tagifier.net/img/og.jpg" />
   </head>
-  <body>
+  <body ng-controller="fileCtrl">
 
   	<div id="preloader" ng-hide="docReady">
   		<img src="img/tgf/icon.png" class="animated pulse infinite">
   	</div>
 
-	  <div ng-include="'views/file.html'" ng-controller="fileCtrl"></div>
+	  <div ng-include="'views/file.html'"></div>
 
-    <div ng-include="'views/player.html'"></div>
+    <!--<div ng-include="'views/player.html'"></div>-->
 
     <!-- require scripts -->
     <script src="dep/jquery/dist/jquery.min.js" onload="window.$ = window.jQuery = module.exports;"></script>

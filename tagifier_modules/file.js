@@ -4,6 +4,7 @@ var ID3Writer = require('browser-id3-writer');
 var id3Parser = require("id3-parser");
 var path = require('path');
 var fs = require('fs');
+var fileExists = require('file-exists');
 var random = require('random-gen');
 
 var EyeD3 = require('eyed3')
@@ -87,22 +88,26 @@ fileTag = function (file,callback){
   if(file.pictureUri){
     var ext = path.extname(file.pictureUri);
     imgPath = "./public/img/temps/"+file.id+ext;
-    if(fs.accessSync(imgPath)){
-      
+    if(fileExists(file.pictureUri)){
+      var coverBuffer = fs.readFileSync(file.pictureUri);
+      fs.writeFileSync(imgPath, coverBuffer);
     }
-    var coverBuffer = fs.readFileSync(file.pictureUri);
-    fs.writeFileSync(imgPath, coverBuffer);
   }
 
   var songBuffer = fs.readFileSync(file.uri);
 
   var writer = new ID3Writer(songBuffer);
+
+  //write cover only if updated
+  if(file.pictureUri !== file.originalePictureUri &&  Buffer.isBuffer(coverBuffer)){
+    writer.setFrame('APIC', coverBuffer);
+  }
+
   writer.setFrame('TIT2', String(file.title))
       .setFrame('TPE1', [String(file.artist)])
       .setFrame('TPE2', String(file.artist))
       .setFrame('TALB', String(file.album))
       .setFrame('TYER', String(file.year))
-      .setFrame('APIC', coverBuffer);
   writer.addTag();
 
   var taggedSongBuffer = new Buffer(writer.arrayBuffer);

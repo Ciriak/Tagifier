@@ -32,6 +32,7 @@
     "browser-id3-writer": "^2.3.1",
     "del": "^2.2.0",
     "fast-image-downloader": "0.0.4",
+    "file-exists": "^1.0.0",
     "fluent-ffmpeg": "^2.1.0",
     "fs-sync": "^1.0.2",
     "id3-parser": "^1.0.2",

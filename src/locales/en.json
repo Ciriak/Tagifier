@@ -14,7 +14,7 @@
   "file" : {
     "fileName" : "File Name",
     "pattern" : "Pattern",
-    "cover" : "Cover image (path)",
+    "cover" : "Select a cover image",
     "title" : "Title",
     "artist" : "Artist",
     "album" : "Album",

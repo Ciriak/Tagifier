@@ -12,6 +12,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	$scope.filePlayer;
 	$scope.canRemoveFile = false;
 	$scope.playerStatus = "stop";
+	$scope.playingFileIndex = null;
 	$scope.exportDir;
 	var date = new Date();
 
@@ -35,6 +36,12 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.canAddFile = true;
 		}
 	};
+
+	//define the audio player prop
+	$(window).load(function(){
+		$scope.filePlayer = document.getElementById("file-player");
+	})
+
 
 	var parseFileData = function(data){
 		var index = $scope.exportFiles.length;
@@ -141,8 +148,20 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		location.reload();
 	};
 
+	//start process when "Enter key" is pressed
+	$(window).bind('keydown', function(event) {
+    if (event.ctrlKey || event.metaKey) {
+      switch (String.fromCharCode(event.which).toLowerCase()) {
+      case 's':
+	      event.preventDefault();
+	      $scope.requestProcess();
+	      break;
+      }
+	  }
+	});
+
 	$scope.requestProcess = function(){
-		if($scope.processing){
+		if($scope.processing || !$scope.canStartProcess){
 			return;
 		}
 
@@ -150,15 +169,16 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
 		$scope.canRemoveFile = false;
+
+		if(!$scope.$$phase) {
+			$scope.$apply();
+		}
+
 		$scope.ipc.emit("processRequest",{files:$scope.exportFiles});
 	};
 
 	$scope.setCurrentFile = function(i){
 		$scope.currentFileIndex = i;
-		if($scope.filePlayer){
-			$scope.filePlayer.pause();	//stop the audio player if playing
-		}
-		$scope.playerStatus = "stop";
 	};
 
 	$scope.ipc.on("file_event",function(ev){
@@ -349,17 +369,30 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 
 	};
 
-	$scope.togglePlayer = function(){
-		$scope.filePlayer = document.getElementById("file-player");
-		if($scope.filePlayer.paused){
-			$scope.filePlayer.play();
-			$scope.playerStatus = "play";
+	$scope.togglePlayer = function(index){
+
+		if($scope.playingFileIndex !== index){
+			$scope.playingFileIndex = index;
+			$scope.filePlayer.load();
+			$scope.filePlayer.oncanplay = function() {
+				$scope.filePlayer.play();
+				$scope.playerStatus = "play";
+				if(!$scope.$$phase) {
+					$scope.$apply();
+				}
+			};
+
 		}
 		else{
-			$scope.filePlayer.pause();
-			$scope.playerStatus = "pause";
+			if($scope.filePlayer.paused){
+				$scope.filePlayer.play();
+				$scope.playerStatus = "play";
+			}
+			else{
+				$scope.filePlayer.pause();
+				$scope.playerStatus = "pause";
+			}
 		}
-
 	}
 
 	$scope.setExportPath = function(fileIndex){
@@ -383,7 +416,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	    {name: 'Mp3', extensions: ['mp3']}
 	  ]});
 		if(fileUri){
-			console.log(fileUri);
 			for (var i = 0; i < fileUri.length; i++) {
 				$scope.addFile(fileUri[i],false);
 			}
