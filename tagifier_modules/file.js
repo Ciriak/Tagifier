@@ -7,11 +7,6 @@ var fs = require('fs');
 var fileExists = require('file-exists');
 var random = require('random-gen');
 
-var EyeD3 = require('eyed3')
-    , eyed3 = new EyeD3({
-      eyed3_executable: 'eyeD3'
-    });
-
 function File() {
 
 
@@ -22,6 +17,7 @@ function File() {
   this.artist = "";
   this.composer = "";
   this.album = "";
+  this.year = "";
 
 
 };
