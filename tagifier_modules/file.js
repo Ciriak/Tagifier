@@ -95,7 +95,9 @@ fileTag = function (file,callback){
   var writer = new ID3Writer(songBuffer);
 
   //write cover only if updated
-  if(file.pictureUri !== file.originalePictureUri &&  Buffer.isBuffer(coverBuffer)){
+  if(fileExists(imgPath)){
+    var coverBuffer = fs.readFileSync(imgPath);
+    console.log("Updating cover...");
     writer.setFrame('APIC', coverBuffer);
   }
 
