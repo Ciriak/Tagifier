@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "electron-prebuilt": "^1.1.0",
+    "electron-windows-installer": "^1.4.1",
     "gulp": "^3.9.1",
     "gulp-bower": "0.0.13",
     "gulp-clean": "^0.3.2",

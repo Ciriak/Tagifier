@@ -11,6 +11,7 @@ var ngmin = require('gulp-ngmin');
 var nodemon = require('gulp-nodemon');
 var bower = require('gulp-bower');
 var plumber = require('gulp-plumber');  //prevent watch crash
+var winInstaller = require('electron-windows-installer');
 var gulpsync = require('gulp-sync')(gulp);
 
 gulp.task('server', function () {
@@ -69,6 +70,14 @@ gulp.task('locales', function () {
     return gulp.src(['./src/locales/*.json'])
         .pipe(jsonminify())
         .pipe(gulp.dest('./public/locales/'));
+});
+
+gulp.task('create-windows-installer', function(done) {
+  winInstaller({
+    appDirectory: './build/win32',
+    outputDirectory: './release',
+    arch: 'ia32'
+  }).then(done).catch(done);
 });
 
 gulp.task('watch', function () {
