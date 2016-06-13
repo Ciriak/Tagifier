@@ -1,0 +1,44 @@
+{
+  "name": "tagifier",
+  "version": "1.0.0",
+  "description": "Download Youtube video as tagged mp3 files",
+  "main": "app.js",
+  "auto-updater": {
+    "repo": "/CYRIAQU3/tagifier",
+    "branch": "master"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CYRIAQU3/tagifier.git"
+  },
+  "keywords": [
+    "tagifier",
+    "mp3",
+    "metadata",
+    "tag"
+  ],
+  "author": "Cyriaque DELAUNAY",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CYRIAQU3/tagifier/issues"
+  },
+  "homepage": "https://github.com/CYRIAQU3/tagifier#readme",
+  "dependencies": {
+    "async": "^1.5.2",
+    "body-parser": "^1.15.0",
+    "browser-id3-writer": "^2.3.1",
+    "del": "^2.2.0",
+    "fast-image-downloader": "0.0.4",
+    "file-exists": "^1.0.0",
+    "fluent-ffmpeg": "^2.1.0",
+    "fs-sync": "^1.0.2",
+    "id3-parser": "^1.0.2",
+    "lodash": "^4.13.1",
+    "node-id3": "0.0.4",
+    "package-script": "0.0.8",
+    "random-gen": "^0.1.0",
+    "remote": "^0.2.6",
+    "request": "^2.69.0",
+    "sanitize-filename": "^1.6.0"
+  }
+}
