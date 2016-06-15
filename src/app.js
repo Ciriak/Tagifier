@@ -17,8 +17,6 @@ function createWindow () {
   });
   mainWindow.loadURL(`file://${__dirname}/web/index.html`);
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools()
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
@@ -100,8 +98,6 @@ ipc.on('addFile', function (fileData) {
       console.log(k[i]+" = "+fileData[k[i]]);
   }
 
-  console.log(file);
-
   fileRetreiveMetaData(file, function(err,md){
     if(err){
       console.log(err);
@@ -121,7 +117,6 @@ ipc.on('addFile', function (fileData) {
     ipc.emit("file_event",{event:"file_infos",data:file});
   });
 });
-
 
 //
 //  When the client start the process

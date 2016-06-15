@@ -35,8 +35,9 @@ fileRetreiveMetaData = function(file,callback) {
     id3Parser.parse(fileBuffer).then(function(tags) {
       //if img exist, write it
       if(tags.image){
-        saveCover(tags.image.data,"./web/img/temps",tempId+".jpg",function(err,path){
+        saveCover(tags.image.data,"img/temps",tempId+".jpg",function(err,path){
             if(err){
+              console.log(err);
               return callback(err,null);
             }
             tags.originalePictureUri = path;
@@ -83,7 +84,7 @@ fileTag = function (file,callback){
 
   if(file.pictureUri){
     var ext = path.extname(file.pictureUri);
-    imgPath = "./public/img/temps/"+file.id+ext;
+    imgPath = "./web/img/temps/"+file.id+ext;
     if(fileExists(file.pictureUri)){
       var coverBuffer = fs.readFileSync(file.pictureUri);
       fs.writeFileSync(imgPath, coverBuffer);
@@ -115,9 +116,9 @@ fileTag = function (file,callback){
 }
 
 function saveCover(data,path,fileName,callback){
-  var fullPath = "./public/"+path;
-  if (!fs.existsSync("./public/img/temps")){
-    fs.mkdirSync("./public/img/temps");
+  var fullPath = "./web/"+path;
+  if (!fs.existsSync("./web/img/temps")){
+    fs.mkdirSync("./web/img/temps");
   }
   var imgData = new Buffer(data, 'binary').toString('base64');
   fs.writeFile(fullPath+"/"+fileName, imgData, 'base64', function (err,data) {
