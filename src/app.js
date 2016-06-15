@@ -13,12 +13,12 @@ function createWindow () {
     width: 1024,
     height: 600,
     minWidth: 1024,
-    icon: __dirname + '/public/img/tgf/icon_circle.png'
+    icon: __dirname + '/web/img/tgf/icon_circle.png'
   });
-  mainWindow.loadURL(`file://${__dirname}/public/index.html`);
+  mainWindow.loadURL(`file://${__dirname}/web/index.html`);
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
@@ -54,7 +54,6 @@ var async = require('async');
 var bodyParser = require('body-parser');
 var fid = require('fast-image-downloader');
 var path = require('path');
-var video2mp3 = require('video2mp3');
 var sanitize = require("sanitize-filename");
 var ffmpeg = require('fluent-ffmpeg');
 
@@ -105,6 +104,7 @@ ipc.on('addFile', function (fileData) {
 
   fileRetreiveMetaData(file, function(err,md){
     if(err){
+      console.log(err);
       ipc.emit("file_event",{event:"file_infos_error",data:err});
       return
     }
@@ -117,7 +117,6 @@ ipc.on('addFile', function (fileData) {
     if(!file.exportPath && file.uri){
       file.exportPath = path.dirname(file.uri);
     }
-
 
     ipc.emit("file_event",{event:"file_infos",data:file});
   });
@@ -286,6 +285,6 @@ var rmDir = function(dirPath, removeSelf) {
 
 
 
-rmDir('./public/img/temps',false);
+rmDir('./web/img/temps',false);
 rmDir('./exports',false);
 console.log("Temp files cleaned");

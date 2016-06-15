@@ -35,7 +35,7 @@ fileRetreiveMetaData = function(file,callback) {
     id3Parser.parse(fileBuffer).then(function(tags) {
       //if img exist, write it
       if(tags.image){
-        saveCover(tags.image.data,"img/temps",tempId+".jpg",function(err,path){
+        saveCover(tags.image.data,"./web/img/temps",tempId+".jpg",function(err,path){
             if(err){
               return callback(err,null);
             }

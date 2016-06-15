@@ -72,6 +72,11 @@ gulp.task('locales', function () {
         .pipe(gulp.dest('./dist/web/locales/'));
 });
 
+gulp.task('install-dist-dep',function(){
+  return gulp.src(['./dist/package.json'])
+  .pipe(install());
+});
+
 gulp.task('copy-electron-components',function(){
   return gulp.src(['./src/*.js', './src/*.json'])
   .pipe(gulp.dest('./dist'))
@@ -89,6 +94,7 @@ gulp.task('watch', function () {
   gulp.watch('./src/web/style/**/*.scss', ['sass']);
   gulp.watch('./src/web/**/*.html', ['html']);
   gulp.watch('./src/web/**/*.js', ['scripts']);
+  gulp.watch('./src/*', ['copy-electron-components']);
 });
 
 gulp.task('prepare-dev-env', gulpsync.sync([
@@ -103,8 +109,9 @@ gulp.task('prepare-dev-env', gulpsync.sync([
         'copy-dependencies',
         'images',
         'locales',
-        'copy-electron-components'
-    ]
+        'copy-electron-components',
+    ],
+    ['install-dist-dep']
 ]));
 
 gulp.task('default', gulpsync.sync([

@@ -14,13 +14,5 @@ require('package-script').spawn([
       {
           command: "gulp",
           args: ["prepare-dev-env"]
-      },
-      {
-          command: "cd",
-          args: ["src"]
-      },
-      {
-          command: "npm",
-          args: ["install"]
       }
   ]);
