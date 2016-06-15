@@ -44,6 +44,7 @@
     "gulp-sass": "^2.3.1",
     "gulp-sync": "^0.1.4",
     "gulp-uglify": "^1.5.3",
-    "gulp-usemin": "^0.3.23"
+    "gulp-usemin": "^0.3.23",
+    "package-script": "0.0.8"
   }
 }
