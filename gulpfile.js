@@ -10,6 +10,8 @@ var imageop = require('gulp-image-optimization');
 var ngmin = require('gulp-ngmin');
 var nodemon = require('gulp-nodemon');
 var bower = require('gulp-bower');
+var electron = require('gulp-electron');
+var packageJson = require('./src/package.json');
 var plumber = require('gulp-plumber');  //prevent watch crash
 var winInstaller = require('electron-windows-installer');
 var gulpsync = require('gulp-sync')(gulp);
@@ -33,6 +35,10 @@ gulp.task('clean:dist', function() {
   return del('./dist/**/*');
 });
 
+gulp.task('clean:build', function() {
+  return del('./build/**/*');
+});
+
 gulp.task('install-dependencies', function() {
   return bower({ cwd: './src/web' });
 });
@@ -47,7 +53,7 @@ gulp.task('scripts', function() {
 });
 
 gulp.task('images', function(cb) {
-    gulp.src(['src/web/**/*.png','src/web/**/*.jpg','src/web/**/*.gif','src/web/**/*.jpeg','src/web/**/*.svg']).pipe(imageop({
+    gulp.src(['src/web/**/*.png','src/web/**/*.jpg','src/web/**/*.gif','src/web/**/*.jpeg','src/web/**/*.svg','src/web/**/*.ico']).pipe(imageop({
         optimizationLevel: 5,
         progressive: true,
         interlaced: true
@@ -90,6 +96,36 @@ gulp.task('create-windows-installer', function(done) {
   }).then(done).catch(done);
 });
 
+gulp.task('electron', function() {
+
+    gulp.src("")
+    .pipe(electron({
+        src: './dist',
+        packageJson: packageJson,
+        release: './build',
+        cache: './cache',
+        version: 'v1.0.1',
+        packaging: false,
+        platforms: ['win32-ia32', 'darwin-x64'],
+        platformResources: {
+            darwin: {
+                CFBundleDisplayName: packageJson.name,
+                CFBundleIdentifier: packageJson.name,
+                CFBundleName: packageJson.name,
+                CFBundleVersion: packageJson.version,
+                icon: './dist/web/img/tgf/icon_circle.ico'
+            },
+            win: {
+                "version-string": packageJson.version,
+                "file-version": packageJson.version,
+                "product-version": packageJson.version,
+                "icon": './dist/web/img/tgf/icon_circle.ico'
+            }
+        }
+    }))
+    .pipe(gulp.dest(""));
+});
+
 gulp.task('watch', function () {
   gulp.watch('./src/web/style/**/*.scss', ['sass']);
   gulp.watch('./src/web/**/*.html', ['html']);
@@ -112,6 +148,12 @@ gulp.task('prepare-dev-env', gulpsync.sync([
         'copy-electron-components',
     ],
     ['install-dist-dep']
+]));
+
+gulp.task('build', gulpsync.sync([
+    ['clean:build'],
+    ['prepare-dev-env'],
+    ['electron']
 ]));
 
 gulp.task('default', gulpsync.sync([

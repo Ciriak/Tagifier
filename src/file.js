@@ -79,25 +79,14 @@ fileTag = function (file,callback){
 
   var imgPath = "";
   var coverBuffer = "";
-  console.log(imgPath);
-  //retreive the cover image data and copy them to the temp folder
-
-  if(file.pictureUri){
-    var ext = path.extname(file.pictureUri);
-    imgPath = "./web/img/temps/"+file.id+ext;
-    if(fileExists(file.pictureUri)){
-      var coverBuffer = fs.readFileSync(file.pictureUri);
-      fs.writeFileSync(imgPath, coverBuffer);
-    }
-  }
 
   var songBuffer = fs.readFileSync(file.uri);
 
   var writer = new ID3Writer(songBuffer);
 
   //write cover only if updated
-  if(fileExists(imgPath)){
-    var coverBuffer = fs.readFileSync(imgPath);
+  if(fileExists(file.pictureUri)){
+    var coverBuffer = fs.readFileSync(file.pictureUri);
     console.log("Updating cover...");
     writer.setFrame('APIC', coverBuffer);
   }
@@ -117,6 +106,7 @@ fileTag = function (file,callback){
 
 function saveCover(data,path,fileName,callback){
   var fullPath = "./web/"+path;
+  console.log("Saving the cover to "+fullPath);
   if (!fs.existsSync("./web/img/temps")){
     fs.mkdirSync("./web/img/temps");
   }

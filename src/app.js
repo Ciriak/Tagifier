@@ -77,9 +77,6 @@ if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
 
-// retreive config file
-var config = fs.readJSON("config.json");
-
 
 
 //
@@ -166,7 +163,7 @@ function AddFileToProcessQueue(session,fileIndex){
   waitingList++;  //increment waiting list count
   var fileQueue = setInterval(function(){   //check every 5 sec if the process can start
 
-    if(processList >= config.max_process){
+    if(processList >= 3){
       return;
     }
 
