@@ -12,6 +12,9 @@ dep
 config.json
 exports
 temps
+dist
+cache
+build
 
 
 ### Node ###

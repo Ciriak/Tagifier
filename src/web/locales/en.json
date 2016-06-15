@@ -1,0 +1,46 @@
+{
+  "global" : {
+    "ok": "Ok",
+    "about" : "About",
+    "facebook" : "Facebook",
+    "download" : "Download",
+    "newProcess" : "Convert a new file"
+  },
+  "index" : {
+    "welcomeMessage" : "The ultimate Mp3 tool",
+    "welcomeButtonLabel" : "Tag this file",
+    "invalidLinkMessage" : "This link seem to be invalid !"
+  },
+  "file" : {
+    "fileName" : "File Name",
+    "pattern" : "Pattern",
+    "cover" : "Select a cover image",
+    "title" : "Title",
+    "artist" : "Artist",
+    "album" : "Album",
+    "year" : "Year",
+    "exportPath" : "Export directory",
+    "inputChain" : "Input Chain",
+    "fileNamePattern" : "File Name Pattern",
+    "pleaseEnterCaptchat" : "Please complete the captchat",
+    "applyTagToAll" : "Apply this tag to all files",
+    "applyPatternToAll" : "Apply this pattern to all files",
+    "lockProp" : "Lock / Unlock this attribute",
+    "retreivingInfos" : "Retreiving file(s) information...",
+    "retreivingInfosSub" : "It may take a while...",
+    "addFileButtonLabel" : "Add File",
+    "removeFile" : "Remove this file from the list",
+    "process" : "Save"
+  },
+  "about" : {
+    "description" : "The ultimate Mp3 tool"
+  },
+  "error" : {
+    "invalidCaptchat" : "The captchat seem to be invalid !",
+    "internalError" : "Internal error, please retry",
+    "unableToRetreiveFileData" : "Unable to retreive file informations",
+    "fileTooLong" : "Sorry, we do not convert videos longer than 10 min :(",
+    "invalidLink" : "This lnik seem to be invalid",
+    "plsFixFileErrors" : "Please, remove invalid files from the list before continuing"
+  }
+}

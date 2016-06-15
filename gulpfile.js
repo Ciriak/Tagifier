@@ -9,7 +9,11 @@ var del = require('del');
 var imageop = require('gulp-image-optimization');
 var ngmin = require('gulp-ngmin');
 var nodemon = require('gulp-nodemon');
+var bower = require('gulp-bower');
+var electron = require('gulp-electron');
+var packageJson = require('./src/package.json');
 var plumber = require('gulp-plumber');  //prevent watch crash
+var winInstaller = require('electron-windows-installer');
 var gulpsync = require('gulp-sync')(gulp);
 
 gulp.task('server', function () {
@@ -21,74 +25,138 @@ gulp.task('server', function () {
 });
 
 gulp.task('sass', function () {
-  return gulp.src('./src/style/**/*.scss')
+  return gulp.src('./src/web/style/**/*.scss')
     .pipe(plumber())
     .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
-    .pipe(gulp.dest('./public/css'));
+    .pipe(gulp.dest('./dist/web/css'));
 });
 
-gulp.task('clean:public', function() {
-  return del('./public/**/*');
+gulp.task('clean:dist', function() {
+  return del('./dist/**/*');
 });
 
-gulp.task('installdep', function() {
-  gulp.src(['.src/bower.json'])
-    .pipe(install());
+gulp.task('clean:build', function() {
+  return del('./build/**/*');
+});
+
+gulp.task('install-dependencies', function() {
+  return bower({ cwd: './src/web' });
 });
 
 gulp.task('scripts', function() {
-  return gulp.src('./src/js/**/*.js')
+  return gulp.src('./src/web/js/**/*.js')
     .pipe(plumber())
     .pipe(ngmin())
   	.pipe(uglify({mangle: false}))
     .pipe(concat('tagifier.js'))
-    .pipe(gulp.dest('./public/js/'));
+    .pipe(gulp.dest('./dist/web/js/'));
 });
 
 gulp.task('images', function(cb) {
-    gulp.src(['src/**/*.png','src/**/*.jpg','src/**/*.gif','src/**/*.jpeg','src/**/*.svg']).pipe(imageop({
+    gulp.src(['src/web/**/*.png','src/web/**/*.jpg','src/web/**/*.gif','src/web/**/*.jpeg','src/web/**/*.svg','src/web/**/*.ico']).pipe(imageop({
         optimizationLevel: 5,
         progressive: true,
         interlaced: true
-    })).pipe(gulp.dest('./public')).on('end', cb).on('error', cb);
+    })).pipe(gulp.dest('./dist/web')).on('end', cb).on('error', cb);
 });
 
-gulp.task('bower', function() {
-  gulp.src('./src/bower_components/**/*')
-  .pipe(gulp.dest('./public/dep/'));
+gulp.task('copy-dependencies', function() {
+  gulp.src('./src/web/bower_components/**/*')
+  .pipe(gulp.dest('./dist/web/dep/'));
 });
 
 gulp.task('html', function() {
-  return gulp.src('src/**/*.html')
+  return gulp.src('src/web/**/*.html')
     .pipe(plumber())
     .pipe(htmlmin({collapseWhitespace: true}))
-    .pipe(gulp.dest('./public/'))
+    .pipe(gulp.dest('./dist/web'))
 });
 
 gulp.task('locales', function () {
-    return gulp.src(['./src/locales/*.json'])
+    return gulp.src(['./src/web/locales/*.json'])
         .pipe(jsonminify())
-        .pipe(gulp.dest('./public/locales/'));
+        .pipe(gulp.dest('./dist/web/locales/'));
+});
+
+gulp.task('install-dist-dep',function(){
+  return gulp.src(['./dist/package.json'])
+  .pipe(install());
+});
+
+gulp.task('copy-electron-components',function(){
+  return gulp.src(['./src/*.js', './src/*.json'])
+  .pipe(gulp.dest('./dist'))
+});
+
+gulp.task('create-windows-installer', function(done) {
+  winInstaller({
+    appDirectory: './build/win32',
+    outputDirectory: './release',
+    arch: 'ia32'
+  }).then(done).catch(done);
+});
+
+gulp.task('electron', function() {
+
+    gulp.src("")
+    .pipe(electron({
+        src: './dist',
+        packageJson: packageJson,
+        release: './build',
+        cache: './cache',
+        version: 'v1.0.1',
+        packaging: false,
+        platforms: ['win32-ia32', 'darwin-x64'],
+        platformResources: {
+            darwin: {
+                CFBundleDisplayName: packageJson.name,
+                CFBundleIdentifier: packageJson.name,
+                CFBundleName: packageJson.name,
+                CFBundleVersion: packageJson.version,
+                icon: './dist/web/img/tgf/icon_circle.ico'
+            },
+            win: {
+                "version-string": packageJson.version,
+                "file-version": packageJson.version,
+                "product-version": packageJson.version,
+                "icon": './dist/web/img/tgf/icon_circle.ico'
+            }
+        }
+    }))
+    .pipe(gulp.dest(""));
 });
 
 gulp.task('watch', function () {
-  gulp.watch('./src/style/**/*.scss', ['sass']);
-  gulp.watch('./src/**/*.html', ['html']);
-  gulp.watch('./src/**/*.js', ['scripts']);
+  gulp.watch('./src/web/style/**/*.scss', ['sass']);
+  gulp.watch('./src/web/**/*.html', ['html']);
+  gulp.watch('./src/web/**/*.js', ['scripts']);
+  gulp.watch('./src/*', ['copy-electron-components']);
 });
 
-gulp.task('default', gulpsync.sync([
+gulp.task('prepare-dev-env', gulpsync.sync([
     // sync
-    'clean:public',
-    ['installdep'],
+    'clean:dist',
+    ['install-dependencies'],
     [
         // async
         'sass',
         'scripts',
         'html',
-        'bower',
+        'copy-dependencies',
         'images',
-        'locales'
+        'locales',
+        'copy-electron-components',
     ],
+    ['install-dist-dep']
+]));
+
+gulp.task('build', gulpsync.sync([
+    ['clean:build'],
+    ['prepare-dev-env'],
+    ['electron']
+]));
+
+gulp.task('default', gulpsync.sync([
+    ['prepare-dev-env'],
     ['watch']
 ]));

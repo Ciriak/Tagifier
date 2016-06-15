@@ -1,0 +1,22 @@
+<div class="player container">
+  <div class="col-md-3">
+    <div class="player-cover">
+      <img ng-src="{{exportFiles[playingFileIndex].pictureUri}}" />
+    </div>
+    <div class="player-info">
+      <h1>{{exportFiles[playingFileIndex].title}}</h1>
+      <h2>{{exportFiles[playingFileIndex].artist}}</h2>
+    </div>
+    <div class="player-btn">
+      <i class="mdi mdi-skip-play"></i>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <input type="range" ng-model="playerDisplayProgress" ng-change="setPlayerProgress(playerDisplayProgress)">
+  </div>
+  <div class="col-md-3">
+    <div class="player-btn volume-btn">
+      <i class="mdi mdi-volume-high"></i>
+    </div>
+  </div>
+</div>
