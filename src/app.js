@@ -56,7 +56,7 @@ var sanitize = require("sanitize-filename");
 var ffmpeg = require('fluent-ffmpeg');
 
 //File class
-var File = require("./file.js");
+var File = require(__dirname+"/file.js");
 //
 
 var fidOpt = {
@@ -66,13 +66,13 @@ var fidOpt = {
 
 //set the ffmpeg binary location (path)
 if(os.platform() === 'win32'){
-     var ffmpegPath = './bin/ffmpeg/ffmpeg.exe'
+     var ffmpegPath = __dirname+'/bin/ffmpeg/ffmpeg.exe'
  }else{
-     var ffmpegPath = './bin/ffmpeg/ffmpeg'
+     var ffmpegPath = __dirname+'/bin/ffmpeg/ffmpeg'
  }
 ffmpeg.setFfmpegPath(ffmpegPath);
 // create the "exports" folder
-var p = "./exports";
+var p = __dirname+"/exports";
 if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
@@ -141,7 +141,7 @@ ipc.on('processRequest', function (data) {
     session.files.push(file);
   }
 
-  session.tempPath = "./exports/"+session.id;
+  session.tempPath = __dirname+"/exports/"+session.id;
 
   //create the temp session path
   if (!ofs.existsSync(session.tempPath)){
@@ -277,6 +277,6 @@ var rmDir = function(dirPath, removeSelf) {
 
 
 
-rmDir('./web/img/temps',false);
-rmDir('./exports',false);
+rmDir(__dirname+'/web/img/temps',false);
+rmDir(__dirname+'/exports',false);
 console.log("Temp files cleaned");

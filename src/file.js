@@ -1,4 +1,5 @@
 const electron = require('electron');
+const app = electron.app;
 const ipc = electron.ipcMain;
 var ID3Writer = require('browser-id3-writer');
 var id3Parser = require("id3-parser");
@@ -105,10 +106,11 @@ fileTag = function (file,callback){
 }
 
 function saveCover(data,path,fileName,callback){
-  var fullPath = "./web/"+path;
+  var fullPath = __dirname+"/web/"+path;
   console.log("Saving the cover to "+fullPath);
-  if (!fs.existsSync("./web/img/temps")){
-    fs.mkdirSync("./web/img/temps");
+  if (!fs.existsSync(__dirname+"/web/img/temps")){
+    console.log("Creating the temps folder...");
+    fs.mkdirSync(__dirname+"/web/img/temps");
   }
   var imgData = new Buffer(data, 'binary').toString('base64');
   fs.writeFile(fullPath+"/"+fileName, imgData, 'base64', function (err,data) {
