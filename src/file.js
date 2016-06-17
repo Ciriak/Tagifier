@@ -78,17 +78,18 @@ fileProcess = function (file,callback){
 
 fileTag = function (file,callback){
 
-  var imgPath = "";
   var coverBuffer = "";
-
   var songBuffer = fs.readFileSync(file.uri);
-
   var writer = new ID3Writer(songBuffer);
 
+
+  var imgPath = __dirname+"/web/"+file.pictureUri;
+  console.log(imgPath);
+
   //write cover only if updated
-  if(fileExists(file.pictureUri)){
-    var coverBuffer = fs.readFileSync(file.pictureUri);
-    console.log("Updating cover...");
+  if(fileExists(imgPath)){
+    var coverBuffer = fs.readFileSync(imgPath);
+    console.log("Updating cover from "+imgPath);
     writer.setFrame('APIC', coverBuffer);
   }
 

@@ -61,8 +61,8 @@ h2,h3,h4,h5,p{
 }
 
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control{
-	background-color: $darkgrey;
-	color:#9DA5AC;
+	background-color: darken($darkgrey, 5%);
+	color:darken(#9DA5AC, 10%);
 		opacity: 0.5;
 }
 
