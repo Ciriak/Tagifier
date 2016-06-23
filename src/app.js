@@ -3,7 +3,7 @@
 //
 
 const electron = require('electron');
-const app = electron.app;
+const {app, protocol} = require('electron');
 console.log("Tagifier V."+app.getVersion());
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
@@ -30,7 +30,18 @@ app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.quit()
   }
-})
+});
+
+app.on('ready', () => {
+  protocol.registerFileProtocol('tagifier', (request, callback) => {
+    console.log(request);
+    const url = request.url.substr(7);
+    callback({path: path.normalize(__dirname + '/' + url)});
+  }, (error) => {
+    if (error)
+      console.error('Failed to register protocol');
+  });
+});
 
 app.on('activate', function () {
   // On OS X it's common to re-create a window in the app when the

@@ -1,3 +1,6 @@
+var electronVersion = "1.0.1";
+
+
 var gulp = require('gulp');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
@@ -13,7 +16,6 @@ var bower = require('gulp-bower');
 var electron = require('gulp-electron');
 var packageJson = require('./src/package.json');
 var plumber = require('gulp-plumber');  //prevent watch crash
-var winInstaller = require('electron-windows-installer');
 var gulpsync = require('gulp-sync')(gulp);
 
 gulp.task('server', function () {
@@ -88,12 +90,8 @@ gulp.task('copy-electron-components',function(){
   .pipe(gulp.dest('./dist'))
 });
 
-gulp.task('create-windows-installer', function(done) {
-  winInstaller({
-    appDirectory: './build/win32',
-    outputDirectory: './release',
-    arch: 'ia32'
-  }).then(done).catch(done);
+gulp.task('windows-installer', function() {
+
 });
 
 gulp.task('electron', function() {
@@ -104,7 +102,7 @@ gulp.task('electron', function() {
         packageJson: packageJson,
         release: './build',
         cache: './cache',
-        version: 'v1.0.1',
+        version: 'v'+electronVersion,
         packaging: false,
         platforms: ['win32-ia32', 'darwin-x64'],
         platformResources: {
@@ -153,7 +151,8 @@ gulp.task('prepare-dev-env', gulpsync.sync([
 gulp.task('build', gulpsync.sync([
     ['clean:build'],
     ['prepare-dev-env'],
-    ['electron']
+    ['electron'],
+    ['windows-installer']
 ]));
 
 gulp.task('default', gulpsync.sync([
