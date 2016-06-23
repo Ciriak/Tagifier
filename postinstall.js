@@ -1,15 +1,7 @@
 require('package-script').spawn([
       {
           command: "npm",
-          args: ["install", "-g", "gulp"]
-      },
-      {
-          command: "npm",
-          args: ["install", "-g", "bower"]
-      },
-      {
-          command: "npm",
-          args: ["install", "-g", " electron-prebuilt"]
+          args: ["install", "-g", "gulp bower electron-prebuilt electron-installer-windows"]
       },
       {
           command: "gulp",
