@@ -42,7 +42,7 @@ gulp.task('clean:build', function() {
 });
 
 gulp.task('install-dependencies', function() {
-  return bower({ cwd: './src/web' });
+  return bower({ cwd: './src/web',interactive:true });
 });
 
 gulp.task('scripts', function() {
