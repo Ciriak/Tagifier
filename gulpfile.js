@@ -90,10 +90,6 @@ gulp.task('copy-electron-components',function(){
   .pipe(gulp.dest('./dist'))
 });
 
-gulp.task('windows-installer', function() {
-
-});
-
 gulp.task('electron', function() {
 
     gulp.src("")
@@ -151,8 +147,7 @@ gulp.task('prepare-dev-env', gulpsync.sync([
 gulp.task('build', gulpsync.sync([
     ['clean:build'],
     ['prepare-dev-env'],
-    ['electron'],
-    ['windows-installer']
+    ['electron']
 ]));
 
 gulp.task('default', gulpsync.sync([
