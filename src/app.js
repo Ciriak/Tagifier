@@ -3,7 +3,7 @@
 //
 
 const electron = require('electron');
-const {app, protocol} = require('electron');
+const {app} = require('electron');
 console.log("Tagifier V."+app.getVersion());
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
@@ -33,6 +33,7 @@ app.on('window-all-closed', function () {
 });
 
 app.on('ready', () => {
+  const {protocol} = require('electron');
   protocol.registerFileProtocol('tagifier', (request, callback) => {
     console.log(request);
     const url = request.url.substr(7);

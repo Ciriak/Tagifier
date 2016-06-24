@@ -17,6 +17,7 @@ var electron = require('gulp-electron');
 var packageJson = require('./src/package.json');
 var plumber = require('gulp-plumber');  //prevent watch crash
 var gulpsync = require('gulp-sync')(gulp);
+var winInstaller = require('electron-winstaller');
 
 gulp.task('server', function () {
   nodemon({
@@ -125,6 +126,19 @@ gulp.task('watch', function () {
   gulp.watch('./src/web/**/*.html', ['html']);
   gulp.watch('./src/web/**/*.js', ['scripts']);
   gulp.watch('./src/*', ['copy-electron-components']);
+});
+
+gulp.task('create-windows-installer',function(){
+  del('./release/**/*');
+  return resultPromise = winInstaller.createWindowsInstaller({
+    appDirectory: './build/v'+electronVersion+'/win32-ia32',
+    outputDirectory: './release',
+    authors: 'Cyriaque DELAUNAY',
+    exe: 'tagifier.exe'
+  });
+
+resultPromise.then(() => console.log("It worked!"), (e) => console.log(`No dice: ${e.message}`));
+
 });
 
 gulp.task('prepare-dev-env', gulpsync.sync([
