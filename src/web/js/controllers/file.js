@@ -9,7 +9,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	$scope.currentFileIndex = 0;
 	$scope.exportFiles = [];
 	$scope.progress = 0;
-	$scope.filePlayer;
+	$scope.filePlayer = {};
 	$scope.canRemoveFile = false;
 	$scope.playerStatus = "stop";
 	$scope.playingFileIndex = null;
@@ -36,12 +36,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.canAddFile = true;
 		}
 	};
-
-	//define the audio player prop
-	$(window).load(function(){
-		$scope.filePlayer = document.getElementById("file-player");
-	})
-
 
 	var parseFileData = function(data){
 		var index = $scope.exportFiles.length;
@@ -370,6 +364,9 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	};
 
 	$scope.togglePlayer = function(index){
+
+		//define the audio player prop
+		$scope.filePlayer = document.getElementById("file-player");
 
 		if($scope.playingFileIndex !== index){
 			$scope.playingFileIndex = index;

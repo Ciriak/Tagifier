@@ -94,8 +94,6 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
 
   $scope.docReady = false;
   $(window).load(function(){
-
-    $window.ga('create', 'UA-48635201-13', 'auto');  //initialize GA
     $scope.docReady = true;
     $scope.$apply();
   });
@@ -132,8 +130,7 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
     $('.toast').remove();
   });
   $rootScope.$on('$stateChangeSuccess', function (event) {
-      //ga event for page change
-      $window.ga('send', 'pageview', $location.path());
+
   });
 
 }]);
