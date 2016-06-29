@@ -91,9 +91,9 @@ gulp.task('copy-electron-components',function(){
   .pipe(gulp.dest('./dist'))
 });
 
-gulp.task('electron', function() {
+gulp.task('electron-build', function() {
 
-    gulp.src("")
+    return gulp.src("")
     .pipe(electron({
         src: './dist',
         packageJson: packageJson,
@@ -134,7 +134,7 @@ gulp.task('create-windows-installer',function(){
     appDirectory: './build/v'+electronVersion+'/win32-ia32',
     outputDirectory: './release',
     authors: 'Cyriaque DELAUNAY',
-    exe: 'tagifier.exe'
+    exe: 'Tagifier.exe'
   });
 
 resultPromise.then(() => console.log("It worked!"), (e) => console.log(`No dice: ${e.message}`));
@@ -161,7 +161,8 @@ gulp.task('prepare-dev-env', gulpsync.sync([
 gulp.task('build', gulpsync.sync([
     ['clean:build'],
     ['prepare-dev-env'],
-    ['electron']
+    ['electron-build'],
+    ['create-windows-installer']
 ]));
 
 gulp.task('default', gulpsync.sync([

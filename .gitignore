@@ -13,6 +13,7 @@ config.json
 exports
 temps
 dist
+release
 cache
 build
 
