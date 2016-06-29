@@ -13,7 +13,7 @@ var imageop = require('gulp-image-optimization');
 var ngmin = require('gulp-ngmin');
 var nodemon = require('gulp-nodemon');
 var bower = require('gulp-bower');
-var electron = require('gulp-electron');
+var packager = require('electron-packager');
 var packageJson = require('./src/package.json');
 var plumber = require('gulp-plumber');  //prevent watch crash
 var gulpsync = require('gulp-sync')(gulp);
@@ -91,34 +91,20 @@ gulp.task('copy-electron-components',function(){
   .pipe(gulp.dest('./dist'))
 });
 
-gulp.task('electron-build', function() {
-
-    return gulp.src("")
-    .pipe(electron({
-        src: './dist',
-        packageJson: packageJson,
-        release: './build',
-        cache: './cache',
-        version: 'v'+electronVersion,
-        packaging: false,
-        platforms: ['win32-ia32', 'darwin-x64'],
-        platformResources: {
-            darwin: {
-                CFBundleDisplayName: packageJson.name,
-                CFBundleIdentifier: packageJson.name,
-                CFBundleName: packageJson.name,
-                CFBundleVersion: packageJson.version,
-                icon: './dist/web/img/tgf/icon_circle.ico'
-            },
-            win: {
-                "version-string": packageJson.version,
-                "file-version": packageJson.version,
-                "product-version": packageJson.version,
-                "icon": './dist/web/img/tgf/icon_circle.ico'
-            }
-        }
-    }))
-    .pipe(gulp.dest(""));
+gulp.task('electron-build', function(callback) {
+  var options = {
+        dir: "./dist",
+        name: "tagifier",
+        platform: "win32",
+        arch: "all",
+        overwrite: true,
+        icon: "./dist/web/img/tgf/icon_circle.png",
+        out: "build"
+    };
+    packager(options, function done (err, appPath) {
+        if(err) { return console.log(err); }
+        callback();
+    });
 });
 
 gulp.task('watch', function () {
@@ -131,7 +117,7 @@ gulp.task('watch', function () {
 gulp.task('create-windows-installer',function(){
   del('./release/**/*');
   return resultPromise = winInstaller.createWindowsInstaller({
-    appDirectory: './build/v'+electronVersion+'/win32-ia32',
+    appDirectory: './build/tagifier-win32-ia32',
     outputDirectory: './release',
     authors: 'Cyriaque DELAUNAY',
     exe: 'Tagifier.exe'
