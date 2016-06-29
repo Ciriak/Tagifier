@@ -28,6 +28,7 @@
   "homepage": "https://github.com/CYRIAQU3/tagifier#readme",
   "dependencies": {
     "del": "^2.2.0",
+    "electron-gh-releases": "^2.0.3",
     "electron-prebuilt": "^1.1.0",
     "electron-windows-installer": "^1.4.1",
     "gulp": "^3.9.1",

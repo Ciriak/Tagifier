@@ -53,6 +53,7 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
 
     var Menu = $rootScope.remote.Menu;
     var MenuItem = $rootScope.remote.MenuItem;
+    $rootScope.version = $rootScope.remote.app.getVersion();
 
     var template = [
       {
@@ -69,7 +70,7 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
         role: 'about',
         submenu: [
           {
-            label: 'Tagifier (Beta)'
+            label: 'Tagifier (v'+$rootScope.version+')'
           },
           {
             type: 'separator'
@@ -99,11 +100,6 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
   });
 
   $scope.ipc = $rootScope.remote.ipcMain;
-  console.log($rootScope.remote);
-  $scope.ipc.on('connect', function()
-  {
-    console.log("Socket connected !");
-  });
 
   //auto focus the form
   $(document).hover(function(){
