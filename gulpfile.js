@@ -19,6 +19,9 @@ var plumber = require('gulp-plumber');  //prevent watch crash
 var gulpsync = require('gulp-sync')(gulp);
 var winInstaller = require('electron-winstaller');
 
+//retreive package.json data
+var pjson = require('./package.json');
+
 gulp.task('server', function () {
   nodemon({
     script: 'app.js'
@@ -97,6 +100,8 @@ gulp.task('electron-build', function(callback) {
         name: "tagifier",
         platform: "win32",
         arch: "all",
+        'app-version':pjson.version,
+        'build-version':pjson.version,
         overwrite: true,
         icon: "./dist/web/img/tgf/icon_circle.png",
         out: "build"

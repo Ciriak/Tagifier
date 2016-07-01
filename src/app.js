@@ -4,13 +4,16 @@
 
 const electron = require('electron');
 const {app} = require('electron');
-console.log("Tagifier V."+app.getVersion());
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
 const GhReleases = require('electron-gh-releases');
 const ipc = electron.ipcMain;
 let splashScreen
 let mainWindow
+//retreive package.json properties
+var pjson = require('./package.json');
+
+console.log("Tagifier V."+pjson.version);
 
 app.on('ready', function(){
   createSplashScreen();
@@ -60,13 +63,13 @@ function createSplashScreen () {
 
   splashScreen.once('ready-to-show', () => {
     splashScreen.show();
-    splashScreen.webContents.send("tgf_version",{version:app.getVersion()});
+    splashScreen.webContents.send("tgf_version",{version:pjson.version});
     splashScreen.webContents.send("splash_message",{message:"Checking for update..."});
 
     //check for updates
     let options = {
       repo: 'Cyriaqu3/tagifier',
-      currentVersion: app.getVersion()
+      currentVersion: pjson.version
     }
 
     const updater = new GhReleases(options)
