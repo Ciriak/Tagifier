@@ -10,7 +10,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	$scope.exportFiles = [];
 	$scope.progress = 0;
 	$scope.filePlayer = {};
-	$scope.canRemoveFile = false;
 	$scope.playerStatus = "stop";
 	$scope.playingFileIndex = null;
 	$scope.exportDir;
@@ -40,7 +39,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	var parseFileData = function(data){
 		var index = $scope.exportFiles.length;
 		if(index > 0){
-			$scope.canRemoveFile = true;	// they will be more than 1 file so the user can remove them from thhe list
 			$scope.singleFile = false;
 			if(!$scope.$$phase) {
 				$scope.$apply();
@@ -112,19 +110,21 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 	};
 
 	$scope.removeFileFromList = function(file){
-		if(!$scope.canRemoveFile){
-			console.log("You are trying to remove a file from the list... but it seem you cant !");
-			return;
-		}
 		var fileIndex = _.indexOf($scope.exportFiles,file);
 		if(fileIndex <= -1){
 			return;
 		}
 		$scope.exportFiles.splice(fileIndex, 1);
 
-		if($scope.exportFiles.length < 2){
+		//If their is only one file remaining
+		if($scope.exportFiles.length == 1){
 			$scope.singleFile = true;
-			$scope.canRemoveFile = false;		//only 1 file in the list , cannnot remove files
+		}
+		// if their is no file on the list
+		if($scope.exportFiles.length == 0){
+			$scope.canStartProcess = false;
+			$scope.canEditTags = false;
+			$scope.fileAvailable = false;
 		}
 		if(fileIndex > 0){
 			$scope.setCurrentFile(fileIndex-1);
@@ -162,7 +162,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.processing = true;
 		$scope.canEditTags = false;
 		$scope.canStartProcess = false;
-		$scope.canRemoveFile = false;
 
 		if(!$scope.$$phase) {
 			$scope.$apply();
@@ -233,7 +232,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.processing = false;
 			$scope.canEditTags = true;
 			$scope.canStartProcess = true;
-			$scope.canRemoveFile = true;
 			$scope.canAddFile = true;
 		}
 		if(ev["event"] == "file_finished"){
@@ -258,7 +256,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 				$scope.processing = false;
 				$scope.canEditTags = true;
 				$scope.canStartProcess = true;
-				$scope.canRemoveFile = true;
 				$scope.canAddFile = true;
 		}
 

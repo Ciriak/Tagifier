@@ -149,7 +149,7 @@ function createSplashScreen () {
     console.log("Looking for update");
     updater.check((err, status) => {
       if(err){
-        console.log("Updater error :");
+        ipc.emit("splach_message",{message:err});
         console.log(err);
       }
 
@@ -166,10 +166,7 @@ function createSplashScreen () {
         //no update available, prepare the mainWindow
       } else {
         if(err){
-          splashScreen.webContents.send("splash_message",{message:"Error while downloading the update..."});
-        }
-        else{
-          splashScreen.webContents.send("splash_message",{message:"Loading..."});
+          splashScreen.webContents.send("splash_message",{message:err.message});
         }
 
         mainWindow = new BrowserWindow({
@@ -191,6 +188,7 @@ function createSplashScreen () {
 
     // When an update has been downloaded
     updater.on('update-downloaded', (info) => {
+      ipc.emit("splach_message",{message:"Installing update..."});
       // Restart the app and install the update
       updater.install()
     })

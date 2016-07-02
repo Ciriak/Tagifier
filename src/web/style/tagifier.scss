@@ -313,6 +313,19 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 		margin-top: 10px;
 		color:#cccccc;
 	}
+
+	.add-file-btn-anim{
+		animation-name: btnAnim;
+    animation-duration: 1s;
+		animation-delay: 2s;
+		animation-iteration-count: 3
+	}
+
+	/* Add-file-btn animatione */
+	@keyframes btnAnim {
+    50%  {box-shadow: 0px 0px 5px $green;}
+	}
+
 	.file-btn:hover,.file-btn.current{
 		border-left-color: $blue;
 	}

@@ -99,7 +99,7 @@ gulp.task('electron-build', function(callback) {
         dir: "./dist",
         name: "tagifier",
         platform: "win32",
-        arch: "all",
+        arch: "x64",
         'app-version':pjson.version,
         'build-version':pjson.version,
         overwrite: true,
@@ -122,7 +122,7 @@ gulp.task('watch', function () {
 gulp.task('create-windows-installer',function(){
   del('./release/**/*');
   return resultPromise = winInstaller.createWindowsInstaller({
-    appDirectory: './build/tagifier-win32-ia32',
+    appDirectory: './build/tagifier-win32-x64',
     outputDirectory: './release',
     authors: 'Cyriaque DELAUNAY',
     setupIcon : './src/web/img/tgf/icon_setup.ico',
