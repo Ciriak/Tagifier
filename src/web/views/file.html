@@ -20,11 +20,11 @@
 					</div>
 
 					{{f.fulltitle}}<span class="format-label">.mp3</span>
-					<i class="remove-file-btn mdi mdi-close" ng-show="canRemoveFile" ng-click="removeFileFromList(f)"></i>
+					<i class="remove-file-btn mdi mdi-close" ng-click="removeFileFromList(f)"></i>
 
 					<span class="file-progress" style="width:{{f.progress}}%"></span>
 				</div>
-				<div class="btn add-file-btn col-md-12 col-sm-12" ng-click="showAddFileModal()">
+				<div class="btn add-file-btn col-md-12 col-sm-12" ng-click="showAddFileModal()" ng-class="{'add-file-btn-anim' : !fileAvailable}">
 					<i class="mdi mdi-cloud-upload"></i> {{ 'file.addFileButtonLabel' | translate }}
 				</div>
 			</div>
@@ -56,14 +56,6 @@
 							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('fileNamePattern',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
 					 </td>
 				</tr>-->
-				<tr>
-					 <td class="input-group">
-							<span class="input-group-addon"><i class="mdi mdi-image"></i></span>
-							<input type="url" class="form-control" ng-model="exportFiles[currentFileIndex].pictureUri" disabled="disabled">
-							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('pictureUri',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
-							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('pictureUri',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
-					 </td>
-				</tr>
 				<tr>
 					 <td class="input-group">
 							<span class="input-group-addon"><i class="mdi mdi-file-music"></i></span>
