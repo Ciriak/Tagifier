@@ -15,6 +15,75 @@ var pjson = require('./package.json');
 
 console.log("Tagifier V."+pjson.version);
 
+
+// Hook the squirrel update events
+if (handleSquirrelEvent()) {
+  // squirrel event handled and app will exit in 1000ms, so don't do anything else
+  return;
+}
+
+function handleSquirrelEvent() {
+  if (process.argv.length === 1) {
+    return false;
+  }
+
+  const ChildProcess = require('child_process');
+  const path = require('path');
+
+  const appFolder = path.resolve(process.execPath, '..');
+  const rootAtomFolder = path.resolve(appFolder, '..');
+  const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+  const exeName = path.basename(process.execPath);
+
+  const spawn = function(command, args) {
+    let spawnedProcess, error;
+
+    try {
+      spawnedProcess = ChildProcess.spawn(command, args, {detached: true});
+    } catch (error) {}
+
+    return spawnedProcess;
+  };
+
+  const spawnUpdate = function(args) {
+    return spawn(updateDotExe, args);
+  };
+
+  const squirrelEvent = process.argv[1];
+  switch (squirrelEvent) {
+    case '--squirrel-install':
+    case '--squirrel-updated':
+      // Optionally do things such as:
+      // - Add your .exe to the PATH
+      // - Write to the registry for things like file associations and
+      //   explorer context menus
+
+      // Install desktop and start menu shortcuts
+      spawnUpdate(['--createShortcut', exeName]);
+
+      setTimeout(app.quit, 1000);
+      return true;
+
+    case '--squirrel-uninstall':
+      // Undo anything you did in the --squirrel-install and
+      // --squirrel-updated handlers
+
+      // Remove desktop and start menu shortcuts
+      spawnUpdate(['--removeShortcut', exeName]);
+
+      setTimeout(app.quit, 1000);
+      return true;
+
+    case '--squirrel-obsolete':
+      // This is called on the outgoing version of your app before
+      // we update to the new version - it's the opposite of
+      // --squirrel-updated
+
+      app.quit();
+      return true;
+  }
+};
+
 app.on('ready', function(){
   createSplashScreen();
 });
@@ -55,6 +124,7 @@ function createSplashScreen () {
     width: 300,
     height: 300,
     show:false,
+    resizable : false,
     frame:false,
     icon: __dirname + '/web/img/tgf/icon_circle.png'
   });
@@ -72,19 +142,36 @@ function createSplashScreen () {
       currentVersion: pjson.version
     }
 
-    const updater = new GhReleases(options)
+    const updater = new GhReleases(options);
 
     // Check for updates
     // `status` returns true if there is a new update available
+    console.log("Looking for update");
     updater.check((err, status) => {
-      if (!err && status) {
+      if(err){
+        console.log("Updater error :");
+        console.log(err);
+      }
+
+      if(status){
+        console.log("Status :");
+        console.log(status);
+      }
+
+      if (status) {
         ipc.emit("splach_message",{message:"Downloading update..."});
         // Download the update
         updater.download();
 
         //no update available, prepare the mainWindow
       } else {
-        splashScreen.webContents.send("splash_message",{message:"Loading..."});
+        if(err){
+          splashScreen.webContents.send("splash_message",{message:"Error while downloading the update..."});
+        }
+        else{
+          splashScreen.webContents.send("splash_message",{message:"Loading..."});
+        }
+
         mainWindow = new BrowserWindow({
           show:false,
           width: 1024,
