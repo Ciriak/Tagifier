@@ -1,12 +1,8 @@
 {
   "name": "tagifier",
-  "version": "1.0.0",
-  "description": "Download Youtube video as tagged mp3 files",
+  "version": "1.0.1",
+  "description": "An advanced Mp3 metadata editor",
   "main": "app.js",
-  "auto-updater": {
-    "repo": "/CYRIAQU3/tagifier",
-    "branch": "master"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CYRIAQU3/tagifier.git"
@@ -28,6 +24,7 @@
     "body-parser": "^1.15.0",
     "browser-id3-writer": "^2.3.1",
     "del": "^2.2.0",
+    "electron-gh-releases": "^2.0.3",
     "fast-image-downloader": "0.0.4",
     "file-exists": "^1.0.0",
     "fluent-ffmpeg": "^2.1.0",

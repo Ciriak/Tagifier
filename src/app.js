@@ -3,41 +3,120 @@
 //
 
 const electron = require('electron');
-const app = electron.app;
+const {app} = require('electron');
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
+const GhReleases = require('electron-gh-releases');
 const ipc = electron.ipcMain;
+let splashScreen
 let mainWindow
-function createWindow () {
-  mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 600,
-    minWidth: 1024,
-    icon: __dirname + '/web/img/tgf/icon_circle.png'
-  });
-  mainWindow.loadURL(`file://${__dirname}/web/index.html`);
+//retreive package.json properties
+var pjson = require('./package.json');
 
-  mainWindow.on('closed', function () {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null
-  });
-}
-app.on('ready', createWindow);
+console.log("Tagifier V."+pjson.version);
+
+app.on('ready', function(){
+  createSplashScreen();
+});
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.quit()
   }
-})
+});
+
+app.on('ready', () => {
+  const {protocol} = require('electron');
+  protocol.registerFileProtocol('tagifier', (request, callback) => {
+    console.log(request);
+    const url = request.url.substr(7);
+    callback({path: path.normalize(__dirname + '/' + url)});
+  }, (error) => {
+    if (error)
+      console.error('Failed to register protocol');
+  });
+});
 
 app.on('activate', function () {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) {
+  if (splashScreen === null) {
     createWindow();
   }
 });
+
+
+//
+// Create the splashscreen
+//
+// Also check for update -> Pre-render the app -> show the app
+
+function createSplashScreen () {
+  splashScreen = new BrowserWindow({
+    width: 300,
+    height: 300,
+    show:false,
+    frame:false,
+    icon: __dirname + '/web/img/tgf/icon_circle.png'
+  });
+
+  splashScreen.loadURL(`file://${__dirname}/web/splash.html`);
+
+  splashScreen.once('ready-to-show', () => {
+    splashScreen.show();
+    splashScreen.webContents.send("tgf_version",{version:pjson.version});
+    splashScreen.webContents.send("splash_message",{message:"Checking for update..."});
+
+    //check for updates
+    let options = {
+      repo: 'Cyriaqu3/tagifier',
+      currentVersion: pjson.version
+    }
+
+    const updater = new GhReleases(options)
+
+    // Check for updates
+    // `status` returns true if there is a new update available
+    updater.check((err, status) => {
+      if (!err && status) {
+        ipc.emit("splach_message",{message:"Downloading update..."});
+        // Download the update
+        updater.download();
+
+        //no update available, prepare the mainWindow
+      } else {
+        splashScreen.webContents.send("splash_message",{message:"Loading..."});
+        mainWindow = new BrowserWindow({
+          show:false,
+          width: 1024,
+          height: 600,
+          minWidth: 1024,
+          icon: __dirname + '/web/img/tgf/icon_circle.png'
+        });
+        mainWindow.loadURL(`file://${__dirname}/web/index.html`);
+        //display the main app and close the
+        mainWindow.once('ready-to-show', () => {
+          splashScreen.close();
+          mainWindow.show();
+          mainWindow.focus();
+        });
+      }
+    });
+
+    // When an update has been downloaded
+    updater.on('update-downloaded', (info) => {
+      // Restart the app and install the update
+      updater.install()
+    })
+
+    // Access electrons autoUpdater
+    updater.autoUpdater
+
+  });
+
+  splashScreen.on('closed', function () {
+    splashScreen = null
+  });
+}
 
 var fs = require('fs-sync');
 var ofs = require('fs');  // old fs
@@ -56,7 +135,7 @@ var sanitize = require("sanitize-filename");
 var ffmpeg = require('fluent-ffmpeg');
 
 //File class
-var File = require("./file.js");
+var File = require(__dirname+"/file.js");
 //
 
 var fidOpt = {
@@ -66,13 +145,13 @@ var fidOpt = {
 
 //set the ffmpeg binary location (path)
 if(os.platform() === 'win32'){
-     var ffmpegPath = './bin/ffmpeg/ffmpeg.exe'
+     var ffmpegPath = __dirname+'/bin/ffmpeg/ffmpeg.exe'
  }else{
-     var ffmpegPath = './bin/ffmpeg/ffmpeg'
+     var ffmpegPath = __dirname+'/bin/ffmpeg/ffmpeg'
  }
 ffmpeg.setFfmpegPath(ffmpegPath);
 // create the "exports" folder
-var p = "./exports";
+var p = __dirname+"/exports";
 if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
@@ -141,7 +220,7 @@ ipc.on('processRequest', function (data) {
     session.files.push(file);
   }
 
-  session.tempPath = "./exports/"+session.id;
+  session.tempPath = __dirname+"/exports/"+session.id;
 
   //create the temp session path
   if (!ofs.existsSync(session.tempPath)){
@@ -277,6 +356,6 @@ var rmDir = function(dirPath, removeSelf) {
 
 
 
-rmDir('./web/img/temps',false);
-rmDir('./exports',false);
+rmDir(__dirname+'/web/img/temps',false);
+rmDir(__dirname+'/exports',false);
 console.log("Temp files cleaned");

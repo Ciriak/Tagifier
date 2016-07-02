@@ -1,4 +1,5 @@
 const electron = require('electron');
+const app = electron.app;
 const ipc = electron.ipcMain;
 var ID3Writer = require('browser-id3-writer');
 var id3Parser = require("id3-parser");
@@ -77,17 +78,18 @@ fileProcess = function (file,callback){
 
 fileTag = function (file,callback){
 
-  var imgPath = "";
   var coverBuffer = "";
-
   var songBuffer = fs.readFileSync(file.uri);
-
   var writer = new ID3Writer(songBuffer);
 
+
+  var imgPath = __dirname+"/web/"+file.pictureUri;
+  console.log(imgPath);
+
   //write cover only if updated
-  if(fileExists(file.pictureUri)){
-    var coverBuffer = fs.readFileSync(file.pictureUri);
-    console.log("Updating cover...");
+  if(fileExists(imgPath)){
+    var coverBuffer = fs.readFileSync(imgPath);
+    console.log("Updating cover from "+imgPath);
     writer.setFrame('APIC', coverBuffer);
   }
 
@@ -105,10 +107,11 @@ fileTag = function (file,callback){
 }
 
 function saveCover(data,path,fileName,callback){
-  var fullPath = "./web/"+path;
+  var fullPath = __dirname+"/web/"+path;
   console.log("Saving the cover to "+fullPath);
-  if (!fs.existsSync("./web/img/temps")){
-    fs.mkdirSync("./web/img/temps");
+  if (!fs.existsSync(__dirname+"/web/img/temps")){
+    console.log("Creating the temps folder...");
+    fs.mkdirSync(__dirname+"/web/img/temps");
   }
   var imgData = new Buffer(data, 'binary').toString('base64');
   fs.writeFile(fullPath+"/"+fileName, imgData, 'base64', function (err,data) {

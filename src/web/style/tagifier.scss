@@ -61,8 +61,8 @@ h2,h3,h4,h5,p{
 }
 
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control{
-	background-color: $darkgrey;
-	color:#9DA5AC;
+	background-color: darken($darkgrey, 5%);
+	color:darken(#9DA5AC, 10%);
 		opacity: 0.5;
 }
 
@@ -588,4 +588,53 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	img{
 		margin: 10px;
 	}
+}
+
+/*
+//					SPLASH SCREEN
+*/
+
+#splash{
+	background-color: $darkgrey;
+	color:#9DA5AC;
+	text-align: center;
+
+	.logo{
+		margin:auto;
+		margin-top: 75px;
+		width: 100px;
+		height:100px;
+		border-radius: 100px;
+		animation-name: splashLogoAnim;
+    animation-duration: 1.3s;
+		animation-iteration-count: infinite;
+	}
+
+	#splash-text{
+		text-align: center;
+		font-family: Arial;
+		position: fixed;
+		bottom: 20px;
+		left: 0px;
+		width: 100%;
+		font-size: 20px;
+	}
+
+	#splash-version{
+		text-align: right;
+		font-family: Arial;
+		position: fixed;
+		top: 0px;
+		right: 0px;
+		padding: 5px;
+		margin:0px;
+		font-size: 10px;
+		opacity: 0.5;
+	}
+}
+
+@keyframes splashLogoAnim {
+    100% {
+			transform: rotateZ(360deg);
+		}
 }
