@@ -83,7 +83,7 @@ fileTag = function (file,callback){
   var writer = new ID3Writer(songBuffer);
 
 
-  var imgPath = __dirname+"/web/"+file.pictureUri;
+  var imgPath = file.pictureUri;
   console.log(imgPath);
 
   //write cover only if updated
@@ -118,7 +118,7 @@ function saveCover(data,path,fileName,callback){
     if (err) {
       callback(err,null);
     }
-    callback(null,path+"/"+fileName);
+    callback(null,fullPath+"/"+fileName);
   });
 
 }
