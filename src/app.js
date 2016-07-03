@@ -151,23 +151,7 @@ function createSplashScreen () {
       if(err){
         ipc.emit("splach_message",{message:err});
         console.log(err);
-      }
-
-      if(status){
-        console.log("Status :");
-        console.log(status);
-      }
-
-      if (status) {
-        ipc.emit("splach_message",{message:"Downloading update..."});
-        // Download the update
-        updater.download();
-
-        //no update available, prepare the mainWindow
-      } else {
-        if(err){
-          splashScreen.webContents.send("splash_message",{message:err.message});
-        }
+        splashScreen.webContents.send("splash_message",{message:"Loading..."});
 
         mainWindow = new BrowserWindow({
           show:false,
@@ -183,6 +167,14 @@ function createSplashScreen () {
           mainWindow.show();
           mainWindow.focus();
         });
+      }
+      //update available
+      else{
+        setInterval(function(){
+          ipc.emit("splach_message",{message:"Downloading update..."});
+        },2000);
+        // Download the update
+        updater.download();
       }
     });
 
