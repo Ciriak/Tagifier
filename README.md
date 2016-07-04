@@ -2,9 +2,9 @@
 
 ### Tagifier is a simple software designed to help you in editing metadata
 
-### [ > Download the latest release](https://github.com/Cyriaqu3/tagifier/releases/tag/1.0.0)
+### [ > Download the latest release](https://github.com/Cyriaqu3/tagifier/releases/tag/1.1.0)
 
-![Album editing](http://i.imgur.com/64MRssJ.jpg)
+![Audio player from 1.1.0](http://i.imgur.com/fFx2RPI.jpg)
 
 Please note that this app is **very young** and a lot of improvements / additional features will come soon like :
 
