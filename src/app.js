@@ -7,6 +7,7 @@ const {app} = require('electron');
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
 const GhReleases = require('electron-gh-releases');
+const commandLineArgs = require('command-line-args')
 const ipc = electron.ipcMain;
 let splashScreen
 let mainWindow
@@ -14,6 +15,15 @@ let mainWindow
 var pjson = require('./package.json');
 
 console.log("Tagifier V."+pjson.version);
+
+
+//define the possible command line args
+const optionDefinitions = [
+  { name: 'files', type: String, multiple: true, defaultOption: true }
+];
+
+//parse the launch options
+const argsOptions = commandLineArgs(optionDefinitions);
 
 
 // Hook the squirrel update events
@@ -151,23 +161,7 @@ function createSplashScreen () {
       if(err){
         ipc.emit("splach_message",{message:err});
         console.log(err);
-      }
-
-      if(status){
-        console.log("Status :");
-        console.log(status);
-      }
-
-      if (status) {
-        ipc.emit("splach_message",{message:"Downloading update..."});
-        // Download the update
-        updater.download();
-
-        //no update available, prepare the mainWindow
-      } else {
-        if(err){
-          splashScreen.webContents.send("splash_message",{message:err.message});
-        }
+        splashScreen.webContents.send("splash_message",{message:"Loading..."});
 
         mainWindow = new BrowserWindow({
           show:false,
@@ -182,7 +176,13 @@ function createSplashScreen () {
           splashScreen.close();
           mainWindow.show();
           mainWindow.focus();
+          checkArgsOptions();
         });
+      }
+      //update available
+      else{
+        // Download the update
+        updater.download();
       }
     });
 
@@ -241,13 +241,26 @@ if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
 
-
+//check if some files were defined at the app launch and automaticly add them
+function checkArgsOptions(){
+  if(argsOptions.files){
+    for (var i = 0; i < argsOptions.files.length; i++) {
+      console.log("Adding a file from "+argsOptions.files[i]);
+      var f = {uri : argsOptions.files[i]};
+      addFile(f);
+    }
+  }
+}
 
 //
 //   FILE ADDED
 //
 
 ipc.on('addFile', function (fileData) {
+  addFile(fileData);
+});
+
+function addFile(fileData){
   console.log("New file added : "+fileData.uri);
   var file = new File();
 
@@ -277,7 +290,7 @@ ipc.on('addFile', function (fileData) {
 
     ipc.emit("file_event",{event:"file_infos",data:file});
   });
-});
+}
 
 //
 //  When the client start the process

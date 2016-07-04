@@ -5,7 +5,8 @@ var app = angular.module('tagifier', [
 'ngSanitize',
 'pascalprecht.translate',
 'cgNotify',
-'angular-electron'
+'angular-electron',
+'ngAudio'
     ]);
 
 app.config(function($stateProvider, $urlRouterProvider) {
