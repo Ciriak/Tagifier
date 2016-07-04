@@ -372,24 +372,47 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	width: 100%;
 	background-color: $darkgrey;
 	border-top: 1px #222222 solid;
-	.player-btn{
-		display: inline-block;
-		i{
-			font-size: 18px;
-		}
-	}
 	.player-cover{
-		float: left;
+		position: relative;
+		float: right;
+		margin-top: -2px;
 		margin-right:10px;
+		margin-left: 10px;
 		width: 40px;
 		height:40px;
+		background-color: #000000;
+		overflow: hidden;
+		cursor: pointer;
 		img{
+			opacity: 0.7;
 			width: 100%;
 			height: 100%;
+			-webkit-filter: blur(3px);
+			transition-duration: 0.3s;
+		}
+		.player-btn{
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			padding: 2px;
+			i{
+				transition-duration: 0.3s;
+				color:rgba(255,255,255,0.8);
+				font-size: 34px;
+			}
+			i:hover{
+				color:rgba(255,255,255,1.0);
+			}
 		}
 	}
 	.player-info{
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow:ellipsis;
+		padding: 5px;
 		display: inline-block;
+		max-width: 155px;
 		h1,h2{
 			font-size: 14px;
 			margin: 0;
@@ -400,11 +423,56 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 		}
 	}
 
+	.player-progress{
+		margin-top: 12px;
+	}
+
 	.volume-btn{
+		cursor: pointer;
+		display: inline-block;
 		i{
+			transition-duration: 0.3s;
 			font-size: 24px;
 			padding: 6px;
 		}
+	}
+
+	.volume-range{
+		transition-duration: 0.3s;
+		opacity: 0;
+		position: absolute;
+		bottom:60px;
+		left: -15px;
+		transform: rotate(-90deg);
+		width: 100px!important;
+	}
+
+	.volume-trigger:hover .volume-range,.volume-range:active{
+		opacity: 1.0;
+	}
+
+	.volume-trigger:hover{
+		.volume-btn{
+			i{
+				color:#ffffff;
+			}
+		}
+	}
+
+	.repeat-btn{
+		cursor: pointer;
+		display: inline-block;
+		opacity: 0.5;
+		transition-duration: 0.3s;
+		i{
+			font-size: 24px;
+			padding: 6px;
+			color:#ffffff;
+		}
+	}
+
+	.repeat-btn.repeat{
+		opacity: 1.0;
 	}
 
 	/* ------------- */
@@ -415,6 +483,7 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	  -webkit-appearance: none;
 	  width: 100%;
 		display: inline-block;
+		background-color: transparent;
 	}
 	input[type=range]:focus {
 	  outline: none;
@@ -425,8 +494,8 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	  cursor: pointer;
 	  animate: 0.2s;
 	  box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-	  background: #ac51b5;
-	  border-radius: 25px;
+	  background: #282C34;
+	  border-radius: 2px;
 	  border: 0px solid #000101;
 	}
 	input[type=range]::-webkit-slider-thumb {
@@ -438,10 +507,9 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	  background: $green;
 	  cursor: pointer;
 	  -webkit-appearance: none;
-	  margin-top: -3.6px;
 	}
 	input[type=range]:focus::-webkit-slider-runnable-track {
-	  background: #ac51b5;
+	  background: #282C34;
 	}
 	input[type=range]::-moz-range-track {
 	  width: 100%;
@@ -449,8 +517,8 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	  cursor: pointer;
 	  animate: 0.2s;
 	  box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-	  background: #ac51b5;
-	  border-radius: 25px;
+	  background: #282C34;
+	  border-radius: 2px;
 	  border: 0px solid #000101;
 	}
 	input[type=range]::-moz-range-thumb {
@@ -458,7 +526,7 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	  border: 0px solid #000000;
 	  height: 20px;
 	  width: 39px;
-	  border-radius: 7px;
+	  border-radius: 2px;
 	  background: $green;
 	  cursor: pointer;
 	}
@@ -473,15 +541,15 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	  color: transparent;
 	}
 	input[type=range]::-ms-fill-lower {
-	  background: #ac51b5;
+	  background: #282C34;
 	  border: 0px solid #000101;
-	  border-radius: 50px;
+	  border-radius: 2px;
 	  box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
 	}
 	input[type=range]::-ms-fill-upper {
-	  background: #ac51b5;
+	  background: #282C34;
 	  border: 0px solid #000101;
-	  border-radius: 50px;
+	  border-radius: 2px;
 	  box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
 	}
 	input[type=range]::-ms-thumb {
@@ -489,15 +557,15 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	  border: 0px solid #000000;
 	  height: 20px;
 	  width: 39px;
-	  border-radius: 7px;
+	  border-radius: 2px;
 	  background: $green;
 	  cursor: pointer;
 	}
 	input[type=range]:focus::-ms-fill-lower {
-	  background: #ac51b5;
+	  background: #282C34;
 	}
 	input[type=range]:focus::-ms-fill-upper {
-	  background: #ac51b5;
+	  background: #282C34;
 	}
 
 }

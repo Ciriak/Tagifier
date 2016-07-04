@@ -102,7 +102,6 @@
 
 
 	<div class="panel col-md-3 info">
-		<audio src="{{exportFiles[playingFileIndex].uri | trustUrl}}" audioplayer controls class="hidden" id="file-player"></audio>
 
 		<div class="col-md-12 file-cover" style="height:{{getDynamicHeight('file-cover')}}px" ng-show="fileAvailable">
 			<img ng-src="{{exportFiles[currentFileIndex].pictureUri}}" />
@@ -119,5 +118,8 @@
 		<!-- Dl button -->
 		<button class="btn btn-primary btn-lg col-md-12" ng-disabled="!canStartProcess" ng-show="fileAvailable" ng-click="requestProcess()" ng-class="{'processing' : processing,'disabled' : !canStartProcess}"><i class="mdi mdi-flash"></i> {{ 'file.process' | translate }}</button>
 	</div>
+
+	<!-- audio player -->
+	<div ng-include="'views/player.html'"></div>
 
 </div>

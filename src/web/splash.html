@@ -30,5 +30,10 @@
       document.getElementById("splash-text").innerHTML = data.message;
     });
 
+    //show the downloading update message after 2 sec
+    setInterval(function(){
+      document.getElementById("splash-text").innerHTML = "Downloading Update...";
+    },3000);
+
   </script>
 </html>

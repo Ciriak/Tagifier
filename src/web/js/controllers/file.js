@@ -1,4 +1,4 @@
-app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams,$translate,$location,notify,dialog,ipcRenderer,shell)
+app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams,$translate,$location,notify,dialog,ipcRenderer,shell,ngAudio)
 {
 	$scope.canStartProcess = false;
 	$scope.processing = false;
@@ -362,20 +362,17 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 
 	$scope.togglePlayer = function(index){
 
-		//define the audio player prop
-		$scope.filePlayer = document.getElementById("file-player");
-
 		if($scope.playingFileIndex !== index){
 			$scope.playingFileIndex = index;
-			$scope.filePlayer.load();
-			$scope.filePlayer.oncanplay = function() {
-				$scope.filePlayer.play();
-				$scope.playerStatus = "play";
-				if(!$scope.$$phase) {
-					$scope.$apply();
-				}
-			};
-
+			if($scope.filePlayer.audio){
+				$scope.filePlayer.audio.pause();
+			}
+			$scope.filePlayer = ngAudio.load($scope.exportFiles[index].uri);
+			$scope.filePlayer.play();
+			$scope.playerStatus = "play";
+			if(!$scope.$$phase) {
+				$scope.$apply();
+			}
 		}
 		else{
 			if($scope.filePlayer.paused){
@@ -386,6 +383,25 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 				$scope.filePlayer.pause();
 				$scope.playerStatus = "pause";
 			}
+		}
+	};
+
+	var lastSavedVol = 1;
+	$scope.togglePlayerMute = function(){
+		if($scope.filePlayer.muted){
+			$scope.filePlayer.muted = false;
+		}
+		else{
+			$scope.filePlayer.muted = true;
+		}
+	};
+
+	$scope.togglePlayerRepeat = function(){
+		if($scope.filePlayer.loop === true){
+			$scope.filePlayer.loop = 0;
+		}
+		else{
+			$scope.filePlayer.loop = true;
 		}
 	}
 

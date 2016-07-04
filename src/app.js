@@ -170,9 +170,6 @@ function createSplashScreen () {
       }
       //update available
       else{
-        setInterval(function(){
-          ipc.emit("splach_message",{message:"Downloading update..."});
-        },2000);
         // Download the update
         updater.download();
       }
