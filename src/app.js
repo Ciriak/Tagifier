@@ -7,6 +7,7 @@ const {app} = require('electron');
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
 const GhReleases = require('electron-gh-releases');
+const commandLineArgs = require('command-line-args')
 const ipc = electron.ipcMain;
 let splashScreen
 let mainWindow
