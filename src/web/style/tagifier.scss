@@ -427,24 +427,27 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 		margin-top: 12px;
 	}
 
-	.volume-btn{
-		cursor: pointer;
+	.volume-trigger{
 		display: inline-block;
-		i{
-			transition-duration: 0.3s;
-			font-size: 24px;
-			padding: 6px;
+		.volume-btn{
+			cursor: pointer;
+			display: inline-block;
+			i{
+				transition-duration: 0.3s;
+				font-size: 24px;
+				padding: 6px;
+			}
 		}
-	}
 
-	.volume-range{
-		transition-duration: 0.3s;
-		opacity: 0;
-		position: absolute;
-		bottom:60px;
-		left: -15px;
-		transform: rotate(-90deg);
-		width: 100px!important;
+		.volume-range{
+			transition-duration: 0.3s;
+			opacity: 0;
+			position: absolute;
+			bottom:60px;
+			left: -15px;
+			transform: rotate(-90deg);
+			width: 100px!important;
+		}
 	}
 
 	.volume-trigger:hover .volume-range,.volume-range:active{
