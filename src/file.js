@@ -26,6 +26,14 @@ function File() {
 
 // retreive informations for the file and return them
 fileRetreiveMetaData = function(file,callback) {
+  if(!file.uri){
+    callback("Invalid uri",null);
+    return;
+  }
+  if(!fileExists(file.uri)){
+    callback("File does not exist",null);
+    return;
+  }
   if(file.external){
     console.log("External");
   }
