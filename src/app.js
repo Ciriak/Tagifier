@@ -94,12 +94,6 @@ function handleSquirrelEvent() {
   }
 };
 
-app.on('ready', function(){
-  createSplashScreen();
-  if(process.platform === 'win32') {
-    registerRegistry();
-  }
-});
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.quit()
@@ -107,15 +101,11 @@ app.on('window-all-closed', function () {
 });
 
 app.on('ready', () => {
-  const {protocol} = require('electron');
-  protocol.registerFileProtocol('tagifier', (request, callback) => {
-    console.log(request);
-    const url = request.url.substr(7);
-    callback({path: path.normalize(__dirname + '/' + url)});
-  }, (error) => {
-    if (error)
-      console.error('Failed to register protocol');
-  });
+  createSplashScreen();
+  if(process.platform === 'win32') {
+    registerRegistry();
+  }
+  registerProtocol();
 });
 
 app.on('activate', function () {
@@ -512,18 +502,18 @@ function registerRegistry(){
     });
 
   });
-  /*var valuesToPut = {
-      'HKCR\\Directory\\Background\\shell\\Tagifier\\command': {
-          'uselessname': {
-              value: '"C:\\Users\\cyria\\AppData\\Local\\tagifier\\app-1.1.0\\Tagifier.exe"',
-              type: 'REG_DEFAULT'
-          }
-      }
-  }
+}
 
-  regedit.putValue(valuesToPut, function(err) {
-    console.log(err);
-  });*/
+function registerProtocol(){
+  const {protocol} = require('electron');
+  protocol.registerFileProtocol('tagifier', (request, callback) => {
+    console.log(request);
+    const url = request.url.substr(7);
+    callback({path: path.normalize(__dirname + '/' + url)});
+  }, (error) => {
+    if (error)
+      console.error('Failed to register protocol');
+  });
 }
 
 
