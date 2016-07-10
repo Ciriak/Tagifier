@@ -7,15 +7,15 @@ const {app} = require('electron');
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
 const GhReleases = require('electron-gh-releases');
-const commandLineArgs = require('command-line-args')
+const commandLineArgs = require('command-line-args');
 const ipc = electron.ipcMain;
+var regedit = require('regedit');
 let splashScreen
 let mainWindow
 //retreive package.json properties
 var pjson = require('./package.json');
 
 console.log("Tagifier V."+pjson.version);
-
 
 //define the possible command line args
 const optionDefinitions = [
@@ -96,6 +96,9 @@ function handleSquirrelEvent() {
 
 app.on('ready', function(){
   createSplashScreen();
+  if(process.platform === 'win32') {
+    registerRegistry();
+  }
 });
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
@@ -451,6 +454,77 @@ var rmDir = function(dirPath, removeSelf) {
   if (removeSelf)
     ofs.rmdirSync(dirPath);
 };
+
+//add contexttual menu inside the windows registry
+function registerRegistry(){
+  var progId;
+  regedit.list('HKCR\\.mp3', function (err, result) {
+    progId = result['HKCR\\.mp3'].values[''].value;
+    var newKeysList = ['HKCR\\*\\shell\\Tagifier',
+    'HKCR\\*\\shell\\Tagifier\\command'];
+
+    regedit.createKey(newKeysList, function(err) {
+      if(err){
+        console.log(err);
+      }else{
+        console.log("Registry keys created / updated");
+      }
+    });
+
+    var exePath = app.getPath("exe");
+    var appPath = app.getAppPath();
+    console.log("path");
+    console.log(exePath);
+
+    var valuesToPut = {
+        [newKeysList[0]]: {
+            'uselessname': {
+                value: 'Open with Tagifier',
+                type: 'REG_DEFAULT'
+            },
+            'icon': {
+                value: '"'+appPath+'\\web\\img\\tgf\\icon_circle.ico"',
+                type: 'REG_SZ'
+            },
+            'AppliesTo': {
+                value: '.mp3',
+                type: 'REG_SZ'
+            }
+        },
+        [newKeysList[1]]: {
+            'uselessname': {
+                value: '"'+exePath+'" --files "%1"',
+                type: 'REG_DEFAULT'
+            }
+        },
+        'HKCU\\Software\\Classes\\.mp3': {
+            'uselessname': {
+                value: progId,
+                type: 'REG_DEFAULT'
+            }
+        }
+    }
+
+    regedit.putValue(valuesToPut, function(err) {
+      if(err){
+        console.log(err);
+      }
+    });
+
+  });
+  /*var valuesToPut = {
+      'HKCR\\Directory\\Background\\shell\\Tagifier\\command': {
+          'uselessname': {
+              value: '"C:\\Users\\cyria\\AppData\\Local\\tagifier\\app-1.1.0\\Tagifier.exe"',
+              type: 'REG_DEFAULT'
+          }
+      }
+  }
+
+  regedit.putValue(valuesToPut, function(err) {
+    console.log(err);
+  });*/
+}
 
 
 
