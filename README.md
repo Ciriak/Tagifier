@@ -2,7 +2,7 @@
 
 ### Tagifier is a simple software designed to help you in editing metadata
 
-### [ > Download the latest release](https://github.com/Cyriaqu3/tagifier/releases/tag/1.1.0)
+### [ > Download the latest release](https://github.com/Cyriaqu3/tagifier/releases/latest)
 
 ![Audio player from 1.1.0](http://i.imgur.com/fFx2RPI.jpg)
 
