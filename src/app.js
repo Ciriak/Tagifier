@@ -102,6 +102,8 @@ app.on('window-all-closed', function () {
 
 app.on('ready', () => {
   createSplashScreen();
+
+  //write in the registry if windows OS
   if(process.platform === 'win32') {
     registerRegistry();
   }

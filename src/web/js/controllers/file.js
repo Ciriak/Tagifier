@@ -116,6 +116,12 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 		$scope.exportFiles.splice(fileIndex, 1);
 
+		//if the "player file" is the removed one
+		if(fileIndex === $scope.playingFileIndex){
+			$scope.filePlayer.audio.pause();
+			$scope.playingFileIndex = null;
+		}
+
 		//If their is only one file remaining
 		if($scope.exportFiles.length == 1){
 			$scope.singleFile = true;
