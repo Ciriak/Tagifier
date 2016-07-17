@@ -113,6 +113,11 @@
 			<div class="set-cover-btn" ng-click="setCoverImage(currentFileIndex)" uib-tooltip="{{ 'file.cover' | translate }}" tooltip-placement="bottom">
 				<i class="mdi mdi-image"></i>
 			</div>
+
+			<div class="set-cover-all-btn" ng-hide="singleFile" ng-click="overrideProp('pictureUri',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}">
+				<i class="mdi mdi-assistant"></i>
+			</div>
+
 		</div>
 
 		<!-- Dl button -->
