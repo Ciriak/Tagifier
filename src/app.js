@@ -43,7 +43,7 @@ function handleSquirrelEvent() {
   const appFolder = path.resolve(process.execPath, '..');
   const rootAtomFolder = path.resolve(appFolder, '..');
   const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
-  const exeName = pjson.name+".exe";
+  const exeName = "Tagifier.exe";
 
   const spawn = function(command, args) {
     let spawnedProcess, error;
