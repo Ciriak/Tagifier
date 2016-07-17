@@ -127,6 +127,7 @@ gulp.task('create-windows-installer',function(){
     authors: 'Cyriaque DELAUNAY',
     setupIcon : './src/web/img/tgf/icon_setup.ico',
     exe: 'Tagifier.exe',
+    setupExe:'Setup.exe',
     noMsi : true,
     title : 'Tagifier'
   });
