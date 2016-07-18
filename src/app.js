@@ -23,7 +23,7 @@ const optionDefinitions = [
 ];
 
 //parse the launch options
-const argsOptions = commandLineArgs(optionDefinitions);
+var argsOptions = commandLineArgs(optionDefinitions);
 
 
 // Hook the squirrel update events
@@ -100,6 +100,25 @@ app.on('window-all-closed', function () {
   }
 });
 
+//check if another instance exist
+// if exist, sent it the command line arguments and focus the window
+const shouldQuit = app.makeSingleInstance((args, workingDirectory) => {
+  // Someone tried to run a second instance, we should focus our window.
+  if (mainWindow) {
+    if (mainWindow.isMinimized()){
+      mainWindow.restore();
+    }
+    mainWindow.focus();
+    var parsedArgs = commandLineArgs(optionDefinitions, args);
+    checkArgsOptions(parsedArgs);
+  }
+});
+
+if (shouldQuit) {
+  app.quit();
+  return;
+}
+
 app.on('ready', () => {
   createSplashScreen();
 
@@ -171,7 +190,7 @@ function createSplashScreen () {
           splashScreen.close();
           mainWindow.show();
           mainWindow.focus();
-          checkArgsOptions();
+          checkArgsOptions(argsOptions);
         });
       }
       //update available
@@ -237,13 +256,23 @@ if (!ofs.existsSync(p)){
 }
 
 //check if some files were defined at the app launch and automaticly add them
-function checkArgsOptions(){
-  if(argsOptions.files){
-    for (var i = 0; i < argsOptions.files.length; i++) {
-      console.log("Adding a file from "+argsOptions.files[i]);
-      var f = {uri : argsOptions.files[i]};
-      addFile(f);
+function checkArgsOptions(arguments){
+  console.log("Checking given launch arguments...");
+  if(arguments.files){
+    console.log(arguments);
+    for (var i = 0; i < arguments.files.length; i++) {
+      console.log("Adding a file from "+arguments.files[i]);
+      var f = {uri : arguments.files[i]};
+      if(path.extname(f.uri) === ".mp3"){
+        addFile(f);
+      }
+      else{
+        console.log("The file is not a mp3 file !");
+      }
     }
+  }
+  else{
+    console.log("... none");
   }
 }
 
