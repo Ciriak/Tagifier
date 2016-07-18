@@ -68,6 +68,11 @@ function handleSquirrelEvent() {
       // - Write to the registry for things like file associations and
       //   explorer context menus
 
+      //write in the registry if windows OS
+      if(process.platform === 'win32') {
+        registerRegistry();
+      }
+
       // Install desktop and start menu shortcuts
       spawnUpdate(['--createShortcut', exeName]);
 
@@ -101,16 +106,15 @@ app.on('window-all-closed', function () {
 });
 
 //check if another instance exist
-// if exist, sent it the command line arguments and focus the window
+// if exist, send it the command line arguments and focus the window
 const shouldQuit = app.makeSingleInstance((args, workingDirectory) => {
-  // Someone tried to run a second instance, we should focus our window.
+  var parsedArgs = commandLineArgs(optionDefinitions, args);
+  checkArgsOptions(parsedArgs);
   if (mainWindow) {
     if (mainWindow.isMinimized()){
       mainWindow.restore();
     }
     mainWindow.focus();
-    var parsedArgs = commandLineArgs(optionDefinitions, args);
-    checkArgsOptions(parsedArgs);
   }
 });
 
