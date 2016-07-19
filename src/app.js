@@ -9,11 +9,36 @@ const BrowserWindow = electron.BrowserWindow;
 const GhReleases = require('electron-gh-releases');
 const commandLineArgs = require('command-line-args');
 const ipc = electron.ipcMain;
+const ChildProcess = require('child_process');
+const path = require('path');
+const appFolder = path.resolve(process.execPath, '..');
+const rootAtomFolder = path.resolve(appFolder, '..');
+const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+const exeName = "Tagifier.exe";
 var regedit = require('regedit');
 let splashScreen
 let mainWindow
 //retreive package.json properties
 var pjson = require('./package.json');
+
+
+var fs = require('fs-sync');
+var ofs = require('fs');  // old fs
+var util = require('util');
+var port = 80;
+var request = require('request');
+var id3 = require('node-id3');
+var random = require('random-gen');
+var os = require('os');
+var _ = require('lodash');
+var async = require('async');
+var bodyParser = require('body-parser');
+var fid = require('fast-image-downloader');
+var sanitize = require("sanitize-filename");
+var ffmpeg = require('fluent-ffmpeg');
+
+//File class
+var File = require(__dirname+"/file.js");
 
 console.log("Tagifier V."+pjson.version);
 
@@ -24,6 +49,8 @@ const optionDefinitions = [
 
 //parse the launch options
 var argsOptions = commandLineArgs(optionDefinitions);
+
+singleInstanceChecker();
 
 
 // Hook the squirrel update events
@@ -36,14 +63,6 @@ function handleSquirrelEvent() {
   if (process.argv.length === 1) {
     return false;
   }
-
-  const ChildProcess = require('child_process');
-  const path = require('path');
-
-  const appFolder = path.resolve(process.execPath, '..');
-  const rootAtomFolder = path.resolve(appFolder, '..');
-  const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
-  const exeName = "Tagifier.exe";
 
   const spawn = function(command, args) {
     let spawnedProcess, error;
@@ -105,23 +124,7 @@ app.on('window-all-closed', function () {
   }
 });
 
-//check if another instance exist
-// if exist, send it the command line arguments and focus the window
-const shouldQuit = app.makeSingleInstance((args, workingDirectory) => {
-  var parsedArgs = commandLineArgs(optionDefinitions, args);
-  checkArgsOptions(parsedArgs);
-  if (mainWindow) {
-    if (mainWindow.isMinimized()){
-      mainWindow.restore();
-    }
-    mainWindow.focus();
-  }
-});
 
-if (shouldQuit) {
-  app.quit();
-  return;
-}
 
 app.on('ready', () => {
   createSplashScreen();
@@ -220,25 +223,6 @@ function createSplashScreen () {
     splashScreen = null
   });
 }
-
-var fs = require('fs-sync');
-var ofs = require('fs');  // old fs
-var util = require('util');
-var port = 80;
-var request = require('request');
-var id3 = require('node-id3');
-var random = require('random-gen');
-var os = require('os');
-var _ = require('lodash');
-var async = require('async');
-var bodyParser = require('body-parser');
-var fid = require('fast-image-downloader');
-var path = require('path');
-var sanitize = require("sanitize-filename");
-var ffmpeg = require('fluent-ffmpeg');
-
-//File class
-var File = require(__dirname+"/file.js");
 //
 
 var fidOpt = {
@@ -540,6 +524,26 @@ function registerRegistry(){
     });
 
   });
+}
+
+function singleInstanceChecker(){
+  //check if another instance exist
+  // if exist, send it the command line arguments and focus the window
+  const shouldQuit = app.makeSingleInstance((args, workingDirectory) => {
+    var parsedArgs = commandLineArgs(optionDefinitions, args);
+    checkArgsOptions(parsedArgs);
+    if (mainWindow) {
+      if (mainWindow.isMinimized()){
+        mainWindow.restore();
+      }
+      mainWindow.focus();
+    }
+  });
+
+  if (shouldQuit) {
+    app.quit();
+    return;
+  }
 }
 
 function registerProtocol(){

@@ -1,3 +1,2 @@
 -- Fix Shortcut name
 -- Player sound
--- UAC request
