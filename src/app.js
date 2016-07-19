@@ -483,10 +483,13 @@ var rmDir = function(dirPath, removeSelf) {
 //add contexttual menu inside the windows registry
 function registerRegistry(){
   var progId;
-  regedit.list('HKCR\\.mp3', function (err, result) {
-    progId = result['HKCR\\.mp3'].values[''].value;
-    var newKeysList = ['HKCR\\*\\shell\\Tagifier',
-    'HKCR\\*\\shell\\Tagifier\\command'];
+  regedit.list('HKCU\\SOFTWARE\\Classes\\.mp3', function (err, result) {
+    if(err){
+      console.log(err);
+    }
+    progId = result['HKCU\\SOFTWARE\\Classes\\.mp3'].values[''].value;
+    var newKeysList = ['HKCU\\SOFTWARE\\Classes\\*\\shell\\Tagifier',
+    'HKCU\\SOFTWARE\\Classes\\*\\shell\\Tagifier\\command'];
 
     regedit.createKey(newKeysList, function(err) {
       if(err){
