@@ -505,7 +505,7 @@ function registerRegistry(){
         },
         [newKeysList[1]]: {
             'uselessname': {
-                value: '"'+exePath+'" --files "%*"',
+                value: '"'+exePath+'" --files "%1"',
                 type: 'REG_DEFAULT'
             }
         },
