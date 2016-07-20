@@ -7,15 +7,41 @@ const {app} = require('electron');
 const Menu = electron.Menu;
 const BrowserWindow = electron.BrowserWindow;
 const GhReleases = require('electron-gh-releases');
-const commandLineArgs = require('command-line-args')
+const commandLineArgs = require('command-line-args');
 const ipc = electron.ipcMain;
+const ChildProcess = require('child_process');
+const path = require('path');
+const appFolder = path.resolve(process.execPath, '..');
+const rootAtomFolder = path.resolve(appFolder, '..');
+const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+const exeName = "Tagifier.exe";
+var regedit = require('regedit');
 let splashScreen
 let mainWindow
 //retreive package.json properties
 var pjson = require('./package.json');
 
-console.log("Tagifier V."+pjson.version);
 
+var fs = require('fs-sync');
+var ofs = require('fs');  // old fs
+var util = require('util');
+var port = 80;
+var request = require('request');
+var id3 = require('node-id3');
+var random = require('random-gen');
+var os = require('os');
+var _ = require('lodash');
+var async = require('async');
+var bodyParser = require('body-parser');
+var fid = require('fast-image-downloader');
+var sanitize = require("sanitize-filename");
+var ffmpeg = require('fluent-ffmpeg');
+var ws = require('windows-shortcuts');
+
+//File class
+var File = require(__dirname+"/file.js");
+
+console.log("Tagifier V."+pjson.version);
 
 //define the possible command line args
 const optionDefinitions = [
@@ -23,7 +49,9 @@ const optionDefinitions = [
 ];
 
 //parse the launch options
-const argsOptions = commandLineArgs(optionDefinitions);
+var argsOptions = commandLineArgs(optionDefinitions);
+
+singleInstanceChecker();
 
 
 // Hook the squirrel update events
@@ -36,14 +64,6 @@ function handleSquirrelEvent() {
   if (process.argv.length === 1) {
     return false;
   }
-
-  const ChildProcess = require('child_process');
-  const path = require('path');
-
-  const appFolder = path.resolve(process.execPath, '..');
-  const rootAtomFolder = path.resolve(appFolder, '..');
-  const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
-  const exeName = path.basename(process.execPath);
 
   const spawn = function(command, args) {
     let spawnedProcess, error;
@@ -60,6 +80,11 @@ function handleSquirrelEvent() {
   };
 
   const squirrelEvent = process.argv[1];
+
+  var exePath = app.getPath("exe");
+  var lnkPath = ["%APPDATA%/Microsoft/Windows/Start Menu/Programs/Tagifier.lnk",
+  "%UserProfile%/Desktop/Tagifier.lnk"];
+
   switch (squirrelEvent) {
     case '--squirrel-install':
     case '--squirrel-updated':
@@ -68,18 +93,41 @@ function handleSquirrelEvent() {
       // - Write to the registry for things like file associations and
       //   explorer context menus
 
-      // Install desktop and start menu shortcuts
-      spawnUpdate(['--createShortcut', exeName]);
+      //write in the registry if windows OS
+      if(process.platform === 'win32') {
+        registerRegistry();
+      }
 
+      // Install desktop and start menu shortcuts
+
+
+      //create windows shortcuts
+      if(process.platform === 'win32') {
+        for (var i = 0; i < lnkPath.length; i++) {
+          ws.create(lnkPath[i], {
+              target : exePath,
+              desc : pjson.description
+          });
+        }
+      }
       setTimeout(app.quit, 1000);
       return true;
 
     case '--squirrel-uninstall':
       // Undo anything you did in the --squirrel-install and
       // --squirrel-updated handlers
+      spawnUpdate(['--removeShortcut', exeName]);
 
       // Remove desktop and start menu shortcuts
-      spawnUpdate(['--removeShortcut', exeName]);
+      if(process.platform === 'win32') {
+        for (var i = 0; i < lnkPath.length; i++) {
+          ofs.access(lnkPath[i], ofs.F_OK, function(err) {
+              if (!err) {
+                ofs.unlink(lnkPath[i]);
+              }
+          });
+        }
+      }
 
       setTimeout(app.quit, 1000);
       return true;
@@ -94,25 +142,22 @@ function handleSquirrelEvent() {
   }
 };
 
-app.on('ready', function(){
-  createSplashScreen();
-});
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 });
 
+
+
 app.on('ready', () => {
-  const {protocol} = require('electron');
-  protocol.registerFileProtocol('tagifier', (request, callback) => {
-    console.log(request);
-    const url = request.url.substr(7);
-    callback({path: path.normalize(__dirname + '/' + url)});
-  }, (error) => {
-    if (error)
-      console.error('Failed to register protocol');
-  });
+  createSplashScreen();
+
+  //write in the registry if windows OS
+  if(process.platform === 'win32') {
+    registerRegistry();
+  }
+  registerProtocol();
 });
 
 app.on('activate', function () {
@@ -176,7 +221,7 @@ function createSplashScreen () {
           splashScreen.close();
           mainWindow.show();
           mainWindow.focus();
-          checkArgsOptions();
+          checkArgsOptions(argsOptions);
         });
       }
       //update available
@@ -202,25 +247,6 @@ function createSplashScreen () {
     splashScreen = null
   });
 }
-
-var fs = require('fs-sync');
-var ofs = require('fs');  // old fs
-var util = require('util');
-var port = 80;
-var request = require('request');
-var id3 = require('node-id3');
-var random = require('random-gen');
-var os = require('os');
-var _ = require('lodash');
-var async = require('async');
-var bodyParser = require('body-parser');
-var fid = require('fast-image-downloader');
-var path = require('path');
-var sanitize = require("sanitize-filename");
-var ffmpeg = require('fluent-ffmpeg');
-
-//File class
-var File = require(__dirname+"/file.js");
 //
 
 var fidOpt = {
@@ -242,13 +268,23 @@ if (!ofs.existsSync(p)){
 }
 
 //check if some files were defined at the app launch and automaticly add them
-function checkArgsOptions(){
-  if(argsOptions.files){
-    for (var i = 0; i < argsOptions.files.length; i++) {
-      console.log("Adding a file from "+argsOptions.files[i]);
-      var f = {uri : argsOptions.files[i]};
-      addFile(f);
+function checkArgsOptions(arguments){
+  console.log("Checking given launch arguments...");
+  if(arguments.files){
+    console.log(arguments);
+    for (var i = 0; i < arguments.files.length; i++) {
+      console.log("Adding a file from "+arguments.files[i]);
+      var f = {uri : arguments.files[i]};
+      if(path.extname(f.uri) === ".mp3"){
+        addFile(f);
+      }
+      else{
+        console.log("The file is not a mp3 file !");
+      }
     }
+  }
+  else{
+    console.log("... none");
   }
 }
 
@@ -451,6 +487,100 @@ var rmDir = function(dirPath, removeSelf) {
   if (removeSelf)
     ofs.rmdirSync(dirPath);
 };
+
+//add contexttual menu inside the windows registry
+function registerRegistry(){
+  var progId;
+  regedit.list('HKCU\\SOFTWARE\\Classes\\.mp3', function (err, result) {
+    if(err){
+      console.log(err);
+    }
+    progId = result['HKCU\\SOFTWARE\\Classes\\.mp3'].values[''].value;
+    var newKeysList = ['HKCU\\SOFTWARE\\Classes\\*\\shell\\Tagifier',
+    'HKCU\\SOFTWARE\\Classes\\*\\shell\\Tagifier\\command'];
+
+    regedit.createKey(newKeysList, function(err) {
+      if(err){
+        console.log(err);
+      }else{
+        console.log("Registry keys created / updated");
+      }
+    });
+
+    var exePath = app.getPath("exe");
+    var appPath = app.getAppPath();
+    console.log("path");
+    console.log(exePath);
+
+    var valuesToPut = {
+        [newKeysList[0]]: {
+            'uselessname': {
+                value: 'Open with Tagifier',
+                type: 'REG_DEFAULT'
+            },
+            'icon': {
+                value: '"'+appPath+'\\web\\img\\tgf\\icon_circle.ico"',
+                type: 'REG_SZ'
+            },
+            'AppliesTo': {
+                value: '.mp3',
+                type: 'REG_SZ'
+            }
+        },
+        [newKeysList[1]]: {
+            'uselessname': {
+                value: '"'+exePath+'" --files "%1"',
+                type: 'REG_DEFAULT'
+            }
+        },
+        'HKCU\\Software\\Classes\\.mp3': {
+            'uselessname': {
+                value: progId,
+                type: 'REG_DEFAULT'
+            }
+        }
+    }
+
+    regedit.putValue(valuesToPut, function(err) {
+      if(err){
+        console.log(err);
+      }
+    });
+
+  });
+}
+
+function singleInstanceChecker(){
+  //check if another instance exist
+  // if exist, send it the command line arguments and focus the window
+  const shouldQuit = app.makeSingleInstance((args, workingDirectory) => {
+    var parsedArgs = commandLineArgs(optionDefinitions, args);
+    checkArgsOptions(parsedArgs);
+    if (mainWindow) {
+      if (mainWindow.isMinimized()){
+        mainWindow.restore();
+      }
+      mainWindow.focus();
+    }
+  });
+
+  if (shouldQuit) {
+    app.quit();
+    return;
+  }
+}
+
+function registerProtocol(){
+  const {protocol} = require('electron');
+  protocol.registerFileProtocol('tagifier', (request, callback) => {
+    console.log(request);
+    const url = request.url.substr(7);
+    callback({path: path.normalize(__dirname + '/' + url)});
+  }, (error) => {
+    if (error)
+      console.error('Failed to register protocol');
+  });
+}
 
 
 

@@ -133,6 +133,12 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.setCurrentFile(0);
 		}
 
+		//if the "player file" is the removed one
+		if(fileIndex === $scope.playingFileIndex){
+			$scope.filePlayer.audio.pause();
+			$scope.playingFileIndex = null;
+		}
+
 		if(!$scope.$$phase) {
 			$scope.$apply();
 		}
@@ -388,11 +394,11 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 
 	var lastSavedVol = 1;
 	$scope.togglePlayerMute = function(){
-		if($scope.filePlayer.muted){
-			$scope.filePlayer.muted = false;
+		if($scope.filePlayer.muting){
+			$scope.filePlayer.muting = false;
 		}
 		else{
-			$scope.filePlayer.muted = true;
+			$scope.filePlayer.muting = true;
 		}
 	};
 

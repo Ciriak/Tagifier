@@ -125,11 +125,15 @@ gulp.task('create-windows-installer',function(){
     appDirectory: './build/tagifier-win32-x64',
     outputDirectory: './release',
     authors: 'Cyriaque DELAUNAY',
-    setupIcon : './src/web/img/tgf/icon_setup.ico',
+    iconUrl: __dirname+'/dist/web/img/tgf/icon_circle.ico',
+    setupIcon : './dist/web/img/tgf/icon_setup.ico',
     exe: 'Tagifier.exe',
+    setupExe:'Setup.exe',
     noMsi : true,
     title : 'Tagifier'
   });
+
+  console.log(iconUrl);
 
 resultPromise.then(() => console.log("It worked!"), (e) => console.log(`No dice: ${e.message}`));
 

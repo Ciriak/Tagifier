@@ -58,15 +58,6 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
 
     var template = [
       {
-        label: 'File',
-        submenu: [
-          {
-            label: 'New task',
-            click : function() { $state.go('main'); }
-          }
-        ]
-      },
-      {
         label: 'About',
         role: 'about',
         submenu: [
