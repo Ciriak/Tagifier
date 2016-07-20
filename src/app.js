@@ -36,6 +36,7 @@ var bodyParser = require('body-parser');
 var fid = require('fast-image-downloader');
 var sanitize = require("sanitize-filename");
 var ffmpeg = require('fluent-ffmpeg');
+var ws = require('windows-shortcuts');
 
 //File class
 var File = require(__dirname+"/file.js");
@@ -79,6 +80,10 @@ function handleSquirrelEvent() {
   };
 
   const squirrelEvent = process.argv[1];
+
+  var exePath = app.getPath("exe");
+  var lnkPath = "%APPDATA%/Microsoft/Windows/Start Menu/Programs/Tagifier.lnk";
+
   switch (squirrelEvent) {
     case '--squirrel-install':
     case '--squirrel-updated':
@@ -93,7 +98,10 @@ function handleSquirrelEvent() {
       }
 
       // Install desktop and start menu shortcuts
-      spawnUpdate(['--createShortcut', exeName]);
+
+
+
+      ws.create(lnkPath, exePath);
 
       setTimeout(app.quit, 1000);
       return true;
@@ -103,6 +111,11 @@ function handleSquirrelEvent() {
       // --squirrel-updated handlers
 
       // Remove desktop and start menu shortcuts
+      fs.access(lnkPath, fs.F_OK, function(err) {
+          if (!err) {
+            fs.unlink(lnkPath);
+          }
+      });
       spawnUpdate(['--removeShortcut', exeName]);
 
       setTimeout(app.quit, 1000);
