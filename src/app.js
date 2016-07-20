@@ -82,7 +82,8 @@ function handleSquirrelEvent() {
   const squirrelEvent = process.argv[1];
 
   var exePath = app.getPath("exe");
-  var lnkPath = "%APPDATA%/Microsoft/Windows/Start Menu/Programs/Tagifier.lnk";
+  var lnkPath = ["%APPDATA%/Microsoft/Windows/Start Menu/Programs/Tagifier.lnk",
+  "%UserProfile%/Desktop/Tagifier.lnk"];
 
   switch (squirrelEvent) {
     case '--squirrel-install':
@@ -100,23 +101,33 @@ function handleSquirrelEvent() {
       // Install desktop and start menu shortcuts
 
 
-
-      ws.create(lnkPath, exePath);
-
+      //create windows shortcuts
+      if(process.platform === 'win32') {
+        for (var i = 0; i < lnkPath.length; i++) {
+          ws.create(lnkPath[i], {
+              target : exePath,
+              desc : pjson.description
+          });
+        }
+      }
       setTimeout(app.quit, 1000);
       return true;
 
     case '--squirrel-uninstall':
       // Undo anything you did in the --squirrel-install and
       // --squirrel-updated handlers
+      spawnUpdate(['--removeShortcut', exeName]);
 
       // Remove desktop and start menu shortcuts
-      fs.access(lnkPath, fs.F_OK, function(err) {
-          if (!err) {
-            fs.unlink(lnkPath);
-          }
-      });
-      spawnUpdate(['--removeShortcut', exeName]);
+      if(process.platform === 'win32') {
+        for (var i = 0; i < lnkPath.length; i++) {
+          ofs.access(lnkPath[i], ofs.F_OK, function(err) {
+              if (!err) {
+                ofs.unlink(lnkPath[i]);
+              }
+          });
+        }
+      }
 
       setTimeout(app.quit, 1000);
       return true;
