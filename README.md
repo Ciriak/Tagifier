@@ -17,7 +17,7 @@ Please note that this app is **very young** and a lot of improvements / addition
 **Any suggestion / Bug ?**
 [Please, report them here](https://github.com/Cyriaqu3/tagifier/issues)
 
-## Develoment
+## Development
 
 ### Prerequisites
 
