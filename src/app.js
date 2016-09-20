@@ -34,6 +34,7 @@ var _ = require('lodash');
 var async = require('async');
 var bodyParser = require('body-parser');
 var fid = require('fast-image-downloader');
+var isOnline = require('is-online');
 var sanitize = require("sanitize-filename");
 var ffmpeg = require('fluent-ffmpeg');
 var ws = require('windows-shortcuts');
@@ -191,6 +192,15 @@ function createSplashScreen () {
     splashScreen.webContents.send("tgf_version",{version:pjson.version});
     splashScreen.webContents.send("splash_message",{message:"Checking for update..."});
 
+
+    //if the user is not connected,
+    isOnline(function(err, online) {
+      if(!online){
+        console.log("Not online : passing update check");
+        openApp();
+      }
+    });
+
     //check for updates
     let options = {
       repo: 'Cyriaqu3/tagifier',
@@ -204,25 +214,9 @@ function createSplashScreen () {
     console.log("Looking for update");
     updater.check((err, status) => {
       if(err){
-        ipc.emit("splach_message",{message:err});
         console.log(err);
         splashScreen.webContents.send("splash_message",{message:"Loading..."});
-
-        mainWindow = new BrowserWindow({
-          show:false,
-          width: 1024,
-          height: 600,
-          minWidth: 1024,
-          icon: __dirname + '/web/img/tgf/icon_circle.png'
-        });
-        mainWindow.loadURL(`file://${__dirname}/web/index.html`);
-        //display the main app and close the
-        mainWindow.once('ready-to-show', () => {
-          splashScreen.close();
-          mainWindow.show();
-          mainWindow.focus();
-          checkArgsOptions(argsOptions);
-        });
+        openApp();
       }
       //update available
       else{
@@ -247,7 +241,25 @@ function createSplashScreen () {
     splashScreen = null
   });
 }
-//
+
+//open the tagifier main process
+function openApp(){
+  var mainWindow = new BrowserWindow({
+    show:false,
+    width: 1024,
+    height: 600,
+    minWidth: 1024,
+    icon: __dirname + '/web/img/tgf/icon_circle.png'
+  });
+  mainWindow.loadURL(`file://${__dirname}/web/index.html`);
+  //display the main app and close the
+  mainWindow.once('ready-to-show', () => {
+    splashScreen.close();
+    mainWindow.show();
+    mainWindow.focus();
+    checkArgsOptions(argsOptions);
+  });
+}
 
 var fidOpt = {
   TIMEOUT : 2000, // timeout in ms
@@ -271,7 +283,6 @@ if (!ofs.existsSync(p)){
 function checkArgsOptions(arguments){
   console.log("Checking given launch arguments...");
   if(arguments.files){
-    console.log(arguments);
     for (var i = 0; i < arguments.files.length; i++) {
       console.log("Adding a file from "+arguments.files[i]);
       var f = {uri : arguments.files[i]};
