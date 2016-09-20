@@ -30,7 +30,8 @@
     "retreivingInfosSub" : "It may take a while...",
     "addFileButtonLabel" : "Add File",
     "removeFile" : "Remove this file from the list",
-    "process" : "Save"
+    "process" : "Save",
+    "removeFromDisk" : "Remove this file from the disk"
   },
   "about" : {
     "description" : "The ultimate Mp3 tool"

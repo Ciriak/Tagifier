@@ -100,6 +100,32 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			}
 		}
 
+		// try to retreive info from musicbrainz API
+
+		//Ex : http://musicbrainz.org/ws/2/recording/?query="Spider Dance"artist:"Toby fox"album&fmt=json
+
+		// build the query URL
+		var qUrl = "http://musicbrainz.org/ws/2/recording/?fmt=json&query=";
+		if($scope.exportFiles[index].title != ""){
+			qUrl = qUrl+'title:"'+$scope.exportFiles[index].title+'"';
+		}
+
+		if($scope.exportFiles[index].artist != ""){
+			qUrl = qUrl+'artist:"'+$scope.exportFiles[index].artist+'"';
+		}
+
+		if($scope.exportFiles[index].album != ""){
+			qUrl = qUrl+'album:"'+$scope.exportFiles[index].album+'"';
+		}
+
+		console.log(qUrl);
+
+		$http({
+		  method: 'GET',
+		  url: qUrl
+		}).then(function(response) {
+			console.log(response.data.recordings);
+		});
 	};
 
 	$scope.retreiveInfoError = function(){
