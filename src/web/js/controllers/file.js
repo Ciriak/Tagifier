@@ -124,7 +124,9 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		  method: 'GET',
 		  url: qUrl
 		}).then(function(response) {
+			//try to retreive the covers
 			$scope.exportFiles[index].suggestions = parseSuggestions(response.data.recordings);
+			$scope.retreiveSuggestionCovers(index, response.data.recordings);
 		});
 	};
 
@@ -498,6 +500,30 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			};
 		}
 	};
+
+	//try to retreive some cover suggestions
+	$scope.retreiveSuggestionCovers = function(fileIndex, recordings){
+		$scope.exportFiles[fileIndex].suggestions.covers = [];
+		var sc = $scope.exportFiles[fileIndex].suggestions.covers;
+
+		for (var i = 0; i < recordings.length; i++) {
+			var qUrl = "http://coverartarchive.org/release/%/front";
+			if(recordings[i]["releases"]){
+				var id = recordings[i]["releases"][0].id;
+				qUrl = qUrl.replace("%", id);
+				$http({
+				  method: 'GET',
+				  url: qUrl
+				}).then(function successCallback(response) {
+					//add the cover to the url list
+					if(_.indexOf(sc, qUrl) === -1 && sc.length <= 7){
+						sc.push(qUrl);
+					}
+				});
+			}
+		}
+	}
+
 });
 
 // parse the suggested tags (prevent the duplicates values)
@@ -505,29 +531,49 @@ var parseSuggestions = function(recordings){
 	var r = {
 		artists: [],
 		tracks: [],
-		albums: []
+		albums: [],
+		years: [],
+		titles: []
 	};
 
 	for (var i = 0; i < recordings.length; i++) {
 
+		//Title tag
+		if(recordings[i]["title"]){
+			var av = recordings[i]["title"];
+			if(_.indexOf(r.titles, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.titles.length <= 7){
+				r.titles.push(av);
+			}
+		}
+
 		//Artist tag
-		var av = recordings[i]["artist-credit"][0].artist.name;
-		if(_.indexOf(r.artists, av) === -1){
-			r.artists.push(av);
+		if(recordings[i]["artist-credit"]){
+			var av = recordings[i]["artist-credit"][0].artist.name;
+			if(_.indexOf(r.artists, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.artists.length <= 7){
+				r.artists.push(av);
+			}
 		}
 
 		//album tag
 		if(recordings[i]["releases"]){
 			var av = recordings[i]["releases"][0].title;
-			if(_.indexOf(r.albums, av) === -1){
+			if(_.indexOf(r.albums, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.albums.length <= 7){
 				r.albums.push(av);
+			}
+		}
+
+		//year tag
+		if(recordings[i]["releases"]){
+			var d = new Date(recordings[i]["releases"][0].date);
+			var av = d.getFullYear();
+			if(_.indexOf(r.years, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.years.length <= 7){
+				r.years.push(av);
 			}
 		}
 
 	}
 
 	//return the suggestions list
-	console.log(r);
 	return r;
 };
 
