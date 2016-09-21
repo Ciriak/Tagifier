@@ -197,7 +197,7 @@ function createSplashScreen () {
     isOnline(function(err, online) {
       if(!online){
         console.log("Not online : passing update check");
-        openApp();
+        openApp(splashScreen);
       }
     });
 
@@ -216,7 +216,7 @@ function createSplashScreen () {
       if(err){
         console.log(err);
         splashScreen.webContents.send("splash_message",{message:"Loading..."});
-        openApp();
+        openApp(splashScreen);
       }
       //update available
       else{
@@ -243,7 +243,7 @@ function createSplashScreen () {
 }
 
 //open the tagifier main process
-function openApp(){
+function openApp(sc){
   var mainWindow = new BrowserWindow({
     show:false,
     width: 1024,
@@ -254,7 +254,7 @@ function openApp(){
   mainWindow.loadURL(`file://${__dirname}/web/index.html`);
   //display the main app and close the
   mainWindow.once('ready-to-show', () => {
-    splashScreen.close();
+    sc.close();
     mainWindow.show();
     mainWindow.focus();
     checkArgsOptions(argsOptions);
