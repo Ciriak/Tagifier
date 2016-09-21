@@ -68,6 +68,13 @@
 					 <td class="input-group">
 							<span class="input-group-addon"><i class="mdi mdi-account"></i></span>
 							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('artist',currentFileIndex)" ng-model="exportFiles[currentFileIndex].artist" uib-tooltip="{{ 'file.artist' | translate }}">
+							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!canEditTags || propIsLocked('artist',currentFileIndex)" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
+						 	<ul class="dropdown-menu pull-right">
+								 <li ng-repeat="artist in exportFiles[currentFileIndex].suggestions.artists">
+									 <a href="#" ng-click="exportFiles[currentFileIndex].artist = artist">{{artist}}</a>
+								 </li>
+						 	</ul>
+
 							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('artist',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
 							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('artist',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
 					 </td>
@@ -76,6 +83,12 @@
 					 <td class="input-group">
 							<span class="input-group-addon"><i class="mdi mdi-album"></i></span>
 							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('album',currentFileIndex)" ng-model="exportFiles[currentFileIndex].album"   uib-tooltip="{{ 'file.album' | translate }}">
+							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!canEditTags || propIsLocked('artist',currentFileIndex)" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
+						 	<ul class="dropdown-menu pull-right">
+								 <li ng-repeat="album in exportFiles[currentFileIndex].suggestions.albums">
+									 <a href="#" ng-click="exportFiles[currentFileIndex].album = album">{{album}}</a>
+								 </li>
+						 	</ul>
 							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('album',currentFileIndex)" uib-tooltip="{{ 'file.applyTagToAll' | translate }}"><i class="mdi mdi-assistant"></i></span>
 							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('album',currentFileIndex)" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
 					 </td>

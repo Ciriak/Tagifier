@@ -124,7 +124,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		  method: 'GET',
 		  url: qUrl
 		}).then(function(response) {
-			console.log(response.data.recordings);
+			$scope.exportFiles[index].suggestions = parseSuggestions(response.data.recordings);
 		});
 	};
 
@@ -499,6 +499,37 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 	};
 });
+
+// parse the suggested tags (prevent the duplicates values)
+var parseSuggestions = function(recordings){
+	var r = {
+		artists: [],
+		tracks: [],
+		albums: []
+	};
+
+	for (var i = 0; i < recordings.length; i++) {
+
+		//Artist tag
+		var av = recordings[i]["artist-credit"][0].artist.name;
+		if(_.indexOf(r.artists, av) === -1){
+			r.artists.push(av);
+		}
+
+		//album tag
+		if(recordings[i]["releases"]){
+			var av = recordings[i]["releases"][0].title;
+			if(_.indexOf(r.albums, av) === -1){
+				r.albums.push(av);
+			}
+		}
+
+	}
+
+	//return the suggestions list
+	console.log(r);
+	return r;
+};
 
 var YTDurationToSeconds = function(duration) {
   var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
