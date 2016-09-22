@@ -123,12 +123,17 @@
 				</tr>-->
 		 </table>
 
-		 <div class="container">
+		 <div class="container" ng-if="exportFiles[currentFileIndex].suggestions.covers">
 			 <p>
 			 	Suggested covers
 			</p>
-			<div class="row">
-				<div class="col-md-3" ng-repeat="cover in exportFiles[currentFileIndex].suggestions.covers">
+			<div class="row col-md-6">
+				<!-- current original cover -->
+				<div class="col-md-3" ng-click="setCover(exportFIles[currentFileIndex].originalPictureUri, cover);">
+					<img ng-src="{{exportFiles[currentFileIndex].originalPictureUri}}" alt="Cover" class="img-responsive" />
+				</div>
+				<!-- -->
+				<div class="col-md-3" ng-repeat="cover in exportFiles[currentFileIndex].suggestions.covers" ng-click="setCover(currentFileIndex, cover);">
 					<img ng-src="{{cover}}" alt="Cover" class="img-responsive" />
 				</div>
 			</div>

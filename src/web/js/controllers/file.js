@@ -60,8 +60,14 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.exportFiles[index].fulltitle = $scope.exportFiles[index].filename.replace(".mp3","");
 
 		if(!$scope.exportFiles[index].pictureUri){
-			$scope.exportFiles[index].pictureUri = "./img/default_cover.png";
+			var x = "./img/default_cover.png";
+			$scope.exportFiles[index].pictureUri = x;
+			$scope.exportFiles[index].originalPictureUri = x;
 		}
+		else{
+			$scope.exportFiles[index].originalPictureUri = angular.copy($scope.exportFiles[index].pictureUri);
+		}
+
 
 		//set release year if defined, else current year
 		if(!data.year){
@@ -117,8 +123,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		if($scope.exportFiles[index].album != ""){
 			qUrl = qUrl+'album:"'+$scope.exportFiles[index].album+'"';
 		}
-
-		console.log(qUrl);
 
 		$http({
 		  method: 'GET',
@@ -516,12 +520,17 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 				  url: qUrl
 				}).then(function successCallback(response) {
 					//add the cover to the url list
-					if(_.indexOf(sc, qUrl) === -1 && sc.length <= 7){
-						sc.push(qUrl);
+					if(_.indexOf(sc, response.config.url) === -1 && sc.length <= 7){
+						sc.push(response.config.url);
 					}
 				});
 			}
 		}
+	}
+
+	$scope.setCover = function(fileId, pictureUri){
+		$scope.exportFiles[fileId].pictureUri = pictureUri;
+		console.log(pictureUri);
 	}
 
 });
