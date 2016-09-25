@@ -76,8 +76,8 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
             click : function() { $rootScope.remote.shell.openExternal('https://github.com/Cyriaqu3/tagifier/issues/new'); }
           },
           {
-            label: 'Facebook Page',
-            click : function(){ $rootScope.remote.shell.openExternal('https://www.facebook.com/Tagifier-1172453299437404/'); }
+            label: 'Author Website',
+            click : function(){ $rootScope.remote.shell.openExternal('http://www.cyriaquedelaunay.fr'); }
           }
         ]
       }
