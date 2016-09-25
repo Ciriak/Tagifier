@@ -38,7 +38,7 @@
     "random-gen": "^0.1.0",
     "regedit": "^2.2.6",
     "remote": "^0.2.6",
-    "request": "^2.69.0",
+    "request": "^2.75.0",
     "sanitize-filename": "^1.6.0",
     "windows-shortcuts": "^0.1.4"
   }
