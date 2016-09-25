@@ -33,7 +33,7 @@
     "process": "Save",
     "removeFromDisk": "Remove this file from the disk",
     "showSuggestedTags": "Show suggested tags",
-    "removeAll": "Remove all files from the list"
+    "removeAll": "Clear the list"
   },
   "about": {
     "description": "The ultimate Mp3 tool"
