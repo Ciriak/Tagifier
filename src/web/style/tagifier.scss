@@ -1,6 +1,7 @@
 $green: #00897B;	/* 0 137 123 */
 $blue: #528BFF;
 $darkgrey : #181A1F;
+$red : #AC2925;
 
 body{
 	background-color: #282C34;
@@ -74,13 +75,10 @@ h2,h3,h4,h5,p{
 }
 
 .btn:hover{
-	text-decoration: none;
-}
-
-.btn:hover{
 	background-color: #282C34;
 	color:#ffffff;
 	border:1px $darkgrey solid;
+	text-decoration: none;
 }
 
 .btn.current{
@@ -94,8 +92,13 @@ h2,h3,h4,h5,p{
 	border:1px $darkgrey solid;
 }
 
-.btn-primary:hover{
-	background-color: $darkgrey;
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus{
+	background-color: $green;
+	border:1px $darkgrey solid;
+}
+
+.btn-danger:hover, .btn-danger:active, .btn-danger:focus{
+	background-color: $red;
 	border:1px $darkgrey solid;
 }
 
@@ -234,7 +237,7 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	}
 }
 .info,.files-list{
-	height: calc(100vh);
+	height: 100vh;
 	margin-bottom: 0;
 }
 
@@ -284,6 +287,7 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 			.control-btn{
 				cursor: pointer;
 				position: absolute;
+				padding: 2px;
 				top: 0;
 				left: 0;
 				width: 100%;
@@ -321,8 +325,8 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 		}
 	}
 
-	.add-file-btn{
-		margin-top: 10px;
+	.add-file-btn, .rm-all-btn{
+		margin: 10px auto 10px auto;
 		color:#cccccc;
 	}
 
@@ -372,6 +376,14 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	}
 	.file-btn.playing{		//When the file is playing with the audio player
 		border-left-color:$green;
+	}
+}
+
+.sug-cover{
+	margin-bottom: 10px;
+	img{
+		background-color: #21252B;
+		width: 100%;
 	}
 }
 
