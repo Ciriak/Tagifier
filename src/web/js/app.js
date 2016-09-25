@@ -34,12 +34,14 @@ app.config(function($stateProvider, $urlRouterProvider) {
 });
 
 app.config(['$translateProvider', function($translateProvider) {
-  $translateProvider.useSanitizeValueStrategy('sanitize');
   $translateProvider.useStaticFilesLoader({
     prefix: 'locales/',
     suffix: '.json'
-});
-  $translateProvider.preferredLanguage('en');
+  });
+  var remote = require('electron').remote;
+  var lang = remote.app.getLocale();
+  //$translateProvider.preferredLanguage("fr");
+  $translateProvider.preferredLanguage(lang).fallbackLanguage('en');
 }]);
 
 app.filter("trustUrl", ['$sce', function ($sce) { //used by media player
