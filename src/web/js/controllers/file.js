@@ -107,32 +107,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			}
 		}
 
-		// try to retreive info from musicbrainz API
-
-		//Ex : http://musicbrainz.org/ws/2/recording/?query="Spider Dance"artist:"Toby fox"album&fmt=json
-
-		// build the query URL
-		var qUrl = "http://musicbrainz.org/ws/2/recording/?fmt=json&query=";
-		if($scope.exportFiles[index].title != ""){
-			qUrl = qUrl+'title:"'+$scope.exportFiles[index].title+'"';
-		}
-
-		if($scope.exportFiles[index].artist != ""){
-			qUrl = qUrl+'artist:"'+$scope.exportFiles[index].artist+'"';
-		}
-
-		if($scope.exportFiles[index].album != ""){
-			qUrl = qUrl+'album:"'+$scope.exportFiles[index].album+'"';
-		}
-
-		$http({
-		  method: 'GET',
-		  url: qUrl
-		}).then(function(response) {
-			//try to retreive the covers
-			$scope.exportFiles[index].suggestions = parseSuggestions(response.data.recordings);
-			$scope.retreiveSuggestionCovers(index, response.data.recordings);
-		});
+		$scope.retreiveSuggestions(index);
 	};
 
 	$scope.retreiveInfoError = function(){
@@ -141,6 +116,36 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$state.go('^.main');
 		}
 	};
+
+	$scope.retreiveSuggestions = function(fileIndex){
+		$scope.canEditTags = false;
+		// try to retreive info from musicbrainz API
+
+		//Ex : http://musicbrainz.org/ws/2/recording/?query="Spider Dance"artist:"Toby fox"album&fmt=json
+
+		// build the query URL
+		var qUrl = "http://musicbrainz.org/ws/2/recording/?fmt=json&query=";
+		if($scope.exportFiles[fileIndex].title != ""){
+			qUrl = qUrl+'title:"'+$scope.exportFiles[fileIndex].title+'"';
+		}
+
+		if($scope.exportFiles[fileIndex].artist != ""){
+			qUrl = qUrl+'artist:"'+$scope.exportFiles[fileIndex].artist+'"';
+		}
+
+		if($scope.exportFiles[fileIndex].album != ""){
+			qUrl = qUrl+'album:"'+$scope.exportFiles[fileIndex].album+'"';
+		}
+
+		$http({
+		  method: 'GET',
+		  url: qUrl
+		}).then(function(response) {
+			//try to retreive the covers
+			$scope.exportFiles[fileIndex].suggestions = parseSuggestions(response.data.recordings);
+			$scope.retreiveSuggestionCovers(fileIndex, response.data.recordings);
+		});
+	}
 
 	$scope.removeFileFromList = function(file){
 		var fileIndex = _.indexOf($scope.exportFiles,file);
@@ -541,6 +546,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 					if(_.indexOf(sc, response.config.url) === -1 && sc.length <= 6){
 						sc.push(response.config.url);
 					}
+							$scope.canEditTags = true;
 				});
 			}
 		}
@@ -573,19 +579,19 @@ var parseSuggestions = function(recordings){
 			}
 		}
 
-		//Artist tag
-		if(recordings[i]["artist-credit"]){
-			var av = recordings[i]["artist-credit"][0].artist.name;
-			if(_.indexOf(r.artists, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.artists.length <= 7){
-				r.artists.push(av);
-			}
-		}
-
 		//album tag
 		if(recordings[i]["releases"]){
 			var av = recordings[i]["releases"][0].title;
 			if(_.indexOf(r.albums, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.albums.length <= 7){
 				r.albums.push(av);
+			}
+		}
+
+		//Artist tag
+		if(recordings[i]["artist-credit"]){
+			var av = recordings[i]["artist-credit"][0].artist.name;
+			if(_.indexOf(r.artists, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.artists.length <= 7){
+				r.artists.push(av);
 			}
 		}
 

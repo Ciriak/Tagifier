@@ -45,6 +45,7 @@
 							<input type="text" class="form-control" disabled="disabled" ng-value="exportFiles[currentFileIndex].fulltitle">
 							<span class="input-group-addon btn btn-primary" ng-click="openDir(exportFiles[currentFileIndex].uri,true)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.openDir' | translate }}" tooltip-placement="bottom"><i class="mdi mdi-folder"></i></span>
 							<span class="input-group-addon btn btn-primary" ng-click="openDir(exportFiles[currentFileIndex].uri,false)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.openFile' | translate }}" tooltip-placement="bottom"><i class="mdi mdi-play-circle-outline"></i></span>
+							<span class="input-group-addon btn btn-primary" ng-click="retreiveSuggestions(currentFileIndex);" tooltip-append-to-body="true" uib-tooltip="{{ 'file.refreshTags' | translate }}" tooltip-placement="bottom"><i class="mdi mdi-tag-outline"></i></span>
 					 </td>
 				</tr>
 				<tr>
@@ -136,7 +137,7 @@
 			</p>
 			<div class="row col-md-12">
 				<!-- current original cover -->
-				<div class="col-md-3 sug-cover" ng-click="setCover(exportFIles[currentFileIndex].originalPictureUri, cover);">
+				<div class="col-md-3 sug-cover" ng-click="setCover(currentFileIndex, exportFiles[currentFileIndex].originalPictureUri);">
 					<img ng-src="{{exportFiles[currentFileIndex].originalPictureUri}}" alt="Cover" />
 				</div>
 				<!-- -->
