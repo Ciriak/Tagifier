@@ -26,6 +26,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		var c = _.findIndex($scope.exportFiles, { 'uri': uri});
 		if(c == -1){
 			$scope.ipc.emit("addFile",{uri : uri, external : external});
+			$scope.setCurrentFile($scope.exportFiles.length);
 		}
 		else{
 			console.log("File already added");
@@ -60,8 +61,14 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$scope.exportFiles[index].fulltitle = $scope.exportFiles[index].filename.replace(".mp3","");
 
 		if(!$scope.exportFiles[index].pictureUri){
-			$scope.exportFiles[index].pictureUri = "./img/default_cover.png";
+			var x = "./img/default_cover.png";
+			$scope.exportFiles[index].pictureUri = x;
+			$scope.exportFiles[index].originalPictureUri = x;
 		}
+		else{
+			$scope.exportFiles[index].originalPictureUri = angular.copy($scope.exportFiles[index].pictureUri);
+		}
+
 
 		//set release year if defined, else current year
 		if(!data.year){
@@ -100,6 +107,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			}
 		}
 
+		$scope.retreiveSuggestions(index);
 	};
 
 	$scope.retreiveInfoError = function(){
@@ -108,6 +116,36 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$state.go('^.main');
 		}
 	};
+
+	$scope.retreiveSuggestions = function(fileIndex){
+		$scope.canEditTags = false;
+		// try to retreive info from musicbrainz API
+
+		//Ex : http://musicbrainz.org/ws/2/recording/?query="Spider Dance"artist:"Toby fox"album&fmt=json
+
+		// build the query URL
+		var qUrl = "http://musicbrainz.org/ws/2/recording/?fmt=json&query=";
+		if($scope.exportFiles[fileIndex].title != ""){
+			qUrl = qUrl+'title:"'+encodeURIComponent($scope.exportFiles[fileIndex].title)+'"';
+		}
+
+		if($scope.exportFiles[fileIndex].artist != ""){
+			qUrl = qUrl+'artist:"'+encodeURIComponent($scope.exportFiles[fileIndex].artist)+'"';
+		}
+
+		if($scope.exportFiles[fileIndex].album != ""){
+			qUrl = qUrl+'album:"'+encodeURIComponent($scope.exportFiles[fileIndex].album)+'"';
+		}
+
+		$http({
+		  method: 'GET',
+		  url: qUrl
+		}).then(function(response) {
+			//try to retreive the covers
+			$scope.exportFiles[fileIndex].suggestions = parseSuggestions(response.data.recordings);
+			$scope.retreiveSuggestionCovers(fileIndex, response.data.recordings);
+		});
+	}
 
 	$scope.removeFileFromList = function(file){
 		var fileIndex = _.indexOf($scope.exportFiles,file);
@@ -143,6 +181,16 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.$apply();
 		}
 	};
+
+	$scope.removeAllFiles = function(){
+		$scope.currentFileIndex = null;
+		$scope.exportFiles = [];
+		$scope.canStartProcess = false;
+		$scope.canEditTags = false;
+		$scope.fileAvailable = false;
+		$scope.filePlayer.audio.pause();
+		$scope.playingFileIndex = null;
+	}
 
 	$scope.reloadPage = function(){
 		location.reload();
@@ -442,12 +490,19 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$('#add-file-modal').modal('hide');
 	}
 
+	//open the file folder or play it
 	$scope.openDir = function(path,pathExplore){
+		if(!$scope.canEditTags){
+			return;
+		}
+
 		if(pathExplore){
-			shell.showItemInFolder(path);
+			$rootScope.remote.shell.showItemInFolder(path);
 		}
 		else{
-			shell.openItem(path);
+			$rootScope.remote.shell.openItem(path);
+			//pause the player if playing the file
+			$scope.filePlayer.audio.pause();
 		}
 	}
 
@@ -472,7 +527,112 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			};
 		}
 	};
+
+	//try to retreive some cover suggestions
+	$scope.retreiveSuggestionCovers = function(fileIndex, recordings){
+		$scope.exportFiles[fileIndex].suggestions.covers = [];
+		var sc = $scope.exportFiles[fileIndex].suggestions.covers;
+
+		for (var i = 0; i < recordings.length; i++) {
+			var qUrl = "http://coverartarchive.org/release/%/front";
+			if(recordings[i]["releases"]){
+				var id = recordings[i]["releases"][0].id;
+				qUrl = qUrl.replace("%", id);
+				$http({
+				  method: 'GET',
+				  url: qUrl
+				}).then(function successCallback(response) {
+					//add the cover to the url list
+					if(_.indexOf(sc, response.config.url) === -1 && sc.length <= 6){
+						sc.push(response.config.url);
+					}
+							$scope.canEditTags = true;
+				});
+			}
+		}
+	}
+
+	$scope.setCover = function(fileId, pictureUri){
+		$scope.exportFiles[fileId].pictureUri = pictureUri;
+		console.log(pictureUri);
+	}
+
+
+	//use arrow keys to select file
+	document.onkeydown = checkKey;
+	function checkKey(e) {
+
+	    e = e || window.event;
+
+			//up
+	    if (e.keyCode == '38') {
+	      if($scope.currentFileIndex > 0){
+					$scope.currentFileIndex--;
+				}
+	    }
+			//down
+	    else if (e.keyCode == '40') {
+				if($scope.currentFileIndex < $scope.exportFiles.length-1){
+					$scope.currentFileIndex++;
+				}
+	    }
+			if(!$scope.$$phase) {
+				$scope.$apply();
+			}
+	}
+
 });
+
+// parse the suggested tags (prevent the duplicates values)
+var parseSuggestions = function(recordings){
+	var r = {
+		artists: [],
+		tracks: [],
+		albums: [],
+		years: [],
+		titles: []
+	};
+
+	for (var i = 0; i < recordings.length; i++) {
+
+		//Title tag
+		if(recordings[i]["title"]){
+			var av = recordings[i]["title"];
+			if(_.indexOf(r.titles, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.titles.length <= 7){
+				r.titles.push(av);
+			}
+		}
+
+		//album tag
+		if(recordings[i]["releases"]){
+			var av = recordings[i]["releases"][0].title;
+			if(_.indexOf(r.albums, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.albums.length <= 7){
+				r.albums.push(av);
+			}
+		}
+
+		//Artist tag
+		if(recordings[i]["artist-credit"]){
+			var av = recordings[i]["artist-credit"][0].artist.name;
+			if(_.indexOf(r.artists, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.artists.length <= 7){
+				r.artists.push(av);
+			}
+		}
+
+		//year tag
+		if(recordings[i]["releases"]){
+			var d = new Date(recordings[i]["releases"][0].date);
+			var av = d.getFullYear();
+			if(_.indexOf(r.years, av) === -1 && av !== "" && av !== 0 && av !== "NaN" && r.years.length <= 7){
+				r.years.push(av);
+			}
+		}
+
+	}
+
+	//return the suggestions list
+	return r;
+};
 
 var YTDurationToSeconds = function(duration) {
   var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)

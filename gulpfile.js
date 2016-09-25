@@ -22,14 +22,6 @@ var winInstaller = require('electron-winstaller');
 //retreive package.json data
 var pjson = require('./package.json');
 
-gulp.task('server', function () {
-  nodemon({
-    script: 'app.js'
-  , ext: 'js html css scss'
-  , env: { 'NODE_ENV': 'development' }
-  })
-});
-
 gulp.task('sass', function () {
   return gulp.src('./src/web/style/**/*.scss')
     .pipe(plumber())
@@ -59,27 +51,24 @@ gulp.task('scripts', function() {
 });
 
 gulp.task('images', function(cb) {
-    gulp.src(['src/web/**/*.png','src/web/**/*.jpg','src/web/**/*.gif','src/web/**/*.jpeg','src/web/**/*.svg','src/web/**/*.ico']).pipe(imageop({
-        optimizationLevel: 5,
-        progressive: true,
-        interlaced: true
-    })).pipe(gulp.dest('./dist/web')).on('end', cb).on('error', cb);
+    return gulp.src(['src/web/**/*.png','src/web/**/*.jpg','src/web/**/*.gif','src/web/**/*.jpeg','src/web/**/*.svg','src/web/**/*.ico'])
+    .pipe(gulp.dest('./dist/web/'));
 });
 
 gulp.task('copy-dependencies', function() {
-  gulp.src('./src/web/bower_components/**/*')
+  return gulp.src('./src/web/bower_components/**/*')
   .pipe(gulp.dest('./dist/web/dep/'));
 });
 
 gulp.task('html', function() {
-  return gulp.src('src/web/**/*.html')
+return gulp.src('src/web/**/*.html')
     .pipe(plumber())
     .pipe(htmlmin({collapseWhitespace: true}))
     .pipe(gulp.dest('./dist/web'))
 });
 
 gulp.task('locales', function () {
-    return gulp.src(['./src/web/locales/*.json'])
+return gulp.src(['./src/web/locales/*.json'])
         .pipe(jsonminify())
         .pipe(gulp.dest('./dist/web/locales/'));
 });

@@ -34,12 +34,14 @@ app.config(function($stateProvider, $urlRouterProvider) {
 });
 
 app.config(['$translateProvider', function($translateProvider) {
-  $translateProvider.useSanitizeValueStrategy('sanitize');
   $translateProvider.useStaticFilesLoader({
     prefix: 'locales/',
     suffix: '.json'
-});
-  $translateProvider.preferredLanguage('en');
+  });
+  var remote = require('electron').remote;
+  var lang = remote.app.getLocale();
+  //$translateProvider.preferredLanguage("fr");
+  $translateProvider.preferredLanguage(lang).fallbackLanguage('en');
 }]);
 
 app.filter("trustUrl", ['$sce', function ($sce) { //used by media player
@@ -76,8 +78,8 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
             click : function() { $rootScope.remote.shell.openExternal('https://github.com/Cyriaqu3/tagifier/issues/new'); }
           },
           {
-            label: 'Facebook Page',
-            click : function(){ $rootScope.remote.shell.openExternal('https://www.facebook.com/Tagifier-1172453299437404/'); }
+            label: 'Author Website',
+            click : function(){ $rootScope.remote.shell.openExternal('http://www.cyriaquedelaunay.fr'); }
           }
         ]
       }
