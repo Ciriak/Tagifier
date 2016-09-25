@@ -126,15 +126,15 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		// build the query URL
 		var qUrl = "http://musicbrainz.org/ws/2/recording/?fmt=json&query=";
 		if($scope.exportFiles[fileIndex].title != ""){
-			qUrl = qUrl+'title:"'+$scope.exportFiles[fileIndex].title+'"';
+			qUrl = qUrl+'title:"'+encodeURIComponent($scope.exportFiles[fileIndex].title)+'"';
 		}
 
 		if($scope.exportFiles[fileIndex].artist != ""){
-			qUrl = qUrl+'artist:"'+$scope.exportFiles[fileIndex].artist+'"';
+			qUrl = qUrl+'artist:"'+encodeURIComponent($scope.exportFiles[fileIndex].artist)+'"';
 		}
 
 		if($scope.exportFiles[fileIndex].album != ""){
-			qUrl = qUrl+'album:"'+$scope.exportFiles[fileIndex].album+'"';
+			qUrl = qUrl+'album:"'+encodeURIComponent($scope.exportFiles[fileIndex].album)+'"';
 		}
 
 		$http({
