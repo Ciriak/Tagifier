@@ -26,6 +26,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		var c = _.findIndex($scope.exportFiles, { 'uri': uri});
 		if(c == -1){
 			$scope.ipc.emit("addFile",{uri : uri, external : external});
+			$scope.setCurrentFile($scope.exportFiles.length);
 		}
 		else{
 			console.log("File already added");
