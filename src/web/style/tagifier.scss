@@ -380,7 +380,13 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 }
 
 .sug-cover{
+	cursor: pointer;
+	background-image: url('../img/default_cover.png');
+	background-origin: content-box;
+	background-repeat: no-repeat;
+	background-size: 100% auto;
 	margin-bottom: 10px;
+	min-height: 75px;
 	img{
 		background-color: #21252B;
 		width: 100%;
@@ -419,7 +425,8 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 			top: 0;
 			left: 0;
 			width: 100%;
-			padding: 2px;
+			padding: 0px;
+			text-align: center;
 			i{
 				transition-duration: 0.3s;
 				color:rgba(255,255,255,0.8);
