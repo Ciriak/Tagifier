@@ -176,6 +176,16 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 	};
 
+	$scope.removeAllFiles = function(){
+		$scope.currentFileIndex = null;
+		$scope.exportFiles = [];
+		$scope.canStartProcess = false;
+		$scope.canEditTags = false;
+		$scope.fileAvailable = false;
+		$scope.filePlayer.audio.pause();
+		$scope.playingFileIndex = null;
+	}
+
 	$scope.reloadPage = function(){
 		location.reload();
 	};
@@ -520,7 +530,7 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 				  url: qUrl
 				}).then(function successCallback(response) {
 					//add the cover to the url list
-					if(_.indexOf(sc, response.config.url) === -1 && sc.length <= 7){
+					if(_.indexOf(sc, response.config.url) === -1 && sc.length <= 6){
 						sc.push(response.config.url);
 					}
 				});

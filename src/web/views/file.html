@@ -10,6 +10,14 @@
 	<div class="panel col-md-3 files-list">
 	  <div class="panel-body">
 			<div class="row">
+
+				<div class="btn add-file-btn" ng-click="showAddFileModal()" ng-class="{'add-file-btn-anim' : !fileAvailable, 'col-md-10' : exportFiles.length > 5, 'col-md-12' : exportFiles.length <= 5}">
+					<i class="mdi mdi-cloud-upload"></i> {{ 'file.addFileButtonLabel' | translate }}
+				</div>
+				<div class="btn btn-danger col-md-2 rm-all-btn" ng-if="exportFiles.length > 5" ng-click="removeAllFiles()" tooltip-append-to-body="true" uib-tooltip="{{ 'file.removeAll' | translate }}" tooltip-placement="bottom">
+					<i class="mdi mdi-delete-sweep"></i>
+				</div>
+
 			  <div ng-repeat="f in exportFiles track by $index" class="btn col-md-12 col-sm-12 file-btn file-{{$index}}" ng-click="setCurrentFile($index);" ng-class="{'current': $index == currentFileIndex,'converting' : f.converting,'processing':f.processing,'error':f.error,'playing' :  playingFileIndex === $index}">
 					<div class="file-cover">
 						<img ng-src="{{f.pictureUri}}" />
@@ -23,9 +31,6 @@
 					<i class="remove-file-btn mdi mdi-close" ng-click="removeFileFromList(f)"></i>
 
 					<span class="file-progress" style="width:{{f.progress}}%"></span>
-				</div>
-				<div class="btn add-file-btn col-md-12 col-sm-12" ng-click="showAddFileModal()" ng-class="{'add-file-btn-anim' : !fileAvailable}">
-					<i class="mdi mdi-cloud-upload"></i> {{ 'file.addFileButtonLabel' | translate }}
 				</div>
 			</div>
 	  </div>
@@ -60,7 +65,7 @@
 					 <td class="input-group">
 							<span class="input-group-addon"><i class="mdi mdi-file-music"></i></span>
 							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('title',currentFileIndex)" ng-model="exportFiles[currentFileIndex].title"  tooltip-append-to-body="true" uib-tooltip="{{ 'file.title' | translate }}">
-							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!canEditTags || propIsLocked('album',currentFileIndex) || exportFiles[currentFileIndex].suggestions.albums.length == 0" tooltip-append-to-body="true" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
+							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-hide="!canEditTags || propIsLocked('album',currentFileIndex) || exportFiles[currentFileIndex].suggestions.albums.length == 0" tooltip-append-to-body="true" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
 						 	<ul class="dropdown-menu pull-right" ng-hide="!canEditTags || propIsLocked('title',currentFileIndex) || exportFiles[currentFileIndex].suggestions.titles.length == 0">
 								 <li ng-repeat="title in exportFiles[currentFileIndex].suggestions.titles">
 									 <a href="#" ng-click="exportFiles[currentFileIndex].title = title">{{title}}</a>
@@ -74,7 +79,7 @@
 					 <td class="input-group">
 							<span class="input-group-addon"><i class="mdi mdi-account"></i></span>
 							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('artist',currentFileIndex)" ng-model="exportFiles[currentFileIndex].artist" tooltip-append-to-body="true" uib-tooltip="{{ 'file.artist' | translate }}">
-							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!canEditTags || propIsLocked('artist',currentFileIndex) || exportFiles[currentFileIndex].suggestions.artists.length == 0" tooltip-append-to-body="true" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
+							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-hide="!canEditTags || propIsLocked('artist',currentFileIndex) || exportFiles[currentFileIndex].suggestions.artists.length == 0" tooltip-append-to-body="true" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
 						 	<ul class="dropdown-menu pull-right" ng-hide="!canEditTags || propIsLocked('artist',currentFileIndex) || exportFiles[currentFileIndex].suggestions.artists.length == 0">
 								 <li ng-repeat="artist in exportFiles[currentFileIndex].suggestions.artists">
 									 <a href="#" ng-click="exportFiles[currentFileIndex].artist = artist">{{artist}}</a>
@@ -89,7 +94,7 @@
 					 <td class="input-group">
 							<span class="input-group-addon"><i class="mdi mdi-album"></i></span>
 							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('album',currentFileIndex)" ng-model="exportFiles[currentFileIndex].album"   tooltip-append-to-body="true" uib-tooltip="{{ 'file.album' | translate }}">
-							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!canEditTags || propIsLocked('album',currentFileIndex) || exportFiles[currentFileIndex].suggestions.albums.length == 0" tooltip-append-to-body="true" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
+							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-hide="!canEditTags || propIsLocked('album',currentFileIndex) || exportFiles[currentFileIndex].suggestions.albums.length == 0" tooltip-append-to-body="true" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
 						 	<ul class="dropdown-menu pull-right" ng-hide="!canEditTags || propIsLocked('album',currentFileIndex) || exportFiles[currentFileIndex].suggestions.albums.length == 0">
 								 <li ng-repeat="album in exportFiles[currentFileIndex].suggestions.albums">
 									 <a href="#" ng-click="exportFiles[currentFileIndex].album = album">{{album}}</a>
@@ -103,7 +108,7 @@
 					 <td class="input-group" >
 						 	<span class="input-group-addon"><i class="mdi mdi-calendar-text"></i></span>
 							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('year',currentFileIndex)" ng-model="exportFiles[currentFileIndex].year" tooltip-append-to-body="true" uib-tooltip="{{ 'file.year' | translate }}">
-							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-disabled="!canEditTags || propIsLocked('year',currentFileIndex) || exportFiles[currentFileIndex].suggestions.years.length == 0" tooltip-append-to-body="true" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
+							<span class="input-group-addon btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ng-hide="!canEditTags || propIsLocked('year',currentFileIndex) || exportFiles[currentFileIndex].suggestions.years.length == 0" tooltip-append-to-body="true" uib-tooltip="{{ 'file.showSuggestedTags' | translate }}"><i class="mdi mdi-message-bulleted"></i></span>
 						 	<ul class="dropdown-menu pull-right" ng-hide="!canEditTags || propIsLocked('year',currentFileIndex) || exportFiles[currentFileIndex].suggestions.years.length == 0">
 								 <li ng-repeat="year in exportFiles[currentFileIndex].suggestions.years">
 									 <a href="#" ng-click="exportFiles[currentFileIndex].year = year">{{year}}</a>
@@ -123,18 +128,18 @@
 				</tr>-->
 		 </table>
 
-		 <div class="container" ng-if="exportFiles[currentFileIndex].suggestions.covers">
+		 <div class="row col-md-12" ng-if="exportFiles[currentFileIndex].suggestions.covers.length > 1">
 			 <p>
 			 	Suggested covers
 			</p>
-			<div class="row col-md-6">
+			<div class="row col-md-12">
 				<!-- current original cover -->
-				<div class="col-md-3" ng-click="setCover(exportFIles[currentFileIndex].originalPictureUri, cover);">
-					<img ng-src="{{exportFiles[currentFileIndex].originalPictureUri}}" alt="Cover" class="img-responsive" />
+				<div class="col-md-3 sug-cover" ng-click="setCover(exportFIles[currentFileIndex].originalPictureUri, cover);">
+					<img ng-src="{{exportFiles[currentFileIndex].originalPictureUri}}" alt="Cover" />
 				</div>
 				<!-- -->
-				<div class="col-md-3" ng-repeat="cover in exportFiles[currentFileIndex].suggestions.covers" ng-click="setCover(currentFileIndex, cover);">
-					<img ng-src="{{cover}}" alt="Cover" class="img-responsive" />
+				<div class="col-md-3 sug-cover" ng-repeat="cover in exportFiles[currentFileIndex].suggestions.covers" ng-click="setCover(currentFileIndex, cover);">
+					<img ng-src="{{cover}}" alt="Cover" />
 				</div>
 			</div>
 		 </div>
@@ -152,7 +157,7 @@
 			</div>
 
 			<div class="set-cover-btn" ng-click="setCoverImage(currentFileIndex)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.cover' | translate }}" tooltip-placement="bottom">
-				<i class="mdi mdi-image"></i>
+
 			</div>
 
 			<div class="set-cover-all-btn" ng-hide="singleFile" ng-click="overrideProp('pictureUri',currentFileIndex)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.applyTagToAll' | translate }}">
