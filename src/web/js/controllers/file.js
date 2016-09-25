@@ -557,6 +557,30 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		console.log(pictureUri);
 	}
 
+
+	//use arrow keys to select file
+	document.onkeydown = checkKey;
+	function checkKey(e) {
+
+	    e = e || window.event;
+
+			//up
+	    if (e.keyCode == '38') {
+	      if($scope.currentFileIndex > 0){
+					$scope.currentFileIndex--;
+				}
+	    }
+			//down
+	    else if (e.keyCode == '40') {
+				if($scope.currentFileIndex < $scope.exportFiles.length-1){
+					$scope.currentFileIndex++;
+				}
+	    }
+			if(!$scope.$$phase) {
+				$scope.$apply();
+			}
+	}
+
 });
 
 // parse the suggested tags (prevent the duplicates values)

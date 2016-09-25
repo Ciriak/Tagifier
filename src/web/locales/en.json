@@ -26,7 +26,8 @@
     "removeAll": "Clear the list",
     "openDir": "Open the file location",
     "openFile": "Open the file",
-    "refreshTags": "Refresh tag suggestions"
+    "refreshTags": "Refresh tag suggestions",
+    "suggestedCovers": "Suggested covers"
   },
   "about": {
     "description": "The ultimate Mp3 tool"
