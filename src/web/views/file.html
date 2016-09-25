@@ -43,6 +43,8 @@
 					 <td class="input-group" tooltip-append-to-body="true" uib-tooltip="{{ 'file.inputChain' | translate }}">
 						 <span class="input-group-addon"><i class="mdi mdi-file-document"></i></span>
 							<input type="text" class="form-control" disabled="disabled" ng-value="exportFiles[currentFileIndex].fulltitle">
+							<span class="input-group-addon btn btn-primary" ng-click="openDir(exportFiles[currentFileIndex].uri,true)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.openDir' | translate }}" tooltip-placement="bottom"><i class="mdi mdi-folder"></i></span>
+							<span class="input-group-addon btn btn-primary" ng-click="openDir(exportFiles[currentFileIndex].uri,false)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.openFile' | translate }}" tooltip-placement="bottom"><i class="mdi mdi-play-circle-outline"></i></span>
 					 </td>
 				</tr>
 				<tr>

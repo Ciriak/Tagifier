@@ -485,12 +485,19 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		$('#add-file-modal').modal('hide');
 	}
 
+	//open the file folder or play it
 	$scope.openDir = function(path,pathExplore){
+		if(!$scope.canEditTags){
+			return;
+		}
+
 		if(pathExplore){
-			shell.showItemInFolder(path);
+			$rootScope.remote.shell.showItemInFolder(path);
 		}
 		else{
-			shell.openItem(path);
+			$rootScope.remote.shell.openItem(path);
+			//pause the player if playing the file
+			$scope.filePlayer.audio.pause();
 		}
 	}
 

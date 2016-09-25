@@ -33,7 +33,9 @@
     "process": "Save",
     "removeFromDisk": "Remove this file from the disk",
     "showSuggestedTags": "Show suggested tags",
-    "removeAll": "Clear the list"
+    "removeAll": "Clear the list",
+    "openDir": "Open the file location",
+    "openFile": "Open the file"
   },
   "about": {
     "description": "The ultimate Mp3 tool"
