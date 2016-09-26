@@ -3,7 +3,8 @@
     "ok": "Ok",
     "about": "A propos",
     "download": "Télécharger",
-    "newProcess": "Convertir un nouveau fichier"
+    "newProcess": "Convertir un nouveau fichier",
+    "update": "Mise à jour disponible"
   },
   "file": {
     "fileName": "Nom du fichier",

@@ -3,7 +3,8 @@
     "ok": "Ok",
     "about": "About",
     "download": "Download",
-    "newProcess": "Convert a new file"
+    "newProcess": "Convert a new file",
+    "update": "Update available"
   },
   "file": {
     "fileName": "File Name",
