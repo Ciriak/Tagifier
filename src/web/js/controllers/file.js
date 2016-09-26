@@ -1,5 +1,4 @@
-app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams,$translate,$location,notify,dialog,ipcRenderer,shell,ngAudio)
-{
+app.controller('fileCtrl', function($scope, $rootScope, $http, $translate, $location, dialog, ipcRenderer, shell, ngAudio) {
 	$scope.canStartProcess = false;
 	$scope.processing = false;
 	$scope.canEditTags = false;
@@ -108,13 +107,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 		}
 
 		$scope.retreiveSuggestions(index);
-	};
-
-	$scope.retreiveInfoError = function(){
-		notify($translate.instant("error.unableToRetreiveFileData"));
-		if($scope.exportFiles.length == 1){	// if only one file, return to the main page
-			$state.go('^.main');
-		}
 	};
 
 	$scope.retreiveSuggestions = function(fileIndex){
@@ -239,19 +231,6 @@ app.controller('fileCtrl', function($scope, $rootScope,$state,$http,$stateParams
 			$scope.canStartProcess = true;
 			$scope.fileAvailable = true;
 			$scope.canAddFile = true;
-		}
-
-		if(ev['event'] == "file_infos_error"){
-			$scope.retreiveInfoError(ev.data);
-		}
-
-		if(ev["event"] == "file_download_started"){
-
-			var index = ev.data;
-			$scope.exportFiles[index].processing = true;
-			if(!$scope.$$phase) {
-				$scope.$apply();
-			}
 		}
 
 		if(ev["event"] == "progress"){

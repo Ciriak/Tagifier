@@ -1,37 +1,10 @@
 var app = angular.module('tagifier', [
-'ui.router',
 'ui.bootstrap',
-'youtube-embed',
 'ngSanitize',
 'pascalprecht.translate',
-'cgNotify',
 'angular-electron',
 'ngAudio'
     ]);
-
-app.config(function($stateProvider, $urlRouterProvider) {
-  //
-  // For any unmatched url, redirect to /
-  $urlRouterProvider.otherwise("/");
-  //
-  // Now set up the states
-  $stateProvider
-    .state('main', {
-      url: "/",
-      templateUrl: "views/index.html",
-      reload:true
-    })
-    .state('about', {
-      url: "/about",
-      templateUrl: "views/about.html"
-    })
-    .state('file', {
-      url: "/{fileUrl:.*?}",
-      templateUrl: "views/file.html",
-      controller: "fileCtrl",
-      reload:true
-    });
-});
 
 app.config(['$translateProvider', function($translateProvider) {
   $translateProvider.useStaticFilesLoader({
@@ -40,7 +13,6 @@ app.config(['$translateProvider', function($translateProvider) {
   });
   var remote = require('electron').remote;
   var lang = remote.app.getLocale();
-  //$translateProvider.preferredLanguage("fr");
   $translateProvider.preferredLanguage(lang).fallbackLanguage('en');
 }]);
 
@@ -50,7 +22,7 @@ app.filter("trustUrl", ['$sce', function ($sce) { //used by media player
     };
 }]);
 
-app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window','$location','$state', function($scope, $http,$rootScope,$translate,$window,$location,$state)
+app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window','$location', function($scope, $http,$rootScope,$translate,$window,$location)
 {
   $rootScope.remote = require('electron').remote;
 
@@ -59,80 +31,39 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
     $rootScope.version = $rootScope.remote.app.getVersion();
 
     var template = [
-      {
-        label: 'About',
-        role: 'about',
-        submenu: [
-          {
-            label: 'Tagifier (v'+$rootScope.version+')'
-          },
-          {
-            type: 'separator'
-          },
-          {
-            label: 'Github page',
-            click : function() { $rootScope.remote.shell.openExternal('https://github.com/Cyriaqu3/tagifier'); }
-          },
-          {
-            label: 'Report an issue',
-            click : function() { $rootScope.remote.shell.openExternal('https://github.com/Cyriaqu3/tagifier/issues/new'); }
-          },
-          {
-            label: 'Author Website',
-            click : function(){ $rootScope.remote.shell.openExternal('http://www.cyriaquedelaunay.fr'); }
-          }
-        ]
-      }
-    ];
-    var menu = Menu.buildFromTemplate(template);
-    Menu.setApplicationMenu(menu);
+    {
+      label: 'About',
+      role: 'about',
+      submenu: [
+        {
+          label: 'Tagifier (v'+$rootScope.version+')'
+        },
+        {
+          type: 'separator'
+        },
+        {
+          label: 'Github page',
+          click : function() { $rootScope.remote.shell.openExternal('https://github.com/Cyriaqu3/tagifier'); }
+        },
+        {
+          label: 'Report an issue',
+          click : function() { $rootScope.remote.shell.openExternal('https://github.com/Cyriaqu3/tagifier/issues/new'); }
+        },
+        {
+          label: 'Author Website',
+          click : function(){ $rootScope.remote.shell.openExternal('http://www.cyriaquedelaunay.fr'); }
+        }
+      ]
+    }
+  ];
+  var menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
 
-  $scope.docReady = false;
-  $(window).load(function(){
-    $scope.docReady = true;
-    $scope.$apply();
-  });
+  $rootScope.ipc = $rootScope.remote.ipcMain;
 
-  $scope.ipc = $rootScope.remote.ipcMain;
-
-  //auto focus the form
-  $(document).hover(function(){
-    $("#youtube-url").focus();
-  });
-
-  $(document).click(function(){
-    $("#youtube-url").focus();
-  });
-
-  //retreive last commit infos
-  $scope.lastCommit = "Tagifier";
-  $http({
-  	method: 'GET',
-  	url: 'https://api.github.com/repos/CYRIAQU3/tagifier/commits'
-	}).then(function successCallback(response) {
-    	$scope.lastCommit = response.data[0].sha.substring(0,8);
-    	$scope.lastUser = response.data[0].author.login;
-  });
-
-	// request permission for notifications (used when the file is ready)
-  $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
-    //remove all the notifs when a page change
-    $('.toast').remove();
-  });
-  $rootScope.$on('$stateChangeSuccess', function (event) {
-
+  //player logged
+  $rootScope.ipc.on("updateAvailable", function(update){
+    $rootScope.updateAvailable = true;
   });
 
 }]);
-
-app.directive('targetBlank', function () {
-    return {
-        restrict: 'A',
-        link: function(scope, element, attrs) {
-          var href = element.href;
-          if(true) {  // replace with your condition
-            element.attr("target", "_blank");
-          }
-        }
-    };
-});
