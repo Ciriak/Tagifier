@@ -64,6 +64,9 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
   //player logged
   $rootScope.ipc.on("updateAvailable", function(update){
     $rootScope.updateAvailable = true;
+    if(!$scope.$$phase) {
+      $scope.$apply();
+    }
   });
 
   $rootScope.installUpdate = function(){

@@ -44,8 +44,17 @@ console.log("Tagifier V."+pjson.version);
 
 //define the possible command line args
 const optionDefinitions = [
-  { name: 'files', type: String, multiple: true, defaultOption: true }
+  { name: 'files', type: String, multiple: true, defaultOption: true },
+  { name: 'squirrel-updated' }
 ];
+
+
+  //Define updater options
+  let options = {
+    repo: 'Cyriaqu3/Tagifier',
+    currentVersion: pjson.version
+  }
+  const updater = new GhReleases(options);
 
 //parse the launch options
 var argsOptions = commandLineArgs(optionDefinitions);
@@ -226,20 +235,14 @@ function checkArgsOptions(arguments){
 
 function checkUpdates(){
 
-  //check for updates
-  let options = {
-    repo: 'Cyriaqu3/Tagifier',
-    currentVersion: pjson.version
-  }
-
-  const updater = new GhReleases(options);
-
   // Check for updates
   // `status` returns true if there is a new update available
   console.log("Looking for update");
   updater.check((err, status) => {
     if(err){
       console.log("No new version / unable to check");
+      console.log("details :");
+      console.log(err);
     }
     //update available
     else{
@@ -257,7 +260,7 @@ function checkUpdates(){
   })
 
   // Access electrons autoUpdater
-  updater.autoUpdater
+  //updater.autoUpdater
 }
 
 //
