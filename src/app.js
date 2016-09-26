@@ -251,7 +251,7 @@ function checkUpdates(){
   // When an update has been downloaded
   updater.on('update-downloaded', (info) => {
     console.log(info);
-    ipc.emit("update",{message:"Installing update..."});
+    ipc.emit("updateAvailable", info);
     // Restart the app and install the update
     //updater.install()
   })
@@ -259,6 +259,11 @@ function checkUpdates(){
   // Access electrons autoUpdater
   updater.autoUpdater
 }
+
+//
+ipc.on('installUpdate', function (fileData) {
+  updater.install();
+});
 
 //
 //   FILE ADDED

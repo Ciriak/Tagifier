@@ -66,4 +66,8 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
     $rootScope.updateAvailable = true;
   });
 
+  $rootScope.installUpdate = function(){
+    $rootScope.ipc.emit("installUpdate");
+  }
+
 }]);
