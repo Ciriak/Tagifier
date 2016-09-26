@@ -16,7 +16,6 @@ const rootAtomFolder = path.resolve(appFolder, '..');
 const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
 const exeName = "Tagifier.exe";
 var regedit = require('regedit');
-let splashScreen
 let mainWindow
 //retreive package.json properties
 var pjson = require('./package.json');
@@ -34,7 +33,6 @@ var _ = require('lodash');
 var async = require('async');
 var bodyParser = require('body-parser');
 var fid = require('fast-image-downloader');
-var isOnline = require('is-online');
 var sanitize = require("sanitize-filename");
 var ffmpeg = require('fluent-ffmpeg');
 var ws = require('windows-shortcuts');
@@ -152,7 +150,7 @@ app.on('window-all-closed', function () {
 
 
 app.on('ready', () => {
-  createSplashScreen();
+  openApp();
 
   //write in the registry if windows OS
   if(process.platform === 'win32') {
@@ -164,86 +162,13 @@ app.on('ready', () => {
 app.on('activate', function () {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (splashScreen === null) {
-    createWindow();
+  if (mainWindow === null) {
+    openApp();
   }
 });
 
-
-//
-// Create the splashscreen
-//
-// Also check for update -> Pre-render the app -> show the app
-
-function createSplashScreen () {
-  splashScreen = new BrowserWindow({
-    width: 300,
-    height: 300,
-    show:false,
-    resizable : false,
-    frame:false,
-    icon: __dirname + '/web/img/tgf/icon_circle.png'
-  });
-
-  splashScreen.loadURL(`file://${__dirname}/web/splash.html`);
-
-  splashScreen.once('ready-to-show', () => {
-    splashScreen.show();
-    splashScreen.webContents.send("tgf_version",{version:pjson.version});
-    splashScreen.webContents.send("splash_message",{message:"Checking for update..."});
-
-
-    //if the user is not connected,
-    isOnline(function(err, online) {
-      if(!online){
-        console.log("Not online : passing update check");
-        openApp(splashScreen);
-      }
-    });
-
-    //check for updates
-    let options = {
-      repo: 'Cyriaqu3/tagifier',
-      currentVersion: pjson.version
-    }
-
-    const updater = new GhReleases(options);
-
-    // Check for updates
-    // `status` returns true if there is a new update available
-    console.log("Looking for update");
-    updater.check((err, status) => {
-      if(err){
-        console.log(err);
-        splashScreen.webContents.send("splash_message",{message:"Loading..."});
-        openApp(splashScreen);
-      }
-      //update available
-      else{
-        // Download the update
-        updater.download();
-      }
-    });
-
-    // When an update has been downloaded
-    updater.on('update-downloaded', (info) => {
-      ipc.emit("splach_message",{message:"Installing update..."});
-      // Restart the app and install the update
-      updater.install()
-    })
-
-    // Access electrons autoUpdater
-    updater.autoUpdater
-
-  });
-
-  splashScreen.on('closed', function () {
-    splashScreen = null
-  });
-}
-
 //open the tagifier main process
-function openApp(sc){
+function openApp(){
   var mainWindow = new BrowserWindow({
     show:false,
     width: 1024,
@@ -254,10 +179,10 @@ function openApp(sc){
   mainWindow.loadURL(`file://${__dirname}/web/index.html`);
   //display the main app and close the
   mainWindow.once('ready-to-show', () => {
-    sc.close();
     mainWindow.show();
     mainWindow.focus();
     checkArgsOptions(argsOptions);
+    checkUpdates();
   });
 }
 
@@ -297,6 +222,42 @@ function checkArgsOptions(arguments){
   else{
     console.log("... none");
   }
+}
+
+function checkUpdates(){
+
+  //check for updates
+  let options = {
+    repo: 'Cyriaqu3/Tagifier',
+    currentVersion: pjson.version
+  }
+
+  const updater = new GhReleases(options);
+
+  // Check for updates
+  // `status` returns true if there is a new update available
+  console.log("Looking for update");
+  updater.check((err, status) => {
+    if(err){
+      console.log("No new version / unable to check");
+    }
+    //update available
+    else{
+      // Download the update
+      updater.download();
+    }
+  });
+
+  // When an update has been downloaded
+  updater.on('update-downloaded', (info) => {
+    console.log(info);
+    ipc.emit("update",{message:"Installing update..."});
+    // Restart the app and install the update
+    //updater.install()
+  })
+
+  // Access electrons autoUpdater
+  updater.autoUpdater
 }
 
 //
@@ -520,7 +481,7 @@ function registerRegistry(){
 
     var exePath = app.getPath("exe");
     var appPath = app.getAppPath();
-    console.log("path");
+    console.log("Process exec path = ");
     console.log(exePath);
 
     var valuesToPut = {
