@@ -9,7 +9,6 @@ var htmlmin = require('gulp-htmlmin');
 var jsonminify = require('gulp-jsonminify');
 var install = require("gulp-install");
 var del = require('del');
-var imageop = require('gulp-image-optimization');
 var ngmin = require('gulp-ngmin');
 var nodemon = require('gulp-nodemon');
 var bower = require('gulp-bower');
