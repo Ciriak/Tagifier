@@ -1,7 +1,3 @@
-//
-// THIS APP REQUIRE FFMPEG AND liblamemp3  CODEC !!!
-//
-
 const electron = require('electron');
 const {app} = require('electron');
 const Menu = electron.Menu;
@@ -199,13 +195,6 @@ var fidOpt = {
   ALLOWED_TYPES : ['jpg', 'png'] // allowed image types
 };
 
-//set the ffmpeg binary location (path)
-if(os.platform() === 'win32'){
-     var ffmpegPath = __dirname+'/bin/ffmpeg/ffmpeg.exe'
- }else{
-     var ffmpegPath = __dirname+'/bin/ffmpeg/ffmpeg'
- }
-ffmpeg.setFfmpegPath(ffmpegPath);
 // create the "exports" folder
 var p = __dirname+"/exports";
 if (!ofs.existsSync(p)){
