@@ -34,7 +34,6 @@ var async = require('async');
 var bodyParser = require('body-parser');
 var fid = require('fast-image-downloader');
 var sanitize = require("sanitize-filename");
-var ffmpeg = require('fluent-ffmpeg');
 var ws = require('windows-shortcuts');
 
 //File class
