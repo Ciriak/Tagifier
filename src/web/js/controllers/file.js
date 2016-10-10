@@ -613,16 +613,6 @@ var parseSuggestions = function(recordings){
 	return r;
 };
 
-var YTDurationToSeconds = function(duration) {
-  var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
-
-  var hours = (parseInt(match[1]) || 0);
-  var minutes = (parseInt(match[2]) || 0);
-  var seconds = (parseInt(match[3]) || 0);
-
-  return hours * 3600 + minutes * 60 + seconds;
-}
-
 var getBestThumbnail = function(t){
 	if(t.maxres){
 		return t.maxres.url;
