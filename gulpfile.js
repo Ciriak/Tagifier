@@ -9,7 +9,6 @@ var htmlmin = require('gulp-htmlmin');
 var jsonminify = require('gulp-jsonminify');
 var install = require("gulp-install");
 var del = require('del');
-var imageop = require('gulp-image-optimization');
 var ngmin = require('gulp-ngmin');
 var nodemon = require('gulp-nodemon');
 var bower = require('gulp-bower');
@@ -20,7 +19,7 @@ var gulpsync = require('gulp-sync')(gulp);
 var winInstaller = require('electron-winstaller');
 
 //retreive package.json data
-var pjson = require('./package.json');
+var pjson = require('./src/package.json');
 
 gulp.task('sass', function () {
   return gulp.src('./src/web/style/**/*.scss')
@@ -86,14 +85,21 @@ gulp.task('copy-electron-components',function(){
 gulp.task('electron-build', function(callback) {
   var options = {
         dir: "./dist",
-        name: "tagifier",
+        name: pjson.name,
         platform: "win32",
         arch: "x64",
         'app-version':pjson.version,
         'build-version':pjson.version,
         overwrite: true,
         icon: "./dist/web/img/tgf/icon_circle.png",
-        out: "build"
+        out: "build",
+        win32metadata: {
+          "CompanyName": pjson.author,
+          "OriginalFilename": pjson.name,
+          "ProductName": pjson.name,
+          "InternalName": pjson.name,
+          "FileDescription ": pjson.name
+        }
     };
     packager(options, function done (err, appPath) {
         if(err) { return console.log(err); }
@@ -113,7 +119,7 @@ gulp.task('create-windows-installer',function(){
   return resultPromise = winInstaller.createWindowsInstaller({
     appDirectory: './build/tagifier-win32-x64',
     outputDirectory: './release',
-    authors: 'Cyriaque DELAUNAY',
+    authors: pjson.author,
     iconUrl: __dirname+'/dist/web/img/tgf/icon_circle.ico',
     setupIcon : './dist/web/img/tgf/icon_setup.ico',
     exe: 'Tagifier.exe',

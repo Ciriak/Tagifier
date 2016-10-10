@@ -10,9 +10,6 @@ var random = require('random-gen');
 var request = require('request');
 
 function File() {
-
-
-
   this.id = random.alphaNum(8);
   this.filename = "tagifier.mp3";
   this.title = "";
@@ -20,8 +17,6 @@ function File() {
   this.composer = "";
   this.album = "";
   this.year = "";
-
-
 };
 
 
@@ -168,45 +163,5 @@ function setCover(file, writer, callback){
     });
   }
 }
-
-/*
-fileDownload = function(file,callback){
-  var ytdlProcess = youtubedl(File.uri,
-    // Optional arguments passed to youtube-dl.
-    ['-x'],
-    // Additional options can be given for calling `child_process.execFile()`.
-    { cwd: __dirname });
-
-  ytdlProcess.pipe(ofs.createWriteStream('./exports/'+session.id+'/'+index+'.mp4'));
-
-  // Will be called when the download starts.
-  ytdlProcess.on('info', function (info) {
-    ipc.emit('file_event', {event: 'file_download_started', data: index}); // send a status for this file
-  });
-
-  ytdlProcess.on('error', function error(err) {
-    console.log(err);
-    ipc.emit('file_event', {event: 'file_error', data: {index: index, error: err}});
-  });
-
-  ytdlProcess.on('end', function() {  // DL ending
-    processFileConvert(file,function(err,file){ //convert the mp4 to mp3
-      if(err){                        //stop all if error
-        return callback(err);
-      }
-      processFileTag(file,function(err,file){    //tag the given mp3
-        if(err){                        //stop all if error
-          return callback(err);
-        }
-        callback(null,file);   //return the final result
-      });
-    });
-    //file downloaded, apply the tags
-    ipc.emit("file_event",{event:"file_finished",data:{index:index}});
-
-    clearInterval(progressPing);  //end the filesize ping
-  });
-}
-*/
 
 module.exports = File;
