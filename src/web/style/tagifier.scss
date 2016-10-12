@@ -691,6 +691,17 @@ a.list-group-item:focus, a.list-group-item:hover, button.list-group-item:focus, 
 	-webkit-user-select: none;
 }
 
+.downloading-update{
+	position: fixed;
+	z-index: 10;
+	bottom: 0px;
+	right: 0;
+	height: 18px;
+	img{
+		height: 100%;
+	}
+}
+
 .modal-content{
 	background-color: #222222;
 }

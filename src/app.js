@@ -236,6 +236,7 @@ function checkUpdates(){
     else{
       // Download the update
       updater.download();
+      ipc.emit("updateDownloading");
     }
   });
 
@@ -243,12 +244,7 @@ function checkUpdates(){
   updater.on('update-downloaded', (info) => {
     console.log(info);
     ipc.emit("updateAvailable", info);
-    // Restart the app and install the update
-    //updater.install()
   })
-
-  // Access electrons autoUpdater
-  //updater.autoUpdater
 }
 
 //

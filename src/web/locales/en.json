@@ -4,7 +4,8 @@
     "about": "About",
     "download": "Download",
     "newProcess": "Convert a new file",
-    "update": "Update available"
+    "update": "Update available",
+    "updateDownloading": "Downloading update..."
   },
   "file": {
     "fileName": "File Name",

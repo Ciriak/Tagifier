@@ -4,7 +4,8 @@
     "about": "A propos",
     "download": "Télécharger",
     "newProcess": "Convertir un nouveau fichier",
-    "update": "Mise à jour disponible"
+    "update": "Mise à jour disponible",
+    "updateDownloading": "Téléchargement de la mise à jours..."
   },
   "file": {
     "fileName": "Nom du fichier",
