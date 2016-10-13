@@ -454,12 +454,10 @@ var rmDir = function(dirPath, removeSelf) {
 
 //add contexttual menu inside the windows registry
 function registerRegistry(){
-  var progId;
   regedit.list('HKCU\\SOFTWARE\\Classes\\.mp3', function (err, result) {
     if(err){
       console.log(err);
     }
-    progId = result['HKCU\\SOFTWARE\\Classes\\.mp3'].values[''].value;
     var newKeysList = ['HKCU\\SOFTWARE\\Classes\\*\\shell\\Tagifier',
     'HKCU\\SOFTWARE\\Classes\\*\\shell\\Tagifier\\command'];
 
@@ -494,12 +492,6 @@ function registerRegistry(){
         [newKeysList[1]]: {
             'uselessname': {
                 value: '"'+exePath+'" --files "%1"',
-                type: 'REG_DEFAULT'
-            }
-        },
-        'HKCU\\Software\\Classes\\.mp3': {
-            'uselessname': {
-                value: progId,
                 type: 'REG_DEFAULT'
             }
         }
