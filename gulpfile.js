@@ -120,15 +120,15 @@ gulp.task('create-windows-installer',function(){
     appDirectory: './build/tagifier-win32-x64',
     outputDirectory: './release',
     authors: pjson.author,
+    title: pjson.name,
+    description: pjson.name,
     iconUrl: __dirname+'/dist/web/img/tgf/icon_circle.ico',
-    setupIcon : './dist/web/img/tgf/icon_setup.ico',
+    setupIcon: './dist/web/img/tgf/icon_setup.ico',
     exe: 'Tagifier.exe',
-    setupExe:'Setup.exe',
-    noMsi : true,
-    title : 'Tagifier'
+    setupExe: 'Setup.exe',
+    noMsi: true,
+    loadingGif: './dist/web/img/updater.gif'
   });
-
-  console.log(iconUrl);
 
 resultPromise.then(() => console.log("It worked!"), (e) => console.log(`No dice: ${e.message}`));
 
