@@ -104,9 +104,16 @@ function handleSquirrelEvent() {
       // Install desktop and start menu shortcuts
 
 
-      //create windows shortcuts
+      //create windows shortcuts (remove previous if existing)
       if(process.platform === 'win32') {
         for (var i = 0; i < lnkPath.length; i++) {
+
+          //remove shortcut if exist
+          if(ofs.existsSync(lnkPath[i])){
+            ofs.unlinkSync(lnkPath[i]);
+          }
+
+          //create new shortcut
           ws.create(lnkPath[i], {
               target : exePath,
               desc : pjson.description
