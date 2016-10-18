@@ -133,6 +133,9 @@ gulp.task('create-windows-installer',function(){
   return resultPromise = winInstaller.createWindowsInstaller({
     appDirectory: './build/tagifier-win32-x64',
     outputDirectory: './release',
+    title: pjson.name,
+    description: pjson.name,
+    loadingGif: './dist/web/img/updater.gif',
     authors: pjson.author,
     iconUrl: __dirname+'/dist/web/img/tgf/icon_circle.ico',
     setupIcon : './dist/web/img/tgf/icon_setup.ico',
