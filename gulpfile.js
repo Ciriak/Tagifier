@@ -1,6 +1,6 @@
 var electronVersion = "1.0.1";
 
-
+var fs = require('fs');
 var gulp = require('gulp');
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
@@ -12,6 +12,7 @@ var del = require('del');
 var ngmin = require('gulp-ngmin');
 var nodemon = require('gulp-nodemon');
 var bower = require('gulp-bower');
+var asar = require('asar');
 var packager = require('electron-packager');
 var packageJson = require('./src/package.json');
 var plumber = require('gulp-plumber');  //prevent watch crash
@@ -86,6 +87,7 @@ gulp.task('electron-build', function(callback) {
   var options = {
         dir: "./dist",
         name: pjson.name,
+        asar: true,
         platform: "win32",
         arch: "x64",
         'app-version':pjson.version,
@@ -107,6 +109,18 @@ gulp.task('electron-build', function(callback) {
     });
 });
 
+gulp.task('asar', function() {
+  var src = './dist/';
+  var dest = './dist/app.asar';
+  //clean asar if already exist
+  if(fs.existsSync(dest)){
+    fs.unlinkSync(dest);
+  }
+  asar.createPackage(src, dest, function() {
+    return console.log('App packaged !');
+  })
+});
+
 gulp.task('watch', function () {
   gulp.watch('./src/web/style/**/*.scss', ['sass']);
   gulp.watch('./src/web/**/*.html', ['html']);
@@ -120,15 +134,15 @@ gulp.task('create-windows-installer',function(){
     appDirectory: './build/tagifier-win32-x64',
     outputDirectory: './release',
     authors: pjson.author,
-    title: pjson.name,
-    description: pjson.name,
     iconUrl: __dirname+'/dist/web/img/tgf/icon_circle.ico',
-    setupIcon: './dist/web/img/tgf/icon_setup.ico',
+    setupIcon : './dist/web/img/tgf/icon_setup.ico',
     exe: 'Tagifier.exe',
-    setupExe: 'Setup.exe',
-    noMsi: true,
-    loadingGif: './dist/web/img/updater.gif'
+    setupExe:'Setup.exe',
+    noMsi : true,
+    title : 'Tagifier'
   });
+
+  console.log(iconUrl);
 
 resultPromise.then(() => console.log("It worked!"), (e) => console.log(`No dice: ${e.message}`));
 
