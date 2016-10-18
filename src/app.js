@@ -203,7 +203,7 @@ var fidOpt = {
 };
 
 // create the "exports" folder
-var p = __dirname+"/exports";
+var p = app.getPath("temp")+"/tagifier";
 if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
@@ -325,7 +325,7 @@ ipc.on('processRequest', function (data) {
     session.files.push(file);
   }
 
-  session.tempPath = __dirname+"/exports/"+session.id;
+  session.tempPath = app.getPath("temp")+"/tagifier/"+session.id;
 
   //create the temp session path
   if (!ofs.existsSync(session.tempPath)){
@@ -536,7 +536,6 @@ function singleInstanceChecker(){
 function registerProtocol(){
   const {protocol} = require('electron');
   protocol.registerFileProtocol('tagifier', (request, callback) => {
-    console.log(request);
     const url = request.url.substr(7);
     callback({path: path.normalize(__dirname + '/' + url)});
   }, (error) => {
@@ -545,8 +544,5 @@ function registerProtocol(){
   });
 }
 
-
-
-rmDir(__dirname+'/web/img/temps',false);
-rmDir(__dirname+'/exports',false);
+rmDir(app.getPath("temp")+'/tagifier',false);
 console.log("Temp files cleaned");

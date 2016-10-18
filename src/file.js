@@ -40,7 +40,7 @@ fileRetreiveMetaData = function(file,callback) {
     id3Parser.parse(fileBuffer).then(function(tags) {
       //if img exist, write it
       if(tags.image){
-        saveCover(tags.image.data,"img/temps",tempId+".jpg",function(err,path){
+        saveCover(tags.image.data, tempId+".jpg", function(err,path){
             if(err){
               console.log(err);
               return callback(err,null);
@@ -104,12 +104,12 @@ fileTag = function (file,callback){
   });
 }
 
-function saveCover(data,path,fileName,callback){
-  var fullPath = __dirname+"/web/"+path;
+function saveCover(data,fileName,callback){
+  var fullPath = app.getPath("temp")+'/tagifier/covers';
   console.log("Saving the cover to "+fullPath);
-  if (!fs.existsSync(__dirname+"/web/img/temps")){
+  if (!fs.existsSync(fullPath)){
     console.log("Creating the temps folder...");
-    fs.mkdirSync(__dirname+"/web/img/temps");
+    fs.mkdirSync(fullPath);
   }
   var imgData = new Buffer(data, 'binary').toString('base64');
   fs.writeFile(fullPath+"/"+fileName, imgData, 'base64', function (err,data) {
@@ -148,7 +148,7 @@ function setCover(file, writer, callback){
       }
       var tid = random.alphaNum(8);
       console.log("Updating cover from "+imgPath);
-      saveCover(body, "img/temps", tid+".jpg", function(err,path){
+      saveCover(body, tid+".jpg", function(err,path){
           if(err){
             callback(err);
           }
