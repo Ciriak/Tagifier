@@ -20,6 +20,7 @@
     "fileNamePattern": "File Name Pattern",
     "applyTagToAll": "Apply this tag to all files",
     "applyPatternToAll": "Apply this pattern to all files",
+    "applyPattern": "Apply this pattern to the current file",
     "lockProp": "Lock / Unlock this attribute",
     "addFileButtonLabel": "Add File",
     "removeFile": "Remove this file from the list",
