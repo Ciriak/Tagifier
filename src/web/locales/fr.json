@@ -4,12 +4,13 @@
     "about": "A propos",
     "download": "Télécharger",
     "newProcess": "Convertir un nouveau fichier",
-    "update": "Mise à jour disponible"
+    "update": "Mise à jour disponible",
+    "updateDownloading": "Téléchargement de la mise à jours..."
   },
   "file": {
     "fileName": "Nom du fichier",
     "pattern": "Pattern",
-    "cover": "Sélectionnez une cover",
+    "cover": "Sélectionner une cover",
     "title": "Titre",
     "artist": "Artiste",
     "album": "Album",
@@ -19,7 +20,8 @@
     "fileNamePattern": "Pattern du nom du fichier",
     "applyTagToAll": "Appliquer ce tag à tous les fichiers",
     "applyPatternToAll": "Appliquer ce pattern à tous les fichiers",
-    "lockProp": "Vérouiller / déverouiller cet attribut",
+    "applyPattern": "Appliquer ce pattern au fichier courant",
+    "lockProp": "Verouiller / déverouiller cet attribut",
     "addFileButtonLabel": "Ajouter un fichier",
     "removeFile": "Supprimer ce fichier de la liste",
     "process": "Sauvegarder",

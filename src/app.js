@@ -104,9 +104,16 @@ function handleSquirrelEvent() {
       // Install desktop and start menu shortcuts
 
 
-      //create windows shortcuts
+      //create windows shortcuts (remove previous if existing)
       if(process.platform === 'win32') {
         for (var i = 0; i < lnkPath.length; i++) {
+
+          //remove shortcut if exist
+          if(ofs.existsSync(lnkPath[i])){
+            ofs.unlinkSync(lnkPath[i]);
+          }
+
+          //create new shortcut
           ws.create(lnkPath[i], {
               target : exePath,
               desc : pjson.description
@@ -196,7 +203,7 @@ var fidOpt = {
 };
 
 // create the "exports" folder
-var p = __dirname+"/exports";
+var p = app.getPath("temp")+"/tagifier";
 if (!ofs.existsSync(p)){
     ofs.mkdirSync(p);
 }
@@ -236,6 +243,7 @@ function checkUpdates(){
     else{
       // Download the update
       updater.download();
+      ipc.emit("updateDownloading");
     }
   });
 
@@ -243,12 +251,7 @@ function checkUpdates(){
   updater.on('update-downloaded', (info) => {
     console.log(info);
     ipc.emit("updateAvailable", info);
-    // Restart the app and install the update
-    //updater.install()
   })
-
-  // Access electrons autoUpdater
-  //updater.autoUpdater
 }
 
 //
@@ -322,7 +325,7 @@ ipc.on('processRequest', function (data) {
     session.files.push(file);
   }
 
-  session.tempPath = __dirname+"/exports/"+session.id;
+  session.tempPath = app.getPath("temp")+"/tagifier/"+session.id;
 
   //create the temp session path
   if (!ofs.existsSync(session.tempPath)){
@@ -458,12 +461,10 @@ var rmDir = function(dirPath, removeSelf) {
 
 //add contexttual menu inside the windows registry
 function registerRegistry(){
-  var progId;
   regedit.list('HKCU\\SOFTWARE\\Classes\\.mp3', function (err, result) {
     if(err){
       console.log(err);
     }
-    progId = result['HKCU\\SOFTWARE\\Classes\\.mp3'].values[''].value;
     var newKeysList = ['HKCU\\SOFTWARE\\Classes\\*\\shell\\Tagifier',
     'HKCU\\SOFTWARE\\Classes\\*\\shell\\Tagifier\\command'];
 
@@ -498,12 +499,6 @@ function registerRegistry(){
         [newKeysList[1]]: {
             'uselessname': {
                 value: '"'+exePath+'" --files "%1"',
-                type: 'REG_DEFAULT'
-            }
-        },
-        'HKCU\\Software\\Classes\\.mp3': {
-            'uselessname': {
-                value: progId,
                 type: 'REG_DEFAULT'
             }
         }
@@ -541,7 +536,6 @@ function singleInstanceChecker(){
 function registerProtocol(){
   const {protocol} = require('electron');
   protocol.registerFileProtocol('tagifier', (request, callback) => {
-    console.log(request);
     const url = request.url.substr(7);
     callback({path: path.normalize(__dirname + '/' + url)});
   }, (error) => {
@@ -550,8 +544,5 @@ function registerProtocol(){
   });
 }
 
-
-
-rmDir(__dirname+'/web/img/temps',false);
-rmDir(__dirname+'/exports',false);
+rmDir(app.getPath("temp")+'/tagifier',false);
 console.log("Temp files cleaned");

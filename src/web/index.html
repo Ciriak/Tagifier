@@ -15,8 +15,11 @@
 
 	  <div ng-include="'views/file.html'"></div>
 
-    <div class="update-panel" ng-show="updateAvailable" ng-click="installUpdate()">
+    <div class="update-panel" ng-show="updateAvailable && !updateDownloading" ng-click="installUpdate()">
       {{ 'global.update' | translate }}
+    </div>
+    <div class="downloading-update" ng-show="updateDownloading && !updateAvailable" title="{{ 'global.updateDownloading' | translate }}">
+      <img ng-src="img/update-download.svg" alt="Downloading update" />
     </div>
 
     <!-- require scripts -->

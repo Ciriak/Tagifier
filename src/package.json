@@ -1,6 +1,6 @@
 {
   "name": "tagifier",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "An advanced Mp3 metadata editor",
   "main": "app.js",
   "repository": {

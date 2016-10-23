@@ -62,7 +62,14 @@ app.controller('mainCtrl', ['$scope', '$http','$rootScope','$translate','$window
   $rootScope.ipc = $rootScope.remote.ipcMain;
 
   //player logged
-  $rootScope.ipc.on("updateAvailable", function(update){
+  $rootScope.ipc.on("updateDownloading", function(update){
+    $rootScope.updateDownloading = true;
+    if(!$scope.$$phase) {
+      $scope.$apply();
+    }
+  });
+
+  $rootScope.ipc.on("updateAvailable", function(){
     $rootScope.updateAvailable = true;
     if(!$scope.$$phase) {
       $scope.$apply();

@@ -146,7 +146,20 @@ app.controller('fileCtrl', function($scope, $rootScope, $http, $translate, $loca
 		if(fileIndex <= -1){
 			return;
 		}
+
+		var opfi = angular.copy($scope.playingFileIndex);
+
+		//if the "player file" is the removed one
+		if(fileIndex === $scope.playingFileIndex){
+			$scope.filePlayer.audio.pause();
+			$scope.playingFileIndex = null;
+		}
+
+		//if we remove a file "under" the playing file , then put it down
 		$scope.exportFiles.splice(fileIndex, 1);
+		if(opfi > fileIndex){
+			$scope.playingFileIndex--;
+		}
 
 		//If their is only one file remaining
 		if($scope.exportFiles.length == 1){
@@ -163,12 +176,6 @@ app.controller('fileCtrl', function($scope, $rootScope, $http, $translate, $loca
 		}
 		else{
 			$scope.setCurrentFile(0);
-		}
-
-		//if the "player file" is the removed one
-		if(fileIndex === $scope.playingFileIndex){
-			$scope.filePlayer.audio.pause();
-			$scope.playingFileIndex = null;
 		}
 
 		if(!$scope.$$phase) {
@@ -511,6 +518,9 @@ app.controller('fileCtrl', function($scope, $rootScope, $http, $translate, $loca
 
 	//try to retreive some cover suggestions
 	$scope.retreiveSuggestionCovers = function(fileIndex, recordings){
+		if(!$scope.exportFiles[fileIndex]){
+			return;
+		}
 		$scope.exportFiles[fileIndex].suggestions.covers = [];
 		var sc = $scope.exportFiles[fileIndex].suggestions.covers;
 

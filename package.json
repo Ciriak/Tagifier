@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/CYRIAQU3/tagifier#readme",
   "dependencies": {
+    "asar": "^0.12.3",
     "del": "^2.2.0",
     "electron-gh-releases": "^2.0.3",
     "electron-packager": "^7.1.0",

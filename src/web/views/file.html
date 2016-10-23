@@ -51,19 +51,12 @@
 				<tr>
 					 <td class="input-group">
 						 	<span class="input-group-addon"><i class="mdi mdi-code-braces"></i></span>
-							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('tagPattern',currentFileIndex)" ng-model="exportFiles[currentFileIndex].tagPattern" ng-change="genPattern(currentFileIndex)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.pattern' | translate }}">
+							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('tagPattern',currentFileIndex)" ng-model="exportFiles[currentFileIndex].tagPattern" tooltip-append-to-body="true" uib-tooltip="{{ 'file.pattern' | translate }}">
+							<span class="input-group-addon btn btn-primary" ng-click="genPattern(currentFileIndex)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.applyPattern' | translate }}"><i class="mdi mdi-calendar-check"></i></span>
 							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('tagPattern',currentFileIndex,true)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.applyPatternToAll' | translate }}"><i class="mdi mdi-auto-fix"></i></span>
 							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('tagPattern',currentFileIndex)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
 					 </td>
 				</tr>
-				<!--<tr>
-					 <td class="input-group">
-						 	<span class="input-group-addon"><i class="mdi mdi-file-xml"></i></span>
-							<input type="text" class="form-control" ng-disabled="!canEditTags || propIsLocked('fileNamePattern',currentFileIndex)" ng-model="exportFiles[currentFileIndex].fileNamePattern" ng-change="genPattern(currentFileIndex)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.fileNamePattern' | translate }}">
-							<span class="input-group-addon btn btn-primary" ng-hide="singleFile" ng-click="overrideProp('fileNamePattern',currentFileIndex,true)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.applyPatternToAll' | translate }}"><i class="mdi mdi-auto-fix"></i></span>
-							<span class="input-group-addon btn btn-danger" ng-hide="singleFile" ng-click="togglePropLock('fileNamePattern',currentFileIndex)" tooltip-append-to-body="true" uib-tooltip="{{ 'file.lockProp' | translate }}"><i class="mdi mdi-lock"></i></span>
-					 </td>
-				</tr>-->
 				<tr>
 					 <td class="input-group">
 							<span class="input-group-addon"><i class="mdi mdi-file-music"></i></span>
