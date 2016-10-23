@@ -147,13 +147,19 @@ app.controller('fileCtrl', function($scope, $rootScope, $http, $translate, $loca
 			return;
 		}
 
+		var opfi = angular.copy($scope.playingFileIndex);
+
 		//if the "player file" is the removed one
 		if(fileIndex === $scope.playingFileIndex){
 			$scope.filePlayer.audio.pause();
 			$scope.playingFileIndex = null;
 		}
 
+		//if we remove a file "under" the playing file , then put it down
 		$scope.exportFiles.splice(fileIndex, 1);
+		if(opfi > fileIndex){
+			$scope.playingFileIndex--;
+		}
 
 		//If their is only one file remaining
 		if($scope.exportFiles.length == 1){
