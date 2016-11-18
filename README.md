@@ -6,11 +6,8 @@
 
 ![Audio player from 1.1.0](http://i.imgur.com/fFx2RPI.jpg)
 
-Please note that this app is **very young** and a lot of improvements / additional features will come soon like :
+Additional features will come soon like :
 
-- Tags suggestion
-- More tags supported
-- Advanced music player
 - Localisation (more language supported)
 - Mac / Linux support
 
