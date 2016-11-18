@@ -43,7 +43,7 @@ Stay with the terminal open the src folder will be compiled on fly.
 
 For testing , you have to follow the instructions below.
 
-### Testing the app
+### Running the app
 
 Open a terminal on the project folder and type :
 
