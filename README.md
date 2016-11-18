@@ -4,7 +4,7 @@
 
 ### [ > Download the latest release](https://github.com/Cyriaqu3/tagifier/releases/latest)
 
-![Audio player from 1.1.0](http://i.imgur.com/fFx2RPI.jpg)
+![Tagifier Screenshot](http://i.imgur.com/CneGeAw.jpg)
 
 Additional features will come soon like :
 
