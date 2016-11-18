@@ -9,7 +9,7 @@ var htmlmin = require('gulp-htmlmin');
 var jsonminify = require('gulp-jsonminify');
 var install = require("gulp-install");
 var del = require('del');
-var ngmin = require('gulp-ngmin');
+var ngAnnotate = require('gulp-ng-annotate');
 var nodemon = require('gulp-nodemon');
 var bower = require('gulp-bower');
 var asar = require('asar');
@@ -44,7 +44,7 @@ gulp.task('install-dependencies', function() {
 gulp.task('scripts', function() {
   return gulp.src('./src/web/js/**/*.js')
     .pipe(plumber())
-    .pipe(ngmin())
+    .pipe(ngAnnotate())
   	.pipe(uglify({mangle: false}))
     .pipe(concat('tagifier.js'))
     .pipe(gulp.dest('./dist/web/js/'));
