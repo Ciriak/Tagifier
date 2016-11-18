@@ -9,7 +9,7 @@ require('package-script').spawn([
       },
       {
           command: "npm",
-          args: ["install", "-g", "electron-prebuilt"]
+          args: ["install", "-g", "electron"]
       },
       {
           command: "gulp",
